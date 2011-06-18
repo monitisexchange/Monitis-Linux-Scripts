@@ -1,0 +1,6 @@
+#!/bin/bash
+# fill these in to actually have things working and remove
+# next 'exit 1' line
+exit 1
+API_KEY=""
+SECRET_KEY=""
