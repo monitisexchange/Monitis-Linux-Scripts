@@ -26,7 +26,7 @@ find it in /etc/cron.d/munin:
 */5 * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron
 This can work with our example in example/munin_hook_example.sh, change the
 above line to call the hook script:
-*/5 * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron && /usr/share/monitis/RRD/example/munin_hook_example.sh
+*/5 * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron && /usr/share/monitis/RRD/munin_hook_example.sh
 This will call the script and will update the counters every time munin
 finishes to run so we have fresh new RRD data to update.
 
