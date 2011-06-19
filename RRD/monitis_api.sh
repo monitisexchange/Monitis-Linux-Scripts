@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# monitis_api.sh - monitis REST API implemented in bash
 # Written by Dan Fruehauf <malkodan@gmail.com>
 
 # be careful here with spaces, quote anything with double quotes!!

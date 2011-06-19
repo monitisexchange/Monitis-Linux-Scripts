@@ -1,0 +1,34 @@
+This directory contains scripts to integrate monitis with RRD monitoring
+systems such as munin, cacti etc.
+
+Example for a munin installation:
+After checking out the repository, edit monitis_config with your API key
+and secret key as provided from the monitis interface.
+
+Assuming your munin installation is in /var/lib/munin and your hostname
+in munin is 'localhost', you can experiment with the following:
+ # ./monitis_rrd.sh munin list_monitors /var/lib/munin localhost
+This will list the available monitors, each monitor will contain 1 to many
+counters, to list them, use:
+ # ./monitis_rrd.sh munin list_monitors /var/lib/munin localhost memory
+This will list the counters the monitor 'memory' provides
+
+In order to add a munin memory monitor with the counters 'free' and 'active'
+you can run the following:
+ # ./monitis_rrd.sh munin add_monitor /var/lib/munin localhost memory free active
+You can now make sure in the monitis interface that the monitor and counters
+were added and then we can try to update the data the counters hold:
+ # ./monitis_rrd.sh munin update_data_for_monitor /var/lib/munin localhost memory free active
+If the counters are updated, we can try and hook it via crontab.
+
+Munin by default is configured to run every 5 minutes, in most fedoras we can
+find it in /etc/cron.d/munin:
+*/5 * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron
+This can work with our example in example/munin_hook_example.sh, change the
+above line to call the hook script:
+*/5 * * * *     munin test -x /usr/bin/munin-cron && /usr/bin/munin-cron && /usr/share/monitis/RRD/example/munin_hook_example.sh
+This will call the script and will update the counters every time munin
+finishes to run so we have fresh new RRD data to update.
+
+Please note that monitor and counter creation should happen before hooking the
+script.
