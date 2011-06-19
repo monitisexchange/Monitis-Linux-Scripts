@@ -29,7 +29,7 @@ done
 
 if [[ $RESULT != "" ]]
 then
-  ../API/monitis_add_data.sh -m loadMonitor -r $RESULT -a 3P9SPCP910D1FLKBLB0IV3UUNG -s 3L1HMU1H923CBEDQS7O4N9HO7K > /dev/null
+  ../API/monitis_add_data.sh -m loadMonitor -r $RESULT -a API_KEY -s SECRET_KEY > /dev/null
 fi
 
 echo "$NAGIOSCMD"
