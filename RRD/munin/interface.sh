@@ -49,7 +49,7 @@ add_monitor() {
 	local monitor_name=$1; shift
 	# add all counters if user wants it...
 	local counters="$@"
-	if [ x"$counters" != x ]; then
+	if [ x"$counters" = x ]; then
 		echo "No counters specified, use 'ALL' to add them all" 1>&2
 		return 1
 	elif [ "$counters" == "ALL" ]; then
