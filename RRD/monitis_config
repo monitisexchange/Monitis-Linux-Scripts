@@ -1,6 +1,6 @@
 #!/bin/bash
 # fill these in to actually have things working and remove
 # next 'exit 1' line
-exit 1
+echo "Please edit 'monitis_config' before invoking anything" 1>&2 && exit 1
 API_KEY=""
 SECRET_KEY=""

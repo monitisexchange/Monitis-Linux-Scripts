@@ -10,6 +10,13 @@
 ############# PUBLIC INTERFACE #############
 ############################################
 
+# list all hosts
+# $1 - munin directory
+list_hosts() {
+	local munin_dir=$1; shift
+	(cd $munin_dir && ls -1d */ | cut -d'/' -f1 | grep -v "^plugin-state$") | sort | uniq
+}
+
 # list all monitors
 # $1 - munin directory
 # $2 - hostname

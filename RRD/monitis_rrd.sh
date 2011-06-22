@@ -7,7 +7,7 @@
 source monitis_api.sh || exit 1
 
 # these are the functions you have to implement in an interface
-declare -r INTERFACE_FUNCTIONS="list_monitors list_counters_for_monitor add_monitor update_data_for_monitor"
+declare -r INTERFACE_FUNCTIONS="list_hosts list_monitors list_counters_for_monitor add_monitor update_data_for_monitor"
 
 declare -r RRD_TAG_PREFIX="RRD"
 
