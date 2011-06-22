@@ -10,7 +10,7 @@ declare -r MONITIS_RRD_DIR=/usr/share/monitisexchange/Monitis-Linux-Scripts/RRD
 declare -r MUNIN_DIR=/var/lib/munin
 
 main() {
-	# this will update monitor 'memory' with the counters 'free' and 'active'
+	# this will update monitor 'threads' with the counter 'threads'
 	# this monitor must exist prior to hooking this script on crontab
 	# the monitor and counters can be easily created using:
 	# cd $MONITIS_RRD_DIR && \
