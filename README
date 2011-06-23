@@ -1,0 +1,3 @@
+RRD
+ - Integration of Monitis with RRD systems, currently supporting only munin
+ - Includes also a command line API for interacting with the REST API of Monitis
