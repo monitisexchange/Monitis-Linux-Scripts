@@ -1,49 +1,52 @@
 #!/bin/bash
 
-# munin/interface.sh - an integration of munin and monitis
+# cacti/interface.sh - an integration of cacti and monitis
 # Written by Dan Fruehauf <malkodan@gmail.com>
 
 # this will usually not change
-#declare -r MUNIN_DIR=/var/lib/munin
+#declare -r CACTI_DIR=/var/lib/cacti
+
+# this is the subdir where cacti stores it's RRD data
+declare -r CACTI_RRA_SUFFIX=rra
 
 ############################################
 ############# PUBLIC INTERFACE #############
 ############################################
 
 # list all hosts
-# $1 - munin directory
+# $1 - cacti directory
 list_hosts() {
-	local munin_dir=$1; shift
-	(cd $munin_dir && ls -1d */ | cut -d'/' -f1 | grep -v "^plugin-state$") | sort | uniq
+	local cacti_dir=$1; shift
+	(cd $cacti_dir/$CACTI_RRA_SUFFIX && ls -1 | cut -d'_' -f1) | sort | uniq
 }
 
 # list all monitors
-# $1 - munin directory
+# $1 - cacti directory
 # $2 - hostname
 list_monitors() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
-	ls -1 $munin_dir/$hostname/$hostname-* | cut -d'-' -f2 | sort | uniq
+	(cd $cacti_dir/$CACTI_RRA_SUFFIX && ls -1 ${hostname}_*) | sed -e "s#_[0-9]*$CACTI_RRD_SUFFIX##g" | cut -d_ -f2- | sort | uniq
 }
 
 # returns the counters a monitor supports
-# $1 - munin directory
+# $1 - cacti directory
 # $2 - hostname
 # $3 - monitor name
 list_counters_for_monitor() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
 	local monitor_name=$1; shift
-	(cd $munin_dir/$hostname && ls -1 $hostname-$monitor_name-* | cut -d'-' -f3) 2> /dev/null
+	rrdtool info $cacti_dir/$CACTI_RRA_SUFFIX/${hostname}_${monitor_name}_*$CACTI_RRD_SUFFIX  | grep "^ds\[" | cut -d. -f1 | sed -e 's#^ds\[##g' -e 's#\]$##g' | sort | uniq
 }
 
 # add a single monitor with description and appropriate counters
-# $1 - munin directory
+# $1 - cacti directory
 # $2 - hostname
 # $3 - monitor name
 # $@ - counters to add, or 'ALL' if you want to add them all
 add_monitor() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
 	local monitor_name=$1; shift
 	# add all counters if user wants it...
@@ -52,10 +55,10 @@ add_monitor() {
 		echo "No counters specified, use 'ALL' to add them all" 1>&2
 		return 1
 	elif [ "$counters" == "ALL" ]; then
-		local counters=`list_counters_for_monitor $munin_dir $hostname $monitor_name | xargs`
+		local counters=`list_counters_for_monitor $cacti_dir $hostname $monitor_name | xargs`
 	else
 		# if user specified them, make sure they actually exist
-		if ! _validate_counters $munin_dir $hostname $monitor_name $counters; then
+		if ! _validate_counters $cacti_dir $hostname $monitor_name $counters; then
 			echo "Some counters specified are invalid, aborting" 1>&2
 			return 1
 		fi
@@ -68,8 +71,8 @@ add_monitor() {
 	echo "Adding $monitor_name for $hostname with counters '$counters'"
 
 	# get description and UOM
-	local monitor_description=`_get_monitor_description $munin_dir $hostname $monitor_name`
-	local monitor_uom=`_get_monitor_uom $munin_dir $hostname $monitor_name`
+	local monitor_description=`_get_monitor_description $cacti_dir $hostname $monitor_name`
+	local monitor_uom=`_get_monitor_uom $cacti_dir $hostname $monitor_name`
 
 	# format result parameters for monitis
 	local counter
@@ -94,21 +97,21 @@ add_monitor() {
 }
 
 # returns data for monitor by querying every counter
-# $1 - munin directory
+# $1 - cacti directory
 # $2 - hostname
 # $3 - monitor name
 # $@ - counters to update, or ALL if you want to add them all
 update_data_for_monitor() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
 	local monitor_name=$1; shift
 	local monitor_tag=`_canonize_monitor_tag_from_name $hostname $MONITIS_TAG_PREFIX $monitor_name`
 	local counters="$@"
 	if [ x"$counters" != x -a "$counters" == "ALL" ]; then
-		local counters=`list_counters_for_monitor $munin_dir $hostname $monitor_name | xargs`
+		local counters=`list_counters_for_monitor $cacti_dir $hostname $monitor_name | xargs`
 	else
 		# if user specified them, make sure they actually exist
-		if ! _validate_counters $munin_dir $hostname $monitor_name $counters; then
+		if ! _validate_counters $cacti_dir $hostname $monitor_name $counters; then
 			echo "Some counters specified are invalid, aborting" 1>&2
 			return 1
 		fi
@@ -116,7 +119,7 @@ update_data_for_monitor() {
 
 	# get the data
 	for counter in $counters; do
-		local data=`_get_last_data_for_counter $munin_dir $hostname $monitor_name $counter`
+		local data=`_get_last_data_for_counter $cacti_dir $hostname $monitor_name $counter`
 		data_for_update="$data_for_update;$counter:$data"
 	done
 	# remove first ';' as it is unneeded
@@ -130,34 +133,21 @@ update_data_for_monitor() {
 ############# PRIVATE METHODS ##############
 ############################################
 
-# TODO some end in g.rrd, c.rrd and d.rrd - find out the meaning of it
-declare -r MUNIN_RRD_SUFFIX=".rrd"
+# suffix for rrd files
+declare -r CACTI_RRD_SUFFIX=".rrd"
 
 # this is the tag prefix in monitis
-declare -r MONITIS_TAG_PREFIX="munin"
-
-# TODO this is unused, it'll add all monitors with all counters
-# adds all custom monitors for a given hostname
-# $1 - munin directory
-# $2 - hostname
-add_monitors() {
-	local munin_dir=$1; shift
-	local hostname=$1; shift
-	local monitor
-	for monitor in `ls -1 $munin_dir/$hostname/$hostname-* | cut -d'-' -f2 | sort | uniq`; do
-		add_munin_custom_monitor $munin_dir $hostname $monitor
-	done
-}
+declare -r MONITIS_TAG_PREFIX="cacti"
 
 # if user specified them, make sure they actually exist
 # $@ - counters to validate
 # returns true if all counters are valid
 _validate_counters() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
 	local monitor_name=$1; shift
 	local -i retval=0
-	local valid_counters=`list_counters_for_monitor $munin_dir $hostname $monitor_name | xargs`
+	local valid_counters=`list_counters_for_monitor $cacti_dir $hostname $monitor_name | xargs`
 	local counter
 	for counter in "$@"; do
 		if ! echo $valid_counters | grep -q "\b$counter\b" >& /dev/null; then
@@ -169,36 +159,67 @@ _validate_counters() {
 }
 
 # returns the description of a monitor
-# $1 - munin directory
+# $1 - cacti directory
 # $2 - hostname
 # $3 - monitor name
 _get_monitor_description() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
 	local monitor_name=$1; shift
-	grep "$hostname;$hostname:$monitor_name\.graph_title" $munin_dir/datafile | cut -d' ' -f2-
+	echo "TODO"
+	#grep "$hostname;$hostname:$monitor_name\.graph_title" $cacti_dir/datafile | cut -d' ' -f2-
 }
 
 # returns the UOM (unit of measurement) of a monitor
-# $1 - munin directory
+# $1 - cacti directory
 # $2 - hostname
 # $3 - monitor name
 _get_monitor_uom() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
 	local monitor_name=$1; shift
-	grep "$hostname;$hostname:$monitor_name\.graph_vlabel" $munin_dir/datafile | cut -d' ' -f2-
+	echo "TODO"
+	#grep "$hostname;$hostname:$monitor_name\.graph_vlabel" $cacti_dir/datafile | cut -d' ' -f2-
 }
 
 
 # returns last data in monitor using 'rrdtool lastupdate'
-# $1 - munin directory
+# $1 - cacti directory
 # $2 - hostname
 # $3 - monitor name
 _get_last_data_for_counter() {
-	local munin_dir=$1; shift
+	local cacti_dir=$1; shift
 	local hostname=$1; shift
 	local monitor_name=$1; shift
 	local counter=$1; shift
-	rrdtool lastupdate $munin_dir/$hostname/$hostname-$monitor_name-$counter-*$MUNIN_RRD_SUFFIX | tail -1 | cut -d' ' -f2
+
+	# cacti stores multiple counters in the same file, we'll handle it
+	# differently than munin
+	# dump the lastupdate data using rrdtool to a file, it'll look like:
+	#  load_1min load_5min load_15min
+	#
+	# 1308795002: 0.02 0.10 0.14
+
+	local tmp_file=`mktemp`
+	rrdtool lastupdate $cacti_dir/$CACTI_RRA_SUFFIX/${hostname}_${monitor_name}_*$CACTI_RRD_SUFFIX > $tmp_file
+
+	# now start parsing it...
+	data_fields_array=(`tail -1 $tmp_file | cut -d: -f2-`)
+	counter_names_array=(`head -1 $tmp_file | sed -e 's/^ //g'`)
+	local -i i=0
+	local counter_name
+	for counter_name in ${counter_names_array[@]}; do
+		if [ "$counter_name" = "$counter" ]; then
+			echo ${data_fields_array[$i]}
+			# return here, we got our data - just cleanup before this...
+			rm -f $tmp_file
+			unset data_fields_array counter_names_array
+			return 0
+		fi
+		let i=$i+1
+	done
+
+	# unset these, as arrays can't be local in bash
+	unset data_fields_array counter_names_array
+	rm -f $tmp_file
 }
