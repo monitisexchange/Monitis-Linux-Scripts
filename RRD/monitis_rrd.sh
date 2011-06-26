@@ -39,7 +39,7 @@ main() {
 	local plugin_name=$1; shift
 	local function_name=$1; shift
 	_validate_function $function_name
-	source $plugin_name/interface.sh || exit 1
+	source $plugin_name/interface || exit 1
 	$function_name "$@"
 }
 
