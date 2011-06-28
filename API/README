@@ -1,0 +1,20 @@
+ * monitis_api.sh - implements Bash functions for the Monitis REST API
+ * monitis_config - A configuration file for monitis_api.sh
+
+Usage
+-----
+Add a monitor:
+# (source monitis_api.sh && monitis_add_custom_monitor $API_KEY $SECRET_KEY monitor_name monitor_tag result_params)
+
+Updating data:
+# (source monitis_api.sh && monitis_update_custom_monitor_data $API_KEY $SECRET_KEY monitor_name results)
+
+Solid examples
+--------------
+Adding a monitor called 'memory' and tagged 'RRD_localhost_munin_memory' with first counter being 'free' type integer (2), and the second counter being 'active' type integer (2):
+# (source monitis_api.sh && monitis_add_custom_monitor memory RRD_localhost_munin_memory 'free:free:Bytes:2;active:active:Bytes:2')
+
+Updating data is alsmot similar to adding a monitor:
+# (source monitis_api.sh && monitis_update_custom_monitor_data RRD_localhost_munin_memory 'free:305594368;active:879394816')
+
+Please refer to the Monitis API documentation for a more thorough reference for the REST API - http://monitis.com/api/api.html
