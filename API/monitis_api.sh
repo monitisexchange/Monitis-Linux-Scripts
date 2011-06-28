@@ -29,21 +29,21 @@ _calc_checksum_for_api_call() {
 }
 
 # adds a custom monitis monitor
-# $1 - api key
-# $2 - secret key
-# $3 - monitor name
-# $4 - monitor tag
-# $5 - result parameters formatted as stated in API
+# $1 - monitor name
+# $2 - monitor tag
+# $3 - result parameters formatted as stated in API
 # example for formatting: "thread_count:Thread count:nr:2;host:Host Address:hostaddress:3"
 monitis_add_custom_monitor() {
-	local api_key="$1"; shift
-	local secret_key="$1"; shift
 	local monitor_name="$1"; shift
 	local monitor_tag="$1"; shift
 	local result_params="$1"; shift
 	local timestamp=`_get_timestamp`
 
-	# calculat checksum
+	# these should come from monitis_config
+	local api_key=$API_KEY
+	local secret_key=$SECRET_KEY
+
+	# calculate checksum
 	local checksum_string="action${API_ADD_MONITOR_ACTION}apikey${api_key}name${monitor_name}resultParams${result_params}tag${monitor_tag}timestamp${timestamp}version${API_VERSION}"
 	local checksum=`_calc_checksum_for_api_call $secret_key "$checksum_string"`
 
@@ -55,16 +55,17 @@ monitis_add_custom_monitor() {
 }
 
 # updates counter data for a custom monitor
-# $1 - api key
-# $2 - secret key
-# $3 - monitor tag
-# $4 - data for update (in the format of 'counter:value;counter:value')
+# $1 - monitor tag
+# $2 - data for update (in the format of 'counter:value;counter:value')
 monitis_update_custom_monitor_data() {
-	local api_key="$1"; shift
-	local secret_key="$1"; shift
 	local monitor_tag="$1"; shift
 	local results="$1"; shift
 	local xml_output_type=xml
+
+	# these should come from monitis_config
+	local api_key=$API_KEY
+	local secret_key=$SECRET_KEY
+
 	# retrieve the id for this monitor_tag
 	# TODO xpath handling is far from being perfect here
 	local -i monitor_id=$(curl -s "$API_URL?apikey=$api_key&output=$xml_output_type&version=$API_VERSION&action=getMonitors&tag=$monitor_tag" | xpath /monitors/monitor/id 2> /dev/null | sed -e 's#</\?id>##g')

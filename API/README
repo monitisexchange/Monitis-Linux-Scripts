@@ -4,10 +4,10 @@
 Usage
 -----
 Add a monitor:
-# (source monitis_api.sh && monitis_add_custom_monitor $API_KEY $SECRET_KEY monitor_name monitor_tag result_params)
+# (source monitis_api.sh && monitis_add_custom_monitor monitor_name monitor_tag result_params)
 
 Updating data:
-# (source monitis_api.sh && monitis_update_custom_monitor_data $API_KEY $SECRET_KEY monitor_name results)
+# (source monitis_api.sh && monitis_update_custom_monitor_data monitor_name results)
 
 Solid examples
 --------------

@@ -90,7 +90,7 @@ add_monitor() {
 	local monitor_tag=`_canonize_monitor_tag_from_name $hostname $MONITIS_TAG_PREFIX $monitor_name`
 
 	# add the monitor calling monitis api
-	monitis_add_custom_monitor $API_KEY $SECRET_KEY $monitor_name $monitor_tag "$result_params"
+	monitis_add_custom_monitor $monitor_name $monitor_tag "$result_params"
 }
 
 # returns data for monitor by querying every counter
@@ -123,7 +123,7 @@ update_data_for_monitor() {
 	data_for_update=${data_for_update:1}
 
 	# call monitis api to update data
-	monitis_update_custom_monitor_data $API_KEY $SECRET_KEY $monitor_tag "$data_for_update"
+	monitis_update_custom_monitor_data $monitor_tag "$data_for_update"
 }
 
 ############################################
