@@ -1,3 +1,7 @@
+API
+ - An implementation in Bash for the Monitis REST API
+DBI
+ - Integration of Monitis with any DBI compatible DB systems
 RRD
  - Integration of Monitis with RRD systems, currently supporting only munin
  - Includes also a command line API for interacting with the REST API of Monitis
