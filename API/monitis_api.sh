@@ -52,6 +52,7 @@ monitis_add_custom_monitor() {
 
 	# invoke curl
 	eval "curl ${postdata} $API_URL"
+	echo
 }
 
 # updates counter data for a custom monitor
@@ -85,4 +86,5 @@ monitis_update_custom_monitor_data() {
 	# invoke curl
 	local postdata="--data-urlencode \"action="$API_ADD_RESULT_ACTION"\" --data-urlencode \"apikey="$api_key"\" --data-urlencode \"checktime="$check_time"\" --data-urlencode \"monitorId="$monitor_id"\" --data-urlencode \"results="$results"\" --data-urlencode \"timestamp=$timestamp\" --data-urlencode \"version="$API_VERSION"\" --data-urlencode \"checksum="$checksum"\""
 	eval "curl ${postdata} $API_URL"
+	echo
 }

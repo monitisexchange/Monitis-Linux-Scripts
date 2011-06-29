@@ -3,7 +3,7 @@
 %CFG = (
 	# This is where the monitis API resides, you should change it
 	'monitis_api' => {
-		'executable' => '../API/monitis_api.sh',
+		'executable' => '../API/monitis_api_wrapper.sh',
 	},
 	# first monitor, this will be the tag
 	'monitors' => {

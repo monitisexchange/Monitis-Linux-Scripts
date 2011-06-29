@@ -3,6 +3,7 @@
 use strict;
 use DBI;
 use Data::Dumper;
+use Shell;
 
 # returns the monitis api executable
 sub get_monitis_api_executable {
@@ -18,8 +19,8 @@ sub monitis_add_monitor {
 	my ($monitor_name, $monitor_tag, $result_params) = @_;
 
 	my $monitis_api_executable = &get_monitis_api_executable();
-	# TODO INTEGRATE!!!
-	print "$monitis_api_executable monitis_add_custom_monitor '$monitor_name' '$monitor_tag' '$result_params'\n";
+	# call monitis API
+	print system("$monitis_api_executable monitis_add_custom_monitor \"$monitor_name\" \"$monitor_tag\" \"$result_params\"");
 }
 
 # updates custom monitor data in monitis
@@ -27,8 +28,8 @@ sub monnitis_update_data {
 	my ($monitor_name, $results) = @_;
 
 	my $monitis_api_executable = &get_monitis_api_executable();
-	# TODO INTEGRATE!!!
-	print "$monitis_api_executable monitis_update_custom_monitor_data '$monitor_name' '$results'\n";
+	# call monitis API
+	system("$monitis_api_executable monitis_update_custom_monitor_data \"$monitor_name\" \"$results\"");
 }
 
 # read the configuration from the file
