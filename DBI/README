@@ -1,0 +1,10 @@
+This is the DBI integration with Monitis.
+ - Have a look at monitis_dbi_config_sample.pl - it is self explanatory.
+ - Rename it to monitis_dbi_config.pl
+ - Edit monitis_config with your API and secret keys
+ - To add the configured monitors, use:
+# ./monitis_dbi.pl add_monitors
+ - To update data:
+# ./monitis_dbi.pl update_data
+ - For a dry run of data update:
+# ./monitis_dbi.pl "update_data(1)"

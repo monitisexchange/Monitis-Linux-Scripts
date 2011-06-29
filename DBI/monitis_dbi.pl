@@ -118,7 +118,7 @@ sub update_data {
 			if ( $dry_run ) {
 				print "Result for '$$counter_data{'db_query'} on '$$counter_data{'db_name'}\@$$counter_data{'db_host'} => $retval\n";
 			}
-			print STDERR "-------------\n";
+			print "-------------\n";
 		
 	
 		}
