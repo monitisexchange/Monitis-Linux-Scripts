@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<agent name="iostat monitor" interval="5">
+		<monitor name="IOStat for %HOSTNAME%">
+			<exectemplate>/usr/local/sbin/iostat-parser.sh</exectemplate>
+			<metric name="Read Requests per Second">
+				<type>integer</type>
+				<uom>Req/sec</uom>
+				<template>r/s=</template>
+			</metric>
+			<metric name="Write Requests per Second">
+				<type>integer</type>
+				<uom>Req/sec</uom>
+				<template>w/s=</template>
+			</metric>
+		</monitor>
+		<monitor name="Top for $HOSTNAME%" id="892">
+			<exectemplate>/usr/local/sbin/top-parser.sh arg1 arg2</exectemplate>
+			<metric name="Used memory">
+				<type>integer</type>
+				<uom>KBytes</uom>
+				<template>Mem: </template>
+			</metric>
+			<metric name="Used swap">
+				<type>integer</type>
+				<uom>KBytes</uom>
+				<template>Swap: </template>
+			</metric>
+		</monitor>
+	</agent>
+</config>
