@@ -1,0 +1,4 @@
+M3 => MMM => Monitis Monitor Manager
+This is a utility that would help you to manage monitors in Monitis
+Have a look at config_sample.xml and Example.pl to understand how to operate
+it.
