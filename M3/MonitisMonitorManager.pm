@@ -156,18 +156,17 @@ sub invoke_monitor {
 	foreach my $output_line ( split ('\n', $exec_output) ) {
 		# look for each metric on each line
 		foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
-			my $metric_template = $monitor_xml_path->{metric}->{$metric_name}->{template}[0];
-			if ( $output_line =~ m/$metric_template/ ) {
+			my $metric_regex = $monitor_xml_path->{metric}->{$metric_name}->{regex}[0];
+			if ($output_line =~ m/$metric_regex/) {
 				chomp $output_line;
-				carp "'$metric_template' is in '$output_line'" if DEBUG;
-				my $data = $output_line;
-				$data =~ s/$metric_template//;
-				# push into hash, we'll format it later...
+				my $data = $1;
+				carp "Matched '$metric_regex'=>'$data' in '$output_line'";
 				# yield a warning here if it's already in the hash
 				if (defined($results{$metric_name})) {
-					carp "Metric '$metric_name' with template '$metric_template' was already parsed!!";
-					carp "You should fix our script output ('$exec_template') to have '$metric_template' only once in the output";
+					carp "Metric '$metric_name' with regex '$metric_regex' was already parsed!!";
+					carp "You should fix your script output ('$exec_template') to have '$metric_regex' only once in the output";
 				}
+				# push into hash, we'll format it later...
 				$results{$metric_name} = $data;
 			}
 		}

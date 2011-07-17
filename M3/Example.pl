@@ -25,7 +25,7 @@ sub main {
 	$M3->add_agents();
 
 	# invoke all the agents
-	$M3->invoke_agents()
+	$M3->invoke_agents();
 }
 
 &main()
