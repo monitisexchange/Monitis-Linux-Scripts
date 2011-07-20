@@ -15,7 +15,7 @@
 				<regex>^sda\s+\S+\s+\S+\s+\S+\s+(\S+)</regex>
 			</metric>
 		</monitor>
-		<monitor name="Top for %HOSTNAME%" id="892">
+		<monitor name="Top for %HOSTNAME%">
 			<exectemplate>top -b -n 1</exectemplate>
 			<metric name="Free memory">
 				<type>integer</type>
