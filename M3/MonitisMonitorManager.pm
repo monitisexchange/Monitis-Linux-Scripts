@@ -14,10 +14,15 @@ use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
 
 our $VERSION = '0.1';
 
+my %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 );
+
 sub new {
 	my $class = shift;
 	my $self = {@_};
 	bless $self, $class;
+
+	# initialize a static variable
+	$self->{monitis_datatypes} = \%monitis_datatypes;
 
 	# open the given XML file
 	open (FILE, $self->{configuration_xml} || croak "Failed to open configuration XML: $!");
@@ -85,8 +90,8 @@ sub add_monitor {
 	my $result_params = "";
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
 		my $uom = $monitor_xml_path->{metric}->{$metric_name}->{uom}[0];
-		# TODO always integer
-		my $data_type = 2;
+		my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
+		my $data_type = ${ $self->{monitis_datatypes} }{$metric_type} or croak "Incorrect data type '$metric_type'";
 		$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
 	}
 	# remove redundant last ';'
@@ -157,9 +162,18 @@ sub invoke_monitor {
 		# look for each metric on each line
 		foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
 			my $metric_regex = $monitor_xml_path->{metric}->{$metric_name}->{regex}[0];
+			my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
 			if ($output_line =~ m/$metric_regex/) {
 				chomp $output_line;
 				my $data = $1;
+				if ($metric_type eq "boolean") {
+					# if it's a boolean, use a positive value instead of
+					# the extracted value
+					$data = 1;
+				} else {
+					# if it's not a boolean type, use the extracted data
+					my $data = $1;
+				}
 				carp "Matched '$metric_regex'=>'$data' in '$output_line'";
 				# yield a warning here if it's already in the hash
 				if (defined($results{$metric_name})) {
@@ -168,6 +182,11 @@ sub invoke_monitor {
 				}
 				# push into hash, we'll format it later...
 				$results{$metric_name} = $data;
+			} elsif ($metric_type eq "boolean") {
+				# if the data type is a boolean, and we didn't find the result
+				# we were looking for, then it's a 0
+				carp "Matched '$metric_regex'=>'0' in '$output_line'";
+				$results{$metric_name} = 0;
 			}
 		}
 	}
