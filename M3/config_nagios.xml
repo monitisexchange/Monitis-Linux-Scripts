@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<agent name="nagios monitor" interval="5">
+		<monitor name="Nagios check_load for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_load -w 0,0,0 -c 0,0,0</exectemplate>
+			<metric name="Load1">
+				<type>integer</type>
+				<uom>Processes in queue</uom>
+				<regex>load1=([0-9.]+);</regex>
+			</metric>
+			<metric name="Load5">
+				<type>integer</type>
+				<uom>Processes in queue</uom>
+				<regex>load5=([0-9.]+);</regex>
+			</metric>
+			<metric name="Load15">
+				<type>integer</type>
+				<uom>Processes in queue</uom>
+				<regex>load15=([0-9.]+);</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_swap for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_swap -w 1 -c 1</exectemplate>
+			<metric name="Swap free">
+				<type>integer</type>
+				<uom>MB</uom>
+				<regex>swap=([0-9\.]+)MB;</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_users for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_users -w 1 -c 1</exectemplate>
+			<metric name="Users">
+				<type>integer</type>
+				<uom>Number of users</uom>
+				<regex>users=([0-9]+);</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_procs for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_procs</exectemplate>
+			<metric name="Processes">
+				<type>integer</type>
+				<uom>Number of processes</uom>
+				<regex>\s+(\d+)\s+processes</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_ntp_peer for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_ntp_peer -H 0.fedora.pool.ntp.org</exectemplate>
+			<metric name="NTP peer">
+				<type>float</type>
+				<uom>Time offset</uom>
+				<regex>offset=([0-9-\.]+)s;</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_ssh for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_ssh localhost</exectemplate>
+			<metric name="SSH check">
+				<type>boolean</type>
+				<uom>SSH Connectivity</uom>
+				<regex>^SSH OK</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_tcp for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_tcp -H localhost -p 22</exectemplate>
+			<metric name="TCP check">
+				<type>boolean</type>
+				<uom>Connectivity</uom>
+				<regex>^TCP OK</regex>
+			</metric>
+			<metric name="TCP delay">
+				<type>float</type>
+				<uom>seconds</uom>
+				<regex>time=([0-9\.]+)s;</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_dns for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_dns -H monitis.com</exectemplate>
+			<metric name="DNS check">
+				<type>boolean</type>
+				<uom>Connectivity</uom>
+				<regex>^DNS OK</regex>
+			</metric>
+			<metric name="DNS delay">
+				<type>float</type>
+				<uom>seconds</uom>
+				<regex>time=([0-9\.]+)s;</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_http for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_http -H monitis.com</exectemplate>
+			<metric name="HTTP check">
+				<type>boolean</type>
+				<uom>Connectivity</uom>
+				<regex>^HTTP OK</regex>
+			</metric>
+			<metric name="HTTP delay">
+				<type>float</type>
+				<uom>seconds</uom>
+				<regex>time=([0-9\.]+)s;</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nagios check_mysql for %HOSTNAME%">
+			<exectemplate>/usr/lib/nagios/plugins/check_mysql</exectemplate>
+			<metric name="MySQL check">
+				<type>boolean</type>
+				<uom>Connectivity</uom>
+				<regex>^Uptime:</regex>
+			</metric>
+			<metric name="MySQL uptime">
+				<type>integer</type>
+				<uom>seconds</uom>
+				<regex>^Uptime:\s+(\d+)\s+</regex>
+			</metric>
+			<metric name="Queries per second">
+				<type>float</type>
+				<uom>Queries per second</uom>
+				<regex>\s+Queries per second avg:\s+([\d\.]+)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
