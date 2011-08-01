@@ -10,7 +10,7 @@ use Monitis;
 use Carp;
 
 # use the same constant as in the Perl-SDK
-use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
+use constant DEBUG => $ENV{MONITIS_DEBUG} || 1;
 
 our $VERSION = '0.1';
 
@@ -205,6 +205,12 @@ sub update_data_for_monitor {
 		croak "Result set is empty! did it parse well?"; 
 	}
 
+	if ($self->dry_run()) {
+		print "OK\n";
+		carp "This is a dry run, data for monitor '$monitor_name' was not really updated.";
+		return;
+	}
+
 	# get the monitor id, either from the XML, or by calling the API
 	my $monitor_id = 0;
 	if (defined ($self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{id}) ) {
@@ -229,19 +235,14 @@ sub update_data_for_monitor {
 
 	print "Updating data for monitor '$monitor_name'...";
 
-	if ($self->dry_run()) {
+	my $response = $self->{monitis_api_context}->custom_monitors->add_results(
+		monitorId => $monitor_id, checktime => $checktime,
+		results => $results);
+	if ($response->{status} eq 'ok') {
 		print "OK\n";
-		carp "This is a dry run, data for monitor '$monitor_name' was not really updated.";
 	} else {
-		my $response = $self->{monitis_api_context}->custom_monitors->add_results(
-			monitorId => $monitor_id, checktime => $checktime,
-			results => $results);
-		if ($response->{status} eq 'ok') {
-			print "OK\n";
-		} else {
-			print "FAILED: '$response->{status}'\n";
-			carp Dumper($response) if DEBUG;
-		}
+		print "FAILED: '$response->{status}'\n";
+		carp Dumper($response) if DEBUG;
 	}
 }
 
