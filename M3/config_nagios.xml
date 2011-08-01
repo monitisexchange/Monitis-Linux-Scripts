@@ -117,5 +117,23 @@
 				<regex>\s+Queries per second avg:\s+([\d\.]+)</regex>
 			</metric>
 		</monitor>
+		<monitor name="nagios check_ping">
+			<exectemplate>/usr/lib/nagios/plugins/check_ping -w 200.0,20% -c 200.0,20% -H www.google.com</exectemplate>
+			<metric name="PING check">
+				<type>boolean</type>
+				<uom>Connectivity</uom>
+				<regex>^PING OK</regex>
+			</metric>
+			<metric name="PING delay">
+				<type>float</type>
+				<uom>milliseconds</uom>
+				<regex>rta=([0-9.]+)ms;</regex>
+			</metric>
+			<metric name="PING packet loss">
+				<type>float</type>
+				<uom>percent</uom>
+				<regex>pl=([0-9.]+)%;</regex>
+			</metric>
+		</monitor>
 	</agent>
 </config>
