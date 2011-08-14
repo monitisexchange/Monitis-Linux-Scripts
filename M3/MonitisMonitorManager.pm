@@ -8,6 +8,8 @@ use XML::Simple;
 use Data::Dumper;
 use Monitis;
 use Carp;
+use LWP::UserAgent;
+use JSON;
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 1;
@@ -150,50 +152,139 @@ sub invoke_monitor {
 
 	# get the xml path for that monitor
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
-	my $exec_template = $monitor_xml_path->{exectemplate}[0];
 
-	carp "Running '$exec_template' for '$monitor_name'" if DEBUG;
+	my $output = "";
+	my $output_command = "";
+	if (defined($monitor_xml_path->{exectemplate}[0])) {
+		my $exec_template = $monitor_xml_path->{exectemplate}[0];
+		carp "Running '$exec_template' for '$monitor_name'" if DEBUG;
+		# running with qx{} as it should run also on windows
+		$output = qx{ $exec_template } || croak "Failed running '$exec_template': $!";
+		$output_command = $exec_template;
+	} elsif (defined($monitor_xml_path->{url}[0])) {
+		my $url = $monitor_xml_path->{url}[0];
+		carp "Fetching '$url' for '$monitor_name'" if DEBUG;
+		# running with qx{} as it should run also on windows
+		my $browser = LWP::UserAgent->new;
 
-	my %results = ();
-	# running with qx{} as it should run also on windows
-	my $exec_output = qx{ $exec_template} || croak "Failed running '$exec_template': $!";
-	# TODO will spliting with '\n' work on windows?? - it should...
-	foreach my $output_line ( split ('\n', $exec_output) ) {
-		# look for each metric on each line
-		foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
-			my $metric_regex = $monitor_xml_path->{metric}->{$metric_name}->{regex}[0];
-			my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
-			if ($output_line =~ m/$metric_regex/) {
-				chomp $output_line;
-				my $data = $1;
-				if ($metric_type eq "boolean") {
-					# if it's a boolean, use a positive value instead of
-					# the extracted value
-					$data = 1;
-				} else {
-					# if it's not a boolean type, use the extracted data
-					my $data = $1;
-				}
-				carp "Matched '$metric_regex'=>'$data' in '$output_line'";
-				# yield a warning here if it's already in the hash
-				if (defined($results{$metric_name})) {
-					carp "Metric '$metric_name' with regex '$metric_regex' was already parsed!!";
-					carp "You should fix your script output ('$exec_template') to have '$metric_regex' only once in the output";
-				}
-				# push into hash, we'll format it later...
-				$results{$metric_name} = $data;
-			} elsif ($metric_type eq "boolean") {
-				# if the data type is a boolean, and we didn't find the result
-				# we were looking for, then it's a 0
-				carp "Matched '$metric_regex'=>'0' in '$output_line'";
-				$results{$metric_name} = 0;
-			}
+		# credentials defined?
+		if (defined($monitor_xml_path->{user}[0]) and defined($monitor_xml_path->{password}[0])) {
+			my $user = $monitor_xml_path->{user}[0];
+			my $password = $monitor_xml_path->{password}[0];
+			carp "Using authentication '$user'/'$password'";
+			$browser->credentials($user => $password);
 		}
+
+		# invoke it!
+		my $response = $browser->get($url) || croak "Failed fetching '$url': $!";
+		$output = $response->content;
+		$output_command = $url;
+
+		# TODO TODO
+		# TODO add parameters of delay, code, etc
+		# TODO TODO
+	} else {
+		croak "No 'exectemplate' or 'url' defined for monitor '$monitor_name'";
 	}
+
+	# result set hash
+	my %results = ();
+
+	# handle regex matching
+	$self->match_regex($monitor_xml_path, $output, $output_command, \%results);
+
+	# handle XML pattern matching
+	$self->match_xml($monitor_xml_path, $output, $output_command, \%results);
+
+	# handle JSON pattern matching
+	$self->match_json($monitor_xml_path, $output, $output_command, \%results);
+
+	# format results
 	my $formatted_results = format_results(\%results);
 
 	# update the data
 	return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results);
+}
+
+# matches regexes the user defined
+sub match_regex {
+	my ($self, $monitor_xml_path, $output, $output_command, $results) = @_;
+
+	# this handles the regex matching
+	# TODO will spliting with '\n' work on windows?? - it should...
+	foreach my $output_line ( split ('\n', $output) ) {
+		# look for each metric on each line
+		foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
+			if (defined($monitor_xml_path->{metric}->{$metric_name}->{regex}[0])) {
+				my $metric_regex = $monitor_xml_path->{metric}->{$metric_name}->{regex}[0];
+				my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
+				if ($output_line =~ m/$metric_regex/) {
+					chomp $output_line;
+					my $data = $1;
+					if ($metric_type eq "boolean") {
+						# if it's a boolean, use a positive value instead of
+						# the extracted value
+						$data = 1;
+					} else {
+						# if it's not a boolean type, use the extracted data
+						my $data = $1;
+					}
+					carp "Matched '$metric_regex'=>'$data' in '$output_line'";
+					# yield a warning here if it's already in the hash
+					if (defined(${$results}{$metric_name})) {
+						carp "Metric '$metric_name' with regex '$metric_regex' was already parsed!!";
+						carp "You should fix your script output ('$output_command') to have '$metric_regex' only once in the output";
+					}
+					# push into hash, we'll format it later...
+					${$results}{$metric_name} = $data;
+				} elsif ($metric_type eq "boolean") {
+					# if the data type is a boolean, and we didn't find the result
+					# we were looking for, then it's a 0
+					carp "Matched '$metric_regex'=>'0' in '$output_line'";
+					${$results}{$metric_name} = 0;
+				}
+			}
+		}
+	}
+}
+
+# matches all JSON strings in the given output
+sub match_json {
+	my ($self, $monitor_xml_path, $output, $url, $results) = @_;
+	# handle JSON pattern matching
+	# eval is like a try() catch() block
+	eval {
+		my $json_presentation = from_json( $output, { utf8  => 1 } );
+		$self->match_strings_in_object($monitor_xml_path, $json_presentation, "json", $results);
+	};
+}
+
+# matches all XML strings in the given output
+sub match_xml {
+	my ($self, $monitor_xml_path, $output, $url, $results) = @_;
+	# handle XML pattern matching
+	# eval is like a try() catch() block
+	eval {
+		my $xml_parser = XML::Simple->new(ForceArray => 1);
+		my $xml_presentation = $xml_parser->XMLin($output);
+		$self->match_strings_in_object($monitor_xml_path, $xml_presentation, "xpath", $results);
+	};
+}
+
+# match a string in the given object
+sub match_strings_in_object {
+	my ($self, $monitor_xml_path, $presentation, $object_type, $results) = @_;
+	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
+		if (defined($monitor_xml_path->{metric}->{$metric_name}->{$object_type}[0])) {
+			my $metric_string = $monitor_xml_path->{metric}->{$metric_name}->{$object_type}[0];
+			if (defined(eval "\$presentation->$metric_string"))
+			{
+				my $data = eval "\$presentation->$metric_string";
+				carp "Matched '$metric_string'=>'$data'";
+				${$results}{$metric_name} = $data;
+			}
+		}
+	}
 }
 
 # update data for a monitor, calling Monitis API
