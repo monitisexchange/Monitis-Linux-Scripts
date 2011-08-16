@@ -10,9 +10,17 @@ use Monitis;
 use Carp;
 use LWP::UserAgent;
 use JSON;
+use Time::HiRes qw(clock_gettime);
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 1;
+
+# constants for HTTP statistics
+use constant {
+	HTTP_DELAY => "delay",
+	HTTP_CODE => "code",
+	HTTP_SIZE => "size",
+};
 
 our $VERSION = '0.1';
 
@@ -96,6 +104,15 @@ sub add_monitor {
 		my $data_type = ${ $self->{monitis_datatypes} }{$metric_type} or croak "Incorrect data type '$metric_type'";
 		$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
 	}
+
+	# do we need any http statistics in the monitor?
+	if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
+		# add these parameters also when adding a monitor
+		$result_params .= HTTP_DELAY . ":" . HTTP_DELAY . ":ms:" . $monitis_datatypes{integer} . ";";
+		$result_params .= HTTP_CODE . ":" . HTTP_CODE . ":code:" . $monitis_datatypes{integer} . ";";
+		$result_params .= HTTP_SIZE . ":" . HTTP_SIZE . ":bytes:" . $monitis_datatypes{integer} . ";";
+	}
+
 	# remove redundant last ';'
 	$result_params =~ s/;$//;
 
@@ -155,6 +172,10 @@ sub invoke_monitor {
 
 	my $output = "";
 	my $output_command = "";
+
+	# result set hash
+	my %results = ();
+
 	if (defined($monitor_xml_path->{exectemplate}[0])) {
 		my $exec_template = $monitor_xml_path->{exectemplate}[0];
 		carp "Running '$exec_template' for '$monitor_name'" if DEBUG;
@@ -176,19 +197,25 @@ sub invoke_monitor {
 		}
 
 		# invoke it!
+		my $response_begin = clock_gettime();
 		my $response = $browser->get($url) || croak "Failed fetching '$url': $!";
 		$output = $response->content;
 		$output_command = $url;
 
-		# TODO TODO
-		# TODO add parameters of delay, code, etc
-		# TODO TODO
+		# add HTTP statistics if user wants it
+		if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
+			# this will be the response time in ms
+			$results{&HTTP_DELAY}=int((clock_gettime() - $response_begin) * 1000);
+
+			# the numeric response code
+			$results{&HTTP_CODE}=$response->code;
+
+			# page size
+			$results{&HTTP_SIZE}=length($output);
+		}
 	} else {
 		croak "No 'exectemplate' or 'url' defined for monitor '$monitor_name'";
 	}
-
-	# result set hash
-	my %results = ();
 
 	# handle regex matching
 	$self->match_regex($monitor_xml_path, $output, $output_command, \%results);
