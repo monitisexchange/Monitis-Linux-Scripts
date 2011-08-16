@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<agent name="Weather monitor" interval="5">
+		<monitor name="Weather in Wanaka">
+			<url>http://www.holidaycheck.com/climate-wetter_Wanaka-ebene_oid-id_6163.html</url>
+			<!--exectemplate>cat /tmp/wanaka</exectemplate-->
+			<metric name="Temperature">
+				<type>integer</type>
+				<uom>C</uom>
+				<regex>Temperature: (\d+).*,</regex>
+			</metric>
+			<metric name="Humidity">
+				<type>integer</type>
+				<uom>Percent</uom>
+				<regex>, Humidity: (\d+)%</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<agent name="Sample XML extraction" interval="5">
+		<monitor name="XML extraction">
+			<exectemplate>cat config_sample_xpath_extraction.xml</exectemplate>
+			<metric name="Test">
+				<type>integer</type>
+				<uom>F</uom>
+				<xpath>{agent}->{"Sample XML extraction"}->{monitor}->{"XML extraction"}->{exectemplate}[0]</xpath>
+			</metric>
+		</monitor>
+	</agent>
+</config>
