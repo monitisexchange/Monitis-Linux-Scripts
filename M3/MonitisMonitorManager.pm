@@ -11,6 +11,7 @@ use Carp;
 use LWP::UserAgent;
 use JSON;
 use Time::HiRes qw(clock_gettime);
+use URI::Escape;
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 1;
@@ -392,7 +393,7 @@ sub format_results {
 	my (%results) = %{$_[0]};
 	my $formatted_results = "";
 	foreach my $key (keys %results) {
-		$formatted_results .= $key . ":" . $results{$key} . ";";
+		$formatted_results .= $key . ":" . uri_escape($results{$key}) . ";";
 	}
 	# remove redundant last ';'
 	$formatted_results =~ s/;$//;
