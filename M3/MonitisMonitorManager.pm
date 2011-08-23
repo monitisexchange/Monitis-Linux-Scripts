@@ -294,7 +294,9 @@ sub match_xml {
 	# eval is like a try() catch() block
 	eval {
 		my $xml_parser = XML::Simple->new(ForceArray => 1);
-		my $xml_presentation = $xml_parser->XMLin($output);
+		# do not use XMLin() as it might look for a file, parse_string()
+		# is much better so we can avoid potential error messages
+		my $xml_presentation = $xml_parser->parse_string($output);
 		$self->match_strings_in_object($monitor_xml_path, $xml_presentation, "xpath", $results);
 	};
 }
