@@ -14,7 +14,7 @@ use Time::HiRes qw(clock_gettime);
 use URI::Escape;
 
 # use the same constant as in the Perl-SDK
-use constant DEBUG => $ENV{MONITIS_DEBUG} || 1;
+use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
 
 # constants for HTTP statistics
 use constant {
