@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<agent name="Yahoo finance" interval="5">
+		<monitor name="SNP 500">
+			<url>http://finance.yahoo.com/d/quotes.csv?s=^GSPC&amp;f=p</url>
+			<metric name="SNP 500">
+				<type>float</type>
+				<uom>Points</uom>
+				<regex>(.*)</regex>
+			</metric>
+		</monitor>
+		<monitor name="USD to EUR">
+			<url>http://finance.yahoo.com/d/quotes.csv?e=.csv&amp;f=l1&amp;s=USDEUR=X</url>
+			<metric name="USD to EUR">
+				<type>float</type>
+				<uom>Rate</uom>
+				<regex>(.*)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
