@@ -4,3 +4,11 @@ Have a look at config_sample.xml and Example.pl to understand how to operate
 it.
 
 NagiosToM3Converter.pl will convert a nagios configuration to M3 - still work in progress
+
+M3 helper scripts:
+AddMonitors.pl - Adds all the monitors into Monitis, so later on data can be
+	inserted into their counters. It is mandatory to run this before you use Run.pl
+	or invoke_agents()
+Run.pl - Executes all agents, then sends the monitoring data to Monitis.
+DryRun.pl - Same as Run.pl, however does not send monitoring data to Monitis.
+	Can be used to debug your parsing.

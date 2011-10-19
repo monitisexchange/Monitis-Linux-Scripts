@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<agent name="File Agent" interval="5">
+		<monitor name="ETC File Monitor">
+			<exectemplate>find /etc -maxdepth 1 -type f | wc -l</exectemplate>
+			<metric name="Number of files in ETC">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>(.*)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
