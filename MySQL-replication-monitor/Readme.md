@@ -5,7 +5,7 @@ The main purpose of current project is to show the possible way of using Monitis
 
   The current version of MySQL replication monitor provide SSL access to the replicating machines so you have to have installed Secure Socket Layer (SSL) binary and related cryptographic tools  (normally openssl) and corresponding SSL shared libraries (as usually libssl) on Linux  machine where monitor will be run. Besides, you have to have in your Linux account the pair of generated access keys. And, of course, you should have account (user) on MySQL servers with enough privileges (ROOT, SUPER or REPLICATION) which will be used by monitor (monitor will execute necessary MySQL command remotely).
 
-<a href="http://imgur.com/cWPMb"><img src="http://i.imgur.com/cWPMb.png" height="80%" title="MySQL replication monitoring" /></a>
+<a href="http://imgur.com/cWPMb"><img src="http://i.imgur.com/cWPMb.png" title="MySQL replication monitoring" /></a>
 
 #### Monitored parameters
 
