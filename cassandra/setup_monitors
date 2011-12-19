@@ -1,0 +1,37 @@
+#!/usr/bin/python
+
+import monitisserver
+import settings
+from monitors import *
+
+import sys
+
+def create_params(params):
+    new_list = []
+    for item in params:
+        new_list.append(':'.join(item))
+    return ';'.join(new_list)
+
+
+if __name__ == '__main__':
+    monitis = monitisserver.MonitisServer(settings.KEY, settings.SECRET)
+    for monitor in cassandra_monitors:
+        name = monitor['name']
+        tag = monitor['tag']
+        params = create_params(monitor['params'])
+        print '%s: Creating custom monitor.' % tag
+        try:
+            print tag + ': ' + monitis.addMonitor(name=name, tag=tag, resultParams=params)
+        except:
+            print '%s: Did not create, may already exist.' % tag
+            pass
+    for monitor in settings.COLUMN_FAMILIES:
+        name = 'ColumnFamily (%s)' % monitor
+        tag = 'cassandraCF_%s' % monitor
+        params = create_params(column_family_params)
+        print '%s: Creating custom monitor.' % tag
+        try:
+            print tag + ': ' + monitis.addMonitor(name=name, tag=tag, resultParams=params)
+        except:
+            print '%s: Did not create, may already exist.' % tag
+            pass
