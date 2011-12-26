@@ -8,9 +8,7 @@ use XML::Simple;
 use Data::Dumper;
 use Monitis;
 use Carp;
-use LWP::UserAgent;
-use JSON;
-use Time::HiRes qw(clock_gettime);
+use File::Basename;
 use URI::Escape;
 
 # use the same constant as in the Perl-SDK
@@ -18,14 +16,13 @@ use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
 
 # constants for HTTP statistics
 use constant {
-	HTTP_DELAY => "delay",
-	HTTP_CODE => "code",
-	HTTP_SIZE => "size",
+	EXECUTION_PLUGIN_DIR => "Execution",
+	PARSING_PLUGIN_DIR => "Parsing",
 };
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
-my %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 );
+our %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 );
 
 sub new {
 	my $class = shift;
@@ -43,6 +40,12 @@ sub new {
 	# run the macros which would change all the %SOMETHING% to a proper value
 	run_macros($templated_xml);
 
+	# load execution plugins
+	$self->load_plugins_in_directory("execution_plugins", EXECUTION_PLUGIN_DIR);
+
+	# load parsing plugins
+	$self->load_plugins_in_directory("parsing_plugins", PARSING_PLUGIN_DIR);
+
 	my $xml_parser = XML::Simple->new(ForceArray => 1);
     $self->{config_xml} = $xml_parser->XMLin($templated_xml);
 
@@ -56,6 +59,32 @@ sub new {
 		api_key => $self->{config_xml}->{apicredentials}[0]->{apikey} );
 
 	return $self;
+}
+
+# a simple function to dynamically load all perl packages in a given
+# directory
+sub load_plugins_in_directory {
+	my ($self, $plugin_table_name, $plugin_directory) = @_;
+	# initialize a new plugin table
+	$self->{$plugin_table_name} = ();
+
+	my $full_plugin_directory = $ENV{"PWD"} . "/" . $plugin_directory;
+	# iterate on all plugins in directory and load them
+	foreach my $plugin_file (<$full_plugin_directory/*.pm>) {
+		my $plugin_name = $plugin_directory . "::" . basename($plugin_file);
+		$plugin_name =~ s/\.pm$//g;
+		# load the plugin
+		eval {
+			require "$plugin_file";
+			$plugin_name->name();
+		};
+		if ($@) {
+			croak "error: $@";
+		} else {
+			carp "Loading plugin '" . $plugin_name . "'->'" . $plugin_name->name() . "'" if DEBUG;
+			$self->{$plugin_table_name}{$plugin_name->name()} = $plugin_name;
+		}
+	}
 }
 
 # does the user want a dry run?
@@ -106,12 +135,19 @@ sub add_monitor {
 		$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
 	}
 
-	# do we need any http statistics in the monitor?
-	if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
-		# add these parameters also when adding a monitor
-		$result_params .= HTTP_DELAY . ":" . HTTP_DELAY . ":ms:" . $monitis_datatypes{integer} . ";";
-		$result_params .= HTTP_CODE . ":" . HTTP_CODE . ":code:" . $monitis_datatypes{integer} . ";";
-		$result_params .= HTTP_SIZE . ":" . HTTP_SIZE . ":bytes:" . $monitis_datatypes{integer} . ";";
+	# we'll let external execution plugins dictate if they want to expose
+	# additional counters (HTTP statistics for instance)
+	# find the relevant execution plugin and execute its additional counters
+	# function
+	foreach my $execution_plugin (keys %{$self->{execution_plugins}} ) {
+		if (defined($monitor_xml_path->{$execution_plugin}[0])) {
+			# executable, URL, SQL command...
+			carp "Calling extra_counters_cb for plugin: '$execution_plugin', monitor_name->'$monitor_name'" if DEBUG;
+			$result_params .= $self->{execution_plugins}{$execution_plugin}->extra_counters_cb($self->{monitis_datatypes}, $monitor_xml_path);
+
+			# iteration can be broken as we've found the execution plugin
+			last;
+		}
 	}
 
 	# remove redundant last ';'
@@ -172,149 +208,41 @@ sub invoke_monitor {
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
 
 	my $output = "";
-	my $output_command = "";
+	my $uri = undef;
 
 	# result set hash
 	my %results = ();
 
-	if (defined($monitor_xml_path->{exectemplate}[0])) {
-		my $exec_template = $monitor_xml_path->{exectemplate}[0];
-		carp "Running '$exec_template' for '$monitor_name'" if DEBUG;
-		# running with qx{} as it should run also on windows
-		$output = qx{ $exec_template } || croak "Failed running '$exec_template': $!";
-		$output_command = $exec_template;
-	} elsif (defined($monitor_xml_path->{url}[0])) {
-		my $url = $monitor_xml_path->{url}[0];
-		carp "Fetching '$url' for '$monitor_name'" if DEBUG;
-		# running with qx{} as it should run also on windows
-		my $browser = LWP::UserAgent->new;
+	# find the relevant execution plugin and execute it
+	foreach my $execution_plugin (keys %{$self->{execution_plugins}} ) {
+		if (defined($monitor_xml_path->{$execution_plugin}[0])) {
+			# it's called a URI since it can be anything, from a command line
+			# executable, URL, SQL command...
+			$uri = $monitor_xml_path->{$execution_plugin}[0];
+			carp "Calling execution plugin: '$execution_plugin', URI->'$uri', monitor_name->'$monitor_name'" if DEBUG;
+			$output = $self->{execution_plugins}{$execution_plugin}->execute( \
+				$monitor_xml_path, $uri, \%results);
 
-		# credentials defined?
-		if (defined($monitor_xml_path->{user}[0]) and defined($monitor_xml_path->{password}[0])) {
-			my $user = $monitor_xml_path->{user}[0];
-			my $password = $monitor_xml_path->{password}[0];
-			carp "Using authentication '$user'/'$password'";
-			$browser->credentials($user => $password);
+			# iteration can be broken as we've found the execution plugin
+			last;
 		}
-
-		# invoke it!
-		my $response_begin = clock_gettime();
-		my $response = $browser->get($url) || croak "Failed fetching '$url': $!";
-		$output = $response->content;
-		$output_command = $url;
-
-		# add HTTP statistics if user wants it
-		if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
-			# this will be the response time in ms
-			$results{&HTTP_DELAY}=int((clock_gettime() - $response_begin) * 1000);
-
-			# the numeric response code
-			$results{&HTTP_CODE}=$response->code;
-
-			# page size
-			$results{&HTTP_SIZE}=length($output);
-		}
-	} else {
-		croak "No 'exectemplate' or 'url' defined for monitor '$monitor_name'";
+	}
+	if (!defined($uri)) {
+		croak "Could not find proper execution plugin for monitor '$monitor_name'";
 	}
 
-	# handle regex matching
-	$self->match_regex($monitor_xml_path, $output, $output_command, \%results);
-
-	# handle XML pattern matching
-	$self->match_xml($monitor_xml_path, $output, $output_command, \%results);
-
-	# handle JSON pattern matching
-	$self->match_json($monitor_xml_path, $output, $output_command, \%results);
+	# call all parsing plugins
+	# TODO can be optimized to include only the relevant plugins
+	foreach my $parsing_plugin (keys %{$self->{parsing_plugins}} ) {
+		carp "Calling parsing plugin: '$parsing_plugin'" if DEBUG;
+		$self->{parsing_plugins}{$parsing_plugin}->parse($monitor_xml_path, $output, $uri, \%results);
+	}
 
 	# format results
 	my $formatted_results = format_results(\%results);
 
 	# update the data
 	return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results);
-}
-
-# matches regexes the user defined
-sub match_regex {
-	my ($self, $monitor_xml_path, $output, $output_command, $results) = @_;
-
-	# this handles the regex matching
-	# TODO will spliting with '\n' work on windows?? - it should...
-	foreach my $output_line ( split ('\n', $output) ) {
-		# look for each metric on each line
-		foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
-			if (defined($monitor_xml_path->{metric}->{$metric_name}->{regex}[0])) {
-				my $metric_regex = $monitor_xml_path->{metric}->{$metric_name}->{regex}[0];
-				my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
-				if ($output_line =~ m/$metric_regex/) {
-					chomp $output_line;
-					my $data = $1;
-					if ($metric_type eq "boolean") {
-						# if it's a boolean, use a positive value instead of
-						# the extracted value
-						$data = 1;
-					} else {
-						# if it's not a boolean type, use the extracted data
-						my $data = $1;
-					}
-					carp "Matched '$metric_regex'=>'$data' in '$output_line'";
-					# yield a warning here if it's already in the hash
-					if (defined(${$results}{$metric_name})) {
-						carp "Metric '$metric_name' with regex '$metric_regex' was already parsed!!";
-						carp "You should fix your script output ('$output_command') to have '$metric_regex' only once in the output";
-					}
-					# push into hash, we'll format it later...
-					${$results}{$metric_name} = $data;
-				} elsif ($metric_type eq "boolean") {
-					# if the data type is a boolean, and we didn't find the result
-					# we were looking for, then it's a 0
-					carp "Matched '$metric_regex'=>'0' in '$output_line'";
-					${$results}{$metric_name} = 0;
-				}
-			}
-		}
-	}
-}
-
-# matches all JSON strings in the given output
-sub match_json {
-	my ($self, $monitor_xml_path, $output, $url, $results) = @_;
-	# handle JSON pattern matching
-	# eval is like a try() catch() block
-	eval {
-		my $json_presentation = from_json( $output, { utf8  => 1 } );
-		$self->match_strings_in_object($monitor_xml_path, $json_presentation, "json", $results);
-	};
-}
-
-# matches all XML strings in the given output
-sub match_xml {
-	my ($self, $monitor_xml_path, $output, $url, $results) = @_;
-	# handle XML pattern matching
-	# eval is like a try() catch() block
-	eval {
-		my $xml_parser = XML::Simple->new(ForceArray => 1);
-		# do not use XMLin() as it might look for a file, parse_string()
-		# is much better so we can avoid potential error messages
-		my $xml_presentation = $xml_parser->parse_string($output);
-		$self->match_strings_in_object($monitor_xml_path, $xml_presentation, "xpath", $results);
-	};
-}
-
-# match a string in the given object
-sub match_strings_in_object {
-	my ($self, $monitor_xml_path, $presentation, $object_type, $results) = @_;
-	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
-		if (defined($monitor_xml_path->{metric}->{$metric_name}->{$object_type}[0])) {
-			my $metric_string = $monitor_xml_path->{metric}->{$metric_name}->{$object_type}[0];
-			if (defined(eval "\$presentation->$metric_string"))
-			{
-				my $data = eval "\$presentation->$metric_string";
-				carp "Matched '$metric_string'=>'$data'";
-				${$results}{$metric_name} = $data;
-			}
-		}
-	}
 }
 
 # update data for a monitor, calling Monitis API
@@ -379,7 +307,6 @@ sub invoke_agents {
 sub invoke_agent_monitors {
 	my ($self, $agent_name) = @_;
 	foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}}) {
-		# TODO TODO Interface here might change
 		$self->invoke_monitor($agent_name, $monitor_name);
 	}
 }

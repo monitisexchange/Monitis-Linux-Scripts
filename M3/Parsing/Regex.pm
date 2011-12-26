@@ -1,0 +1,57 @@
+package Parsing::Regex;
+use Carp;
+use Data::Dumper;
+
+sub new {
+	my ($class, $name) = @_;
+	return undef;
+}
+
+# this function identifies the token should be used when parsing
+sub name {
+	return "regex";
+}
+
+# matches regexes the user defined
+sub parse {
+	my ($self, $monitor_xml_path, $output, $output_command, $results) = @_;
+
+	# this handles the regex matching
+	# TODO will spliting with '\n' work on windows?? - it should...
+	foreach my $output_line ( split ('\n', $output) ) {
+		# look for each metric on each line
+		foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
+			if (defined($monitor_xml_path->{metric}->{$metric_name}->{$self->name()}[0])) {
+				my $metric_regex = $monitor_xml_path->{metric}->{$metric_name}->{$self->name()}[0];
+				my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
+				if ($output_line =~ m/$metric_regex/) {
+					chomp $output_line;
+					my $data = $1;
+					if ($metric_type eq "boolean") {
+						# if it's a boolean, use a positive value instead of
+						# the extracted value
+						$data = 1;
+					} else {
+						# if it's not a boolean type, use the extracted data
+						my $data = $1;
+					}
+					carp "Matched '$metric_regex'=>'$data' in '$output_line'";
+					# yield a warning here if it's already in the hash
+					if (defined(${$results}{$metric_name})) {
+						carp "Metric '$metric_name' with regex '$metric_regex' was already parsed!!";
+						carp "You should fix your script output ('$output_command') to have '$metric_regex' only once in the output";
+					}
+					# push into hash, we'll format it later...
+					${$results}{$metric_name} = $data;
+				} elsif ($metric_type eq "boolean") {
+					# if the data type is a boolean, and we didn't find the result
+					# we were looking for, then it's a 0
+					carp "Matched '$metric_regex'=>'0' in '$output_line'";
+					${$results}{$metric_name} = 0;
+				}
+			}
+		}
+	}
+}
+
+1;
