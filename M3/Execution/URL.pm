@@ -24,8 +24,7 @@ sub name {
 
 # execute an executable and return the output
 sub execute {
-	my ($self, $monitor_xml_path_ref, $url, $results) = @_;
-	my $monitor_xml_path = ${$monitor_xml_path_ref};
+	my ($self, $monitor_xml_path, $url, $results) = @_;
 
 	# initialize LWP
 	my $browser = LWP::UserAgent->new;
@@ -46,13 +45,13 @@ sub execute {
 	# add HTTP statistics if user wants it
 	if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
 		# this will be the response time in ms
-		$results{&HTTP_DELAY}=int((clock_gettime() - $response_begin) * 1000);
+		${$results}{&HTTP_DELAY}=int((clock_gettime() - $response_begin) * 1000);
 
 		# the numeric response code
-		$results{&HTTP_CODE}=$response->code;
+		${$results}{&HTTP_CODE}=$response->code;
 
 		# page size
-		$results{&HTTP_SIZE}=length($output);
+		${$results}{&HTTP_SIZE}=length($output);
 	}
 
 	return $output;

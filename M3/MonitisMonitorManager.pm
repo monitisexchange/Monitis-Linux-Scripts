@@ -220,8 +220,7 @@ sub invoke_monitor {
 			# executable, URL, SQL command...
 			$uri = $monitor_xml_path->{$execution_plugin}[0];
 			carp "Calling execution plugin: '$execution_plugin', URI->'$uri', monitor_name->'$monitor_name'" if DEBUG;
-			$output = $self->{execution_plugins}{$execution_plugin}->execute( \
-				$monitor_xml_path, $uri, \%results);
+			$output = $self->{execution_plugins}{$execution_plugin}->execute($monitor_xml_path, $uri, \%results);
 
 			# iteration can be broken as we've found the execution plugin
 			last;
