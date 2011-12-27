@@ -1,0 +1,99 @@
+#!/usr/bin/python
+
+import os, commands, re
+import monitisserver, settings
+
+from monitors import *
+
+monitis = monitisserver.MonitisServer(settings.KEY, settings.SECRET)
+
+def get_active_nodes():
+    output = commands.getoutput('nodetool -host localhost ring')
+    count = 0
+    for line in output.split('\n'):
+        if 'Up' in line:
+            count += 1
+    return count
+
+def get_total_nodes():
+    output = commands.getoutput('nodetool -host localhost ring')
+    return len(output.split('\n')) - 1
+
+def send_ring_info():
+    ring_info = {
+        'totalNodes': str(get_total_nodes()),
+        'runningNodes': str(get_active_nodes())
+    }
+    results = ''
+    for key, value in ring_info.iteritems():
+        results += '%s:%s;' % (key, value)
+
+    print 'Ring Info: %s' % monitis.addResult(monitorTag='cassandraRingInfo', result=results)
+
+def send_node_info():
+    raw = commands.getoutput('nodetool -h localhost info')
+    info = {}
+    raw_list = raw.split('\n') 
+    for item in raw_list:
+        split = item.split(':')
+        info[split[0].strip()] = split[1].strip()
+    node_info = None
+    for monitor in cassandra_monitors:
+        if monitor['tag'] == 'cassandraNodeInfo':
+            node_params = monitor['params']    
+  
+    results = {}
+    for monitor in node_params:
+        for item in info:
+            if item.lower() == monitor[1].lower():
+                results[monitor[0]] = info[item]
+
+   
+
+    results['uptime'] = info['Uptime (seconds)']
+    heap_split = info['Heap Memory (MB)'].split('/')
+    results['heapMemoryUsed'] = heap_split[0].strip()
+    results['heapMemoryAvailable'] = heap_split[1].strip()
+    send_result = ''
+    for key, value in results.iteritems():
+        send_result += '%s:%s;' % (key, value)
+
+    print 'Node Info: %s' % monitis.addResult(monitorTag='cassandraNodeInfo', result=send_result)
+
+def get_param_tag(params, name):
+    for item in params:
+        if item[1].lower() == name.lower():
+            return item[0]
+
+def send_column_family_data(cf):
+    raw = commands.getoutput('nodetool -h localhost cfstats')
+    start = False
+    cf_info = {}
+    for line in raw.split('\n'):
+        if 'Column Family: %s' % cf in line:
+            start = True
+            continue
+        if start:
+            try:
+                split = line.split(':')
+                cf_info[split[0].strip()] = split[1].strip().replace('ms.', '')
+            except IndexError as error:
+                break
+
+    results = {}
+    for key, value in cf_info.iteritems():
+        results[get_param_tag(column_family_params, key)] = value
+
+    send_result = ''
+    for key, value in results.iteritems():
+        send_result += '%s:%s;' % (key, value)
+
+    print 'ColumnFamily (%s): %s' % (cf, monitis.addResult(monitorTag='cassandraCF_%s'%cf, result=send_result))
+
+if __name__ == '__main__':
+    send_node_info()
+    send_ring_info()
+    for cf in settings.COLUMN_FAMILIES:
+        send_column_family_data(cf)
+
+
