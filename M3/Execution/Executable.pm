@@ -21,4 +21,10 @@ sub execute {
 	return $output;
 }
 
+# we can add extra counters in this function, such as statistics etc.
+# for this simple executable - we add none
+sub extra_counters_cb {
+	return "";
+}
+
 1;
