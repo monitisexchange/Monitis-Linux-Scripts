@@ -59,9 +59,11 @@ sub execute {
 	}
 
 	# db_password
+	my $use_password = 0;
 	if (!defined($monitor_xml_path->{db_password}[0])) {
-		croak "'db_password' undefined";
+		# we will just not a password for connection
 	} else {
+		$use_password = 1;
 		$db_password = $monitor_xml_path->{db_password}[0];
 	}
 
@@ -69,8 +71,14 @@ sub execute {
 	carp "DB: '$db_username\@$dsn', Query: '$db_query'\n";
 
 	# connect to DB and run the query
-	my $dbh = DBI->connect("$dsn", "$db_username", "$db_password")
-		|| carp "Could not connect to database '$db_username\@$dsn': $DBI::errstr" && return "";
+	my $dbh;
+	if ($use_password == 1) {
+		$dbh = DBI->connect("$dsn", "$db_username", "$db_password")
+			|| carp "Could not connect to database '$db_username\@$dsn': $DBI::errstr" && return "";
+	} else {
+		$dbh = DBI->connect("$dsn", "$db_username")
+			|| carp "Could not connect to database '$db_username\@$dsn': $DBI::errstr" && return "";
+	}
 
 	my $sth = $dbh->prepare($db_query)
 		|| carp "Could not prepare query '$db_query': $DBI::errstr" && return "";

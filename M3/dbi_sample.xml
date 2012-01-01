@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<agent name="MySQL Agent" interval="5">
+		<monitor name="Sample MySQL Monitor">
+			<sql>select count(*) from mysql.user;</sql>
+			<db_driver>mysql</db_driver>
+			<db_host>localhost</db_host>
+			<db_name>mysql</db_name>
+			<db_username>root</db_username>
+			<db_password>XXX</db_password>
+			<db_statistics>1</db_statistics>
+			<metric name="Number of users">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>(.*)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
