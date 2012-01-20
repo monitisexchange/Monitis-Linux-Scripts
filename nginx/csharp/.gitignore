@@ -1,0 +1,3 @@
+monitis_nginx_stats/bin/*
+monitis_nginx_stats/obj/*
+*.suo
