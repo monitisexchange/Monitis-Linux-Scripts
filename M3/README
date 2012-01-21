@@ -12,6 +12,8 @@ AddMonitors.pl - Adds all the monitors into Monitis, so later on data can be
 Run.pl - Executes all agents, then sends the monitoring data to Monitis.
 DryRun.pl - Same as Run.pl, however does not send monitoring data to Monitis.
 	Can be used to debug your parsing.
+TimerRun.pl - Runs M3 in a loop using timers to schedule invocation of monitors
+TimerDryRun.pl - Same as TimerRun.pl but does not send monitoring data to Monitis.
 
 M3 has a plugin architecture. 2 types of plugins exist:
  1. Execution
