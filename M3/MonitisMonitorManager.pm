@@ -27,7 +27,7 @@ our $VERSION = '0.2';
 our %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 );
 
 # a helper variable to signal threads to quit on time
-my $loop_stop :shared = 0;
+my $condition_loop_stop :shared = 0;
 
 # prevent multiple threads from accessing the monitis API
 my $monitis_api_lock :shared = 0;
@@ -322,7 +322,9 @@ sub invoke_agent_monitors {
 # signals threads to stop execution
 sub agents_loop_stop {
 	carp "Stopping execution...";
-	$loop_stop = 1;
+	lock($condition_loop_stop);
+	$condition_loop_stop = 1;
+	cond_broadcast($condition_loop_stop);
 }
 
 # invoke all agents in a loop with timers enabled
@@ -359,12 +361,13 @@ sub invoke_agent_monitors_loop {
 	carp "Agent '$agent_name' will be invoked every '$agent_interval' seconds'" if DEBUG;
 
 	# this loop will break when the user will hit ^C (SIGINT)
-	while(not $loop_stop) {
+	do {
 		foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}}) {
 			$self->invoke_monitor($agent_name, $monitor_name);
 		}
-		sleep $agent_interval;
-	}
+		lock($condition_loop_stop);
+		cond_timedwait($condition_loop_stop, time() + $agent_interval);
+	} while(not $condition_loop_stop);
 }
 
 # formats a monitor tag from a name
