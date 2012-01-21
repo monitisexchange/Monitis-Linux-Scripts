@@ -1,10 +1,9 @@
 API
  - An implementation in Bash for the Monitis REST API
-DBI
- - Integration of Monitis with any DBI compatible DB systems
 RRD
  - Integration of Monitis with RRD systems, currently supporting only munin
  - Includes also a command line API for interacting with the REST API of Monitis
 M3
  - M3 => MMM => Monitis Monitor Manager - A monitor manager for Monitis
    implemented in Perl and using the Monitis Perl-SDK
+ - Includes the new DBI integration as well
