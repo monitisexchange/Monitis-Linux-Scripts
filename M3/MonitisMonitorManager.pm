@@ -10,6 +10,8 @@ use Monitis;
 use Carp;
 use File::Basename;
 use URI::Escape;
+use Thread qw(async);
+use threads::shared;
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -23,6 +25,12 @@ use constant {
 our $VERSION = '0.2';
 
 our %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 );
+
+# a helper variable to signal threads to quit on time
+my $loop_stop :shared = 0;
+
+# prevent multiple threads from accessing the monitis API
+my $monitis_api_lock :shared = 0;
 
 sub new {
 	my $class = shift;
@@ -247,6 +255,7 @@ sub invoke_monitor {
 # update data for a monitor, calling Monitis API
 sub update_data_for_monitor {
 	my ($self, $agent_name, $monitor_name, $results) = @_;
+	lock($monitis_api_lock);
 
 	# sanity check of results...
 	if ($results eq "") {
@@ -307,6 +316,54 @@ sub invoke_agent_monitors {
 	my ($self, $agent_name) = @_;
 	foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}}) {
 		$self->invoke_monitor($agent_name, $monitor_name);
+	}
+}
+
+# signals threads to stop execution
+sub agents_loop_stop {
+	carp "Stopping execution...";
+	$loop_stop = 1;
+}
+
+# invoke all agents in a loop with timers enabled
+sub invoke_agents_loop {
+	my ($self) = @_;
+	# initialize all the agents
+	my @threads = ();
+
+	foreach my $agent_name (keys %{$self->{agents}} ) {
+		push @threads, threads->create(\&invoke_agent_monitors_loop, $self, $agent_name);
+	}
+	my $running_threads = @threads;
+
+	# register SIGINT to stop the loop
+	local $SIG{'INT'} = \&MonitisMonitorManager::agents_loop_stop;
+
+	do {
+		foreach my $thread (@threads) {
+			if($thread->is_joinable()) {
+				$thread->join();
+				carp "Thread '$thread' has quitted." if DEBUG;
+				$running_threads--;
+			}
+		}
+		sleep 1;
+	} while(threads->list(threads::all) > 0);
+}
+
+# invoke all monitors of an agent in a loop, taking care to sleep between
+# executions
+sub invoke_agent_monitors_loop {
+	my ($self, $agent_name) = @_;
+	my $agent_interval = $self->{agents}->{$agent_name}->{interval};
+	carp "Agent '$agent_name' will be invoked every '$agent_interval' seconds'" if DEBUG;
+
+	# this loop will break when the user will hit ^C (SIGINT)
+	while(not $loop_stop) {
+		foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}}) {
+			$self->invoke_monitor($agent_name, $monitor_name);
+		}
+		sleep $agent_interval;
 	}
 }
 
