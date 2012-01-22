@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="XXX" secretkey="XXX"/>
-	<agent name="nagios monitor" interval="5">
+	<agent name="nagios monitor" interval="300">
 		<monitor name="Nagios check_load for %HOSTNAME%">
 			<exectemplate>/usr/lib/nagios/plugins/check_load -w 0,0,0 -c 0,0,0</exectemplate>
 			<metric name="Load1">

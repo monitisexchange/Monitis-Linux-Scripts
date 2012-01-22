@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="XXX" secretkey="XXX"/>
-	<agent name="MySQL Agent" interval="5">
+	<agent name="MySQL Agent" interval="300">
 		<monitor name="Sample MySQL Monitor">
 			<sql>select count(*) from mysql.user;</sql>
 			<db_driver>mysql</db_driver>
