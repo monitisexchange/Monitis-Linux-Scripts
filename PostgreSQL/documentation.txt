@@ -1,0 +1,97 @@
+Scripts:
+delete.pl - deletes page "SQL Server" and all custom monitors with same tag.
+create_monitors.pl - Creates page and monitors.
+monitis.pl - Adds results to monitors.
+
+
+
+Monitors:
+
+User connections:
+-----------------
+Checks the current number of connections, you can compare it to the maximum allowed, which is determined by the Postgres configuration variable max_connections.
+Example to use: Give a warning when the number of connections on host quirm reaches 120, and a critical if it reaches 150.
+Columns: 
+users - The number of connections to the SQL Server. This number depends on the number of users but also the number of running applications and how they connect to the server. 
+Data source: «SELECT COUNT(*) as count FROM pg_stat_activity where datname = ?»
+max_users - Maximum allowed  number of connections to the SQL Server.
+Data source: SELECT setting AS mc FROM pg_settings WHERE name = 'max_connections'
+
+Percent Processor Time:
+-----------------------
+Processor is crucial to SQL Server. If this resource usage is constantly above 60-70%, you will have performance degradation. . Also check that %system stays below 10%. SQL Server consumes User Time and if you have high system %, you will have to check outside SQL Server, such as drivers or virtual machines running on the same hardware.
+Columns:
+LoadAvg - In short it is the average sum of the number of processes waiting in the run-queue plus the number currently executing over 1 minute time periods.
+user - is the amount of CPU time spent in user-mode code
+system - is the amount of CPU time spent in the kernel within the process
+total - system+user
+
+Hit ratio:
+----------
+Checks the hit ratio database and complains when they are too low.
+Example: Warn if any database on host flagg is less than 90% in hitratio, and critical if less then 80%.
+Columns:
+Hit ratio - Data source : SELECT
+		round(100.*sd.blks_hit/(sd.blks_read+sd.blks_hit), 2) AS dhitratio,
+		d.datname
+		FROM pg_stat_database sd
+		JOIN pg_database d ON (d.oid=sd.datid)
+		JOIN pg_user u ON (u.usesysid=d.datdba)
+		WHERE sd.blks_read+sd.blks_hit<>0 and d.datname=?
+
+Commit ratio:
+-------------
+Checks the commit ratio of    database and complains when they are too low.
+Example: Warn if any database on host flagg is less than 90% in commitratio, and critical if less then 80%.
+Columns:
+Commit ratio -  Data source: SELECT
+		round(100.*sd.xact_commit/(sd.xact_commit+sd.xact_rollback), 2) AS dcommitratio, d.datname
+		FROM pg_stat_database sd
+		JOIN pg_database d ON (d.oid=sd.datid)
+		JOIN pg_user u ON (u.usesysid=d.datdba)
+		WHERE sd.xact_commit+sd.xact_rollback<>0 and d.datname=?
+
+Disk read write:
+----------------
+Your SQL Server should run mostly on memory, as you will not get good performance if the disk is used a lot.
+Columns: 
+Read/sec - KB reads from disk per second. Data source: /proc/diskstats
+Write/sec  - KB writen to disk per second. Data source: /proc/diskstats
+
+Transactions per second:
+------------------------
+Get the number of commited transactions per second.
+Columns: 
+Commited transactions/sec ― Data source: select sum(xact_commit) as count_req from pg_stat_database where datname=?
+
+DB Read per second:
+-------------------
+Columns: 
+Physical read and buffer hits.
+Example: warning when blks_read>=blks_hit
+Blocks read/sec - physical reads. Data source: SELECT sum(blks_read) as count_blks,sum(blks_hit) as count_hits FROM pg_stat_database where datname=?
+Buffer Hits/sec - cache reads. Data source: SELECT sum(blks_read) as count_blks,sum(blks_hit) as count_hits FROM pg_stat_database where datname=?
+
+SQL Server memory:
+------------------
+This refers to how PostgreSQL Server tries to allocate to available memory. 
+«Used by Server» is the memory that SQL Server is currently able to allocate due to competition with other applications on the system.
+Columns: 
+Used by Server - is the memory that SQL Server is currently able to allocate due to competition with other applications on the system. Data source: process table (Proc::ProcessTable)
+Total KB - total memory
+Used KB - used by all processes.
+
+Database size and usage:
+------------------------
+Knowing how space is allocated and used helps you plan for management of hardware resources and database maintenance.
+Columns:
+Database size KB - Size of monitoring database. Data source: SELECT pg_database_size(?) as dbsize
+Total KB - total space on partition
+Used KB - used space on partition.
+
+Log size 
+--------
+Knowing how space is allocated and used helps you plan for management of hardware resources and database maintenance
+Log size KB - size of Write-Ahead Logging (WAL) files. Data source: SELECT pg_database_size(?) as dbsize
+Total KB - total space on partition
+Used KB - used space on partition
