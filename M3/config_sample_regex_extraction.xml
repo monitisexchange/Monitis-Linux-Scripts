@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="XXX" secretkey="XXX"/>
-	<agent name="Weather monitor" interval="5">
+	<agent name="Weather monitor" interval="300">
 		<monitor name="Weather in Wanaka">
 			<url>http://www.holidaycheck.com/climate-wetter_Wanaka-ebene_oid-id_6163.html</url>
 			<!--exectemplate>cat /tmp/wanaka</exectemplate-->

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="XXX" secretkey="XXX"/>
-	<agent name="Hotwire" interval="5">
+	<agent name="Hotwire" interval="300">
 		<monitor name="Hotels in Paris">
 			<url>http://api.hotwire.com/v1/deal/hotel?dest=paris&amp;apikey=XXXXXXXX&amp;limit=1</url>
 			<metric name="Cheapest hotel">

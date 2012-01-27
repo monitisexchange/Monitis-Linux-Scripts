@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="XXX" secretkey="XXX"/>
-	<agent name="Sample XML extraction" interval="5">
+	<agent name="Sample XML extraction" interval="300">
 		<monitor name="XML extraction">
 			<exectemplate>cat config_sample_xpath_extraction.xml</exectemplate>
 			<metric name="Test">

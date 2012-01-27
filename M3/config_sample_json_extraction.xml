@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="XXX" secretkey="XXX"/>
-	<agent name="Weather monitor" interval="5">
+	<agent name="Weather monitor" interval="300">
 		<monitor name="Weather in Sunnyvale">
 			<url>http://weather.yahooapis.com/forecastjson?w=2502265</url>
 			<http_statistics>1</http_statistics>

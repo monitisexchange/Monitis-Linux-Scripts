@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="XXX" secretkey="XXX"/>
-	<agent name="Yahoo finance" interval="5">
+	<agent name="Yahoo finance" interval="300">
 		<monitor name="SNP 500">
 			<url>http://finance.yahoo.com/d/quotes.csv?s=^GSPC&amp;f=p</url>
 			<metric name="SNP 500">

@@ -1,0 +1,37 @@
+
+MONITORING MONGO WITH MONITIS
+
+Original Author: Brad Carleton
+Company: Blue Pines Technologies
+Website: http://www.bluepines.org
+
+OVERVIEW:
+---------
+These scripts allow a user to easily get some monitoring around their Cassandra clusters using Monitis.
+
+INSTALLATION:
+-------------
+
+Download the source from github:
+
+git clone git://github.com/monitisexchange/Monitis-Cassandra.git
+cd Monitis-Cassandra
+
+Next, you need to open the file, “settings.py”, and insert your API key and secret.  
+Then add your column families to the column families list, and you are ready to 
+create your custom Monitis monitors by running the following command:
+
+./setup_monitors
+
+After the monitors are setup you can start to send data by running:
+
+./send_data
+
+Set that to run on cron or any other scheduling agent, and you have yourself a fully
+functioning monitoring system for your Cassandra cluster!  Check back in to the Monitis
+Web site to see all your fresh Cassandra metrics rolling in.  
+
+
+DEPENDENCIES:
+-------------
+elementtree - a python xml library (http://effbot.org/zone/element-index.htm)

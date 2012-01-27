@@ -1,0 +1,4 @@
+M3 rendered the DBI integration obsolete as it is now merely another plugin
+under M3.
+Have a look at M3 for further information and please stop using this
+implementation.
