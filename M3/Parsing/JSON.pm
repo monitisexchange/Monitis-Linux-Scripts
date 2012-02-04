@@ -1,4 +1,5 @@
 package Parsing::JSON;
+use strict;
 use Carp;
 use Data::Dumper;
 use JSON;

@@ -20,6 +20,7 @@ use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
 use constant {
 	EXECUTION_PLUGIN_DIR => "Execution",
 	PARSING_PLUGIN_DIR => "Parsing",
+	COMPUTE_PLUGIN_DIR => "Compute",
 };
 
 our $VERSION = '0.2';
@@ -53,6 +54,9 @@ sub new {
 
 	# load parsing plugins
 	$self->load_plugins_in_directory("parsing_plugins", PARSING_PLUGIN_DIR);
+
+	# load compute plugins
+	$self->load_plugins_in_directory("compute_plugins", COMPUTE_PLUGIN_DIR);
 
 	my $xml_parser = XML::Simple->new(ForceArray => 1);
     $self->{config_xml} = $xml_parser->XMLin($templated_xml);
@@ -216,33 +220,59 @@ sub invoke_monitor {
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
 
 	my $output = "";
-	my $uri = undef;
+	my $last_uri = undef;
 
 	# result set hash
 	my %results = ();
 
 	# find the relevant execution plugin and execute it
+	# TODO execution might be out of order in some cases
 	foreach my $execution_plugin (keys %{$self->{execution_plugins}} ) {
 		if (defined($monitor_xml_path->{$execution_plugin}[0])) {
-			# it's called a URI since it can be anything, from a command line
-			# executable, URL, SQL command...
-			$uri = $monitor_xml_path->{$execution_plugin}[0];
-			carp "Calling execution plugin: '$execution_plugin', URI->'$uri', monitor_name->'$monitor_name'" if DEBUG;
-			$output = $self->{execution_plugins}{$execution_plugin}->execute($monitor_xml_path, $uri, \%results);
+			foreach my $uri (@{$monitor_xml_path->{$execution_plugin}}) {
+				# it's called a URI since it can be anything, from a command line
+				# executable, URL, SQL command...
+				carp "Calling execution plugin: '$execution_plugin', URI->'$uri', monitor_name->'$monitor_name'" if DEBUG;
+				my %returned_results = ();
+				$output .= $self->{execution_plugins}{$execution_plugin}->execute($monitor_xml_path, $uri, \%returned_results);
+				$output .= "\n";
 
-			# iteration can be broken as we've found the execution plugin
-			last;
+				# merge the returned results into the main %results hash
+				@results{keys %returned_results} = values %returned_results;
+
+				# we will not break execution as we might execute a few plugins
+				$last_uri = $uri;
+			}
 		}
 	}
-	if (!defined($uri)) {
+	if (!defined($last_uri)) {
 		croak "Could not find proper execution plugin for monitor '$monitor_name'";
 	}
 
-	# call all parsing plugins
-	# TODO can be optimized to include only the relevant plugins
-	foreach my $parsing_plugin (keys %{$self->{parsing_plugins}} ) {
-		carp "Calling parsing plugin: '$parsing_plugin'" if DEBUG;
-		$self->{parsing_plugins}{$parsing_plugin}->parse($monitor_xml_path, $output, $uri, \%results);
+	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
+		# call the relevant parsing plugin
+		my %returned_results = ();
+		foreach my $potential_parsing_plugin (keys $monitor_xml_path->{metric}->{$metric_name}) {
+			if (defined($self->{parsing_plugins}{$potential_parsing_plugin})) {
+				carp "Calling parsing plugin: '$potential_parsing_plugin'" if DEBUG;
+				$self->{parsing_plugins}{$potential_parsing_plugin}->parse($monitor_xml_path, $output, $last_uri, \%returned_results);
+			}
+		}
+
+		# call the relevant compute plugins
+		# TODO computation might be out of order in some cases when chaining
+		foreach my $potential_compute_plugin (keys $monitor_xml_path->{metric}->{$metric_name}) {
+			if (defined($self->{compute_plugins}{$potential_compute_plugin})) {
+				foreach my $code (@{$monitor_xml_path->{metric}->{$metric_name}->{$potential_compute_plugin}}) {
+					carp "Calling compute plugin: '$potential_compute_plugin'" if DEBUG;
+					my $code = $monitor_xml_path->{metric}->{$metric_name}->{$potential_compute_plugin}[0];
+					$self->{compute_plugins}{$potential_compute_plugin}->compute($agent_name, $monitor_name, $monitor_xml_path, $code, \%returned_results);
+				}
+			}
+		}
+
+		# merge the returned results into the main %results hash
+		@results{keys %returned_results} = values %returned_results;
 	}
 
 	# format results
@@ -259,7 +289,7 @@ sub update_data_for_monitor {
 
 	# sanity check of results...
 	if ($results eq "") {
-		croak "Result set is empty! did it parse well?"; 
+		carp "Result set is empty! did it parse well?"; 
 	}
 
 	if ($self->dry_run()) {

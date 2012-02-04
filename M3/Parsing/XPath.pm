@@ -1,4 +1,5 @@
 package Parsing::XPath;
+use strict;
 use Carp;
 use Data::Dumper;
 

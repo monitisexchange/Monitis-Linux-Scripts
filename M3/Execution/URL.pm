@@ -1,4 +1,5 @@
 package Execution::URL;
+use strict;
 use Carp;
 use Data::Dumper;
 use LWP::UserAgent;
@@ -40,7 +41,7 @@ sub execute {
 	# invoke it!
 	my $response_begin = clock_gettime();
 	my $response = $browser->get($url) || croak "Failed fetching '$url': $!";
-	$output = $response->content;
+	my $output = $response->content;
 
 	# add HTTP statistics if user wants it
 	if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
