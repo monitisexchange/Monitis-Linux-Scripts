@@ -23,7 +23,7 @@ use constant {
 	COMPUTE_PLUGIN_DIR => "Compute",
 };
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 
 our %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 );
 
@@ -252,10 +252,12 @@ sub invoke_monitor {
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
 		# call the relevant parsing plugin
 		my %returned_results = ();
+
+		# run the parsing plugin one by one
 		foreach my $potential_parsing_plugin (keys $monitor_xml_path->{metric}->{$metric_name}) {
 			if (defined($self->{parsing_plugins}{$potential_parsing_plugin})) {
 				carp "Calling parsing plugin: '$potential_parsing_plugin'" if DEBUG;
-				$self->{parsing_plugins}{$potential_parsing_plugin}->parse($monitor_xml_path, $output, $last_uri, \%returned_results);
+				$self->{parsing_plugins}{$potential_parsing_plugin}->parse($metric_name, $monitor_xml_path->{metric}->{$metric_name}, $output, $last_uri, \%returned_results);
 			}
 		}
 
