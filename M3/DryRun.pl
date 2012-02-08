@@ -1,11 +1,8 @@
 #!/usr/bin/perl -w
 
+use strict;
 use MonitisMonitorManager;
-
-sub MonitisMonitorManager::_get_HOSTNAME {
-	use Sys::Hostname;
-	return hostname;
-}
+require 'M3Templates.pl';
 
 sub main {
 	my $xmlfile = shift @ARGV;
