@@ -62,8 +62,8 @@
 			</metric>
 		</monitor>
 
-		<!-- Hit Ratio -->
-		<monitor name="Hit Ratio">
+		<!-- Cache Hit Ratio -->
+		<monitor name="Cache Hit Ratio">
 			<db_driver>Pg</db_driver>
 			<db_name>dbname=postgres</db_name>
 			<db_username>dan</db_username>
@@ -76,7 +76,7 @@
 					JOIN pg_user u ON (u.usesysid=d.datdba)
 					WHERE sd.blks_read+sd.blks_hit&lt;&gt;0
 					AND d.datname='%PGSQL_DB_NAME%';</sql>
-			<metric name="Hit Ratio">
+			<metric name="Cache Hit Ratio">
 				<type>integer</type>
 				<uom>N/A</uom>
 				<line>1</line>
@@ -170,8 +170,8 @@
 			</metric>
 		</monitor>
 
-		<!-- PgSQL Memory Footprint Size -->
-		<monitor name="PgSQL Memory Footprint">
+		<!-- PgSQL Disk Usage -->
+		<monitor name="PgSQL Disk Usage">
 			<linuxsysstats>diskusage->{'/dev/%PGSQL_DEVICE%'}{total}</linuxsysstats>
 			<linuxsysstats>diskusage->{'/dev/%PGSQL_DEVICE%'}{usage}</linuxsysstats>
 			<db_driver>Pg</db_driver>
