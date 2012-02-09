@@ -2,7 +2,7 @@
 
 use strict;
 use MonitisMonitorManager;
-require 'M3Templates.pl';
+require 'M3Templates.pm';
 
 sub main {
 	my $xmlfile = shift @ARGV;

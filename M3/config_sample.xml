@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config>
-	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="iostat monitor" interval="300">
 		<monitor name="IOStat for %HOSTNAME%">
 			<exectemplate>iostat -x sda</exectemplate>
