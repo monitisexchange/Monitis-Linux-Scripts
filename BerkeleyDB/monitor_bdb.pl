@@ -8,6 +8,7 @@ use warnings;
 
 use Monitis;
 use Getopt::Long;
+use Pod::Usage;
 
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
 
@@ -80,7 +81,7 @@ sub makeMonitorSpec($) {
 	my ($stats) = @_;
 	my $monitorParams = "";
 
-	for my $key (reverse sort keys %$stats) { 
+	for my $key (reverse sort keys %$stats) { # keys will appear in reverse order in Monitis UI, so we reverse them here 
 		my $paramName = paramName($key);	
 		$monitorParams .= "${paramName}:${key}::2;";
 	}
@@ -146,6 +147,12 @@ sub uploadStats($$) {
 	die "FAILED: status = $resp->{status}" unless $resp->{status} eq 'ok'; 
 }
 
+#
+sub error { 
+	print STDERR shift, "\n"; 
+	pod2usage;
+	exit 1;
+}
 ############################ Main script ############################
 my $register;
 my $envDir; 
@@ -154,8 +161,10 @@ my $monitorGroup;
 my $monitorId;
 my $apiKey; 
 my $secretKey;
+my $help;
 
 GetOptions(
+	"help"   => \$help,
 	"register" => \$register,
 	"monitorName=s" => \$monitorName,
 	"monitorGroup=s" => \$monitorGroup,
@@ -165,18 +174,20 @@ GetOptions(
 	"secretKey=s" => \$secretKey,
 ); 
 
-die "Options secretKey and apiKey required" unless $apiKey && $secretKey;
-die "Option envDir required" unless $envDir; 
-die "envDir \'$envDir\' is not a directory" unless ( -d $envDir);
+pod2usage(-verbose => 2)  if $help;
+
+error "Options secretKey and apiKey required" unless $apiKey && $secretKey;
+error "Option envDir required" unless $envDir; 
+error "envDir \'$envDir\' is not a directory" unless ( -d $envDir);
 
 # initialize the Monitis API
-$api=Monitis->new(api_key => $apiKey, secret_key => $secretKey) || die "Could not connect to Monitis";
+$api=Monitis->new(api_host => 'sandbox.monitis.com', api_key => $apiKey, secret_key => $secretKey) || die "Could not connect to Monitis";
 
 my $stats = getDbStat($envDir); # get Berkeley DB statistics
 
 if( $register ) {  # need to register monitor
-	die "Register option requires monitorGroup" unless $monitorGroup;
-	die "Register option requires monitorName " unless $monitorName;
+	error "Register option requires monitorGroup" unless $monitorGroup;
+	error "Register option requires monitorName " unless $monitorName;
 
 	my $monSpec = makeMonitorSpec($stats);
 
@@ -185,7 +196,7 @@ if( $register ) {  # need to register monitor
 	print "Created monitor with id=$monitorId\n";
 } else { # !$register
 	if( ! $monitorId ) { # find out monitor Id
-		die "Either monitorId or a combination of monitorName AND monitorGroup required" if !($monitorName && $monitorGroup);
+		error "Either monitorId or a combination of monitorName AND monitorGroup required" if !($monitorName && $monitorGroup);
 		$monitorId = findMonitorByName($monitorName, $monitorGroup);	
 	}
 } 
@@ -193,3 +204,81 @@ print "Uploading statistics for monitor $monitorId...\n";
 uploadStats($monitorId, $stats);
 
 __END__
+
+=head1 NAME
+
+monitor_bdb.pl - Monitor BerkeleyDB database environment with Monitis API
+
+=head1 SYNOPSIS
+
+monitor_bdb.pl [--register] --apiKey <api_key> --secretKey <secretKey> --envDir <path_to_env> (--monitorGroup <group> --monitorName <name>) | (--monitorId <monId>)
+
+For help, type 'monitor_bdb.pl -h'
+
+=head1 OPTIONS 
+
+=over 4
+
+=item B<--apiKey>
+Your Monitis API key (see Tools -> API -> API Key menu in your Monitis console)
+
+=item B<--secretKey>
+Your Monitis secret key (see above)
+
+=item B<--register>
+Rregister a new monitor with the specified monitorName and monitorGroup
+
+=item B<--envDir>
+Directory containing your BerkeleyDB environment
+
+=item B<--monitorName>
+The monitor will appear under this name in the Monitis console
+
+=item B<--monitorGroup>
+The monitor will appear in this group in the Monitis console. The group will be created if it does not exist
+
+=item B<--monitorId>
+A numeric ID for an existing monitor (cannot be used with --register)
+
+=back 
+
+=head1 DESCIPTION
+
+Upload BerkeleyDB db_stat metrics to Monitis monitor, optionally creating the monitor
+
+=head1 AUTHOR
+	
+Drago Z Kamenov C<< <dkamenov@cpan.org> >>
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (C) 2006-2012, Monitis Inc.
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.
+
+
+=head1 DISCLAIMER OF WARRANTY
+
+BECAUSE THIS SOFTWARE IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE SOFTWARE, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE SOFTWARE "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE
+ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH
+YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL
+NECESSARY SERVICING, REPAIR, OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENCE, BE
+LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL,
+OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
+THE SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
+RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
+FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
+SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+=cut
