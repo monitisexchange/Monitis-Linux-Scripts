@@ -181,7 +181,7 @@ error "Option envDir required" unless $envDir;
 error "envDir \'$envDir\' is not a directory" unless ( -d $envDir);
 
 # initialize the Monitis API
-$api=Monitis->new(api_host => 'sandbox.monitis.com', api_key => $apiKey, secret_key => $secretKey) || die "Could not connect to Monitis";
+$api=Monitis->new(api_key => $apiKey, secret_key => $secretKey) || die "Could not connect to Monitis";
 
 my $stats = getDbStat($envDir); # get Berkeley DB statistics
 
