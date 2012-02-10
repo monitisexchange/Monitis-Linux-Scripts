@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config>
-	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Sample XML extraction" interval="300">
 		<monitor name="XML extraction">
 			<exectemplate>cat config_sample_xpath_extraction.xml</exectemplate>

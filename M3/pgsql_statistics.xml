@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="PgSQL Agent" interval="10">
+
+		<!-- CPU Usage -->
+		<monitor name="Percent Processor Time">
+			<linuxsysstats>cpustats->{cpu}{total}</linuxsysstats>
+			<linuxsysstats>cpustats->{cpu}{user}</linuxsysstats>
+			<linuxsysstats>cpustats->{cpu}{system}</linuxsysstats>
+			<linuxsysstats>loadavg->{avg_1}</linuxsysstats>
+			<metric name="Total">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>1</line>
+			</metric>
+			<metric name="User">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>2</line>
+			</metric>
+			<metric name="System">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>3</line>
+			</metric>
+			<metric name="LoadAvg">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>4</line>
+			</metric>
+		</monitor>
+
+		<!-- Disk Utilization -->
+		<monitor name="Disk">
+			<exectemplate>iostat -x %PGSQL_DEVICE%</exectemplate>
+			<metric name="Read Requests">
+				<type>integer</type>
+				<uom>Read/sec</uom>
+				<regex>^%PGSQL_DEVICE%\s+\S+\s+\S+\s+(\S+)</regex>
+			</metric>
+			<metric name="Write Requests">
+				<type>integer</type>
+				<uom>Write/sec</uom>
+				<regex>^%PGSQL_DEVICE%\s+\S+\s+\S+\s+\S+\s+(\S+)</regex>
+			</metric>
+		</monitor>
+
+		<!-- TPS (Transactions per second) -->
+		<monitor name="Transactions">
+			<db_driver>Pg</db_driver>
+			<db_name>dbname=postgres</db_name>
+			<db_username>dan</db_username>
+			<db_password></db_password>
+			<sql>SELECT SUM(xact_commit) AS count_req FROM pg_stat_database
+					WHERE datname='%PGSQL_DB_NAME%';</sql>
+			<metric name="Committed Transactions/sec">
+				<type>integer</type>
+				<uom>Committed transactions/sec</uom>
+				<line>1</line>
+				<diffpersec>1</diffpersec>
+			</metric>
+		</monitor>
+
+		<!-- Cache Hit Ratio -->
+		<monitor name="Cache Hit Ratio">
+			<db_driver>Pg</db_driver>
+			<db_name>dbname=postgres</db_name>
+			<db_username>dan</db_username>
+			<db_password></db_password>
+			<sql>SELECT
+					ROUND(100.*sd.blks_hit/(sd.blks_read+sd.blks_hit), 2) AS dhitratio,
+					d.datname
+					FROM pg_stat_database sd
+					JOIN pg_database d ON (d.oid=sd.datid)
+					JOIN pg_user u ON (u.usesysid=d.datdba)
+					WHERE sd.blks_read+sd.blks_hit&lt;&gt;0
+					AND d.datname='%PGSQL_DB_NAME%';</sql>
+			<metric name="Cache Hit Ratio">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>1</line>
+			</metric>
+		</monitor>
+
+		<!-- Commit Ratio -->
+		<monitor name="Commit Ratio">
+			<db_driver>Pg</db_driver>
+			<db_name>dbname=postgres</db_name>
+			<db_username>dan</db_username>
+			<db_password></db_password>
+			<sql>SELECT
+					ROUND(100.*sd.xact_commit/(sd.xact_commit+sd.xact_rollback), 2) AS dcommitratio,
+					d.datname
+					FROM pg_stat_database sd
+					JOIN pg_database d ON (d.oid=sd.datid)
+					JOIN pg_user u ON (u.usesysid=d.datdba)
+					WHERE sd.xact_commit+sd.xact_rollback&lt;&gt;0
+					AND d.datname='%PGSQL_DB_NAME%';</sql>
+			<metric name="Commit Ratio">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>1</line>
+			</metric>
+		</monitor>
+
+		<!-- Blocks Read by PgSQL -->
+		<monitor name="Blocks Read">
+			<db_driver>Pg</db_driver>
+			<db_name>dbname=postgres</db_name>
+			<db_username>dan</db_username>
+			<db_password></db_password>
+			<sql>SELECT SUM(blks_read) FROM pg_stat_database
+					WHERE datname='%PGSQL_DB_NAME%'</sql>
+			<sql>SELECT SUM(blks_hit) FROM pg_stat_database
+					WHERE datname='%PGSQL_DB_NAME%'</sql>
+			<metric name="Blocks Read/sec">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>1</line>
+				<diffpersec>1</diffpersec>
+			</metric>
+			<metric name="Buffer Hits/sec">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>2</line>
+				<diffpersec>1</diffpersec>
+			</metric>
+		</monitor>
+
+		<!-- User Connections -->
+		<monitor name="User Connections">
+			<db_driver>Pg</db_driver>
+			<db_name>dbname=postgres</db_name>
+			<db_username>dan</db_username>
+			<db_password></db_password>
+			<sql>SELECT count(*) FROM pg_stat_activity;</sql>
+			<sql>SELECT setting FROM pg_settings WHERE name = 'max_connections';</sql>
+			<metric name="Users">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>1</line>
+			</metric>
+			<metric name="Max Users">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>2</line>
+			</metric>
+		</monitor>
+
+		<!-- PgSQL Memory -->
+		<monitor name="PgSQL Memory">
+			<linuxsysstats>memstats->{memtotal}</linuxsysstats>
+			<linuxsysstats>memstats->{memused}</linuxsysstats>
+			<exectemplate>ps -e -o rss,cmd | awk '/postgres/{memused+=$1;}END{print memused;}'</exectemplate>
+			<metric name="Total">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>1</line>
+			</metric>
+			<metric name="Used">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>2</line>
+			</metric>
+			<metric name="Used By PgSQL">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>3</line>
+			</metric>
+		</monitor>
+
+		<!-- PgSQL Disk Usage -->
+		<monitor name="PgSQL Disk Usage">
+			<linuxsysstats>diskusage->{'/dev/%PGSQL_DEVICE%'}{total}</linuxsysstats>
+			<linuxsysstats>diskusage->{'/dev/%PGSQL_DEVICE%'}{usage}</linuxsysstats>
+			<db_driver>Pg</db_driver>
+			<db_name>dbname=postgres</db_name>
+			<db_username>dan</db_username>
+			<db_password></db_password>
+			<sql>SELECT pg_database_size('%PGSQL_DB_NAME%') / 1024;</sql>
+			<metric name="Total">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>1</line>
+			</metric>
+			<metric name="Used">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>2</line>
+			</metric>
+			<metric name="Used By PgSQL">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>3</line>
+			</metric>
+		</monitor>
+
+		<!-- Log size and usage-->
+
+	</agent>
+</config>
