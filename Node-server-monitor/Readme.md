@@ -34,7 +34,7 @@ Whole set of measured parameters divided on two parts
           - the output throughput (out_kbps)
     1. The count of successfully processed requests (2xx) - the percentage of request quantity responded by 2xx status code with respect to the total number of requests during monitoring time.
     1. The server processing time (active) - the percentage of busy time of server (real processing time) during monitoring time
-    1. The server load (load) - the evaluation of number of requests per second during monitoring time.
+    1. The server load (load) - the evaluation of number of requests per second during monitoring time.  
 
   - flexible that mostly isn't fixed and can be changing time by time  
 
@@ -45,7 +45,7 @@ Whole set of measured parameters divided on two parts
 ##### The activation of monitor pluging can be done very easily   
 You need to add the following two lines in your code  
 
-        var monitor = monitor = require('monitor');// insert monitor module-plugin
+        var monitor = require('monitor');// insert monitor module-plugin
         ....
         monitor.Monitor(server);//add server to monitor
 

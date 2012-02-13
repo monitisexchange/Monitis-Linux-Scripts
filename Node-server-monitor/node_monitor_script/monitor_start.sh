@@ -9,7 +9,7 @@ get_token
 ret="$?"
 if [[ ($ret -ne 0) ]]
 then
-	error "$ret" "$MSG"
+	error 3 "$MSG"
 else
 	echo RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))`
 	echo "All is OK for now."
@@ -52,6 +52,12 @@ do
 		continue
 	fi
 	get_measure				# call measure function
+	ret="$1"
+	if [[ ($ret -ne 0) ]]
+	then
+	    error "$ret" "$MSG"
+	    continue
+	fi
 	result=$return_value	# retrieve measure values
 	# Compose monitor data
 	param=$(echo ${result} | awk -F "|" '{print $1}' )

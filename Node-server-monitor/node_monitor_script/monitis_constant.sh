@@ -20,7 +20,7 @@ declare -r API_GET_MONITOR_LIST="getMonitors"		# GetMonitorsList action
 # Declaration of constants that are internally used 
 declare -r RES_STATUS="status"
 declare -r RES_DATA="data"
-declare -r DURATION=60	 				# information sending duration [sec] (REPLACE by any desired value)
+declare -r DURATION=300	 				# information sending duration [sec] (REPLACE by any desired value)
 
 declare -r TRUE=true
 declare -r FALSE=false
