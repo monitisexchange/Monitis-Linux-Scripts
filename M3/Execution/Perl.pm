@@ -1,4 +1,4 @@
-package Execution::Executable;
+package Execution::Perl;
 use strict;
 use Carp;
 use Data::Dumper;
@@ -10,15 +10,14 @@ sub new {
 
 # this function identifies the token should be used when parsing
 sub name {
-	return "exectemplate";
+	return "perl";
 }
 
-# execute an executable and return the output
+# execute perl code executable and return the output
 sub execute {
-	my ($self, $monitor_xml_path, $executable, $results) = @_;
+	my ($self, $monitor_xml_path, $code, $results) = @_;
+	my $output = eval $code;
 
-	# running with qx{} as it should run also on windows
-	my $output = qx{ $executable } || croak "Failed running '$executable': $!";
 	return $output;
 }
 

@@ -1,4 +1,5 @@
 package Execution::DBI;
+use strict;
 use Carp;
 use Data::Dumper;
 use Time::HiRes qw(clock_gettime);
@@ -39,7 +40,8 @@ sub execute {
 
 	# db_host
 	if (!defined($monitor_xml_path->{db_host}[0])) {
-		croak "'db_host' undefined";
+		# we will just not a hostname for connection
+		$db_host = "";
 	} else {
 		$db_host = $monitor_xml_path->{db_host}[0];
 	}
@@ -67,7 +69,13 @@ sub execute {
 		$db_password = $monitor_xml_path->{db_password}[0];
 	}
 
-	my $dsn = "DBI:$db_driver:$db_name:$db_host";
+	# for the DSN
+	my $dsn .= "DBI:$db_driver:$db_name";
+
+	# add db_host if it's defined
+	if ($db_host ne "") {
+		$dsn .= ":$db_host";
+	}
 	carp "DB: '$db_username\@$dsn', Query: '$db_query'\n";
 
 	# connect to DB and run the query
@@ -118,7 +126,7 @@ sub execute {
 	# disconnect!
 	$dbh->disconnect();
 
-	# return true
+	# return output
 	return $output;
 }
 

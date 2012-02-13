@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config>
-	<apicredentials apikey="XXX" secretkey="XXX"/>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Yahoo finance" interval="300">
 		<monitor name="SNP 500">
 			<url>http://finance.yahoo.com/d/quotes.csv?s=^GSPC&amp;f=p</url>
