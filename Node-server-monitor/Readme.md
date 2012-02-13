@@ -35,8 +35,9 @@ Whole set of measured parameters divided on two parts
     1. The count of successfully processed requests (2xx) - the percentage of request quantity responded by 2xx status code with respect to the total number of requests during monitoring time.
     1. The server processing time (active) - the percentage of busy time of server (real processing time) during monitoring time
     1. The server load (load) - the evaluation of number of requests per second during monitoring time.  
+  
 
-  - flexible that mostly isn't fixed and can be changing time by time  
+- flexible that mostly isn't fixed and can be changing time by time  
 
     1. The status codes (codes) - the collecting status codes shown in form {1xx: value, 2xx: value, 3xx: value, 4xx: value, 5xx: value}  
     1. The application specific parameters (e.g. client platform, client application version and so on).  
