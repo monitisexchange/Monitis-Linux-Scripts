@@ -23,7 +23,7 @@ function get_token() {
 	local val="."
 	MSG=""
 	
-	if [[ ("$force" == "$TRUE")	 \
+	if [[ ("$force" == "$TRUE")	 || ( ${#TOKEN} -le 0 ) \
 	   || (($TOKEN_OBTAIN_TIME -ge 0) && ( $(($(get_timestamp)-$TOKEN_OBTAIN_TIME)) -gt $TOKEN_EXPIRATION_TIME ) ) ]]
 	then
 		local action="api?action=$API_GET_TOKEN_ACTION&apikey=$APIKEY&secretkey=$SECRETKEY&version=$APIVERSION"
@@ -36,8 +36,10 @@ function get_token() {
 			local prop=$API_GET_TOKEN_ACTION
 			val=`jsonval`
 		else
-			MSG="Response is too long - perhaps received HTML response"
-			return 3
+			MSG="Incorrect response while obtaining token..."
+			TOKEN=""
+			TOKEN_OBTAIN_TIME=0
+			return 1
 		fi
 	else
 		MSG="Needless to get token this time"
@@ -155,7 +157,7 @@ function add_custom_monitor {
 				prop=$RES_DATA
 				data=`jsonval`
 			else
-				if [[ (-n `echo $status | grep -asiow -m1 "exists"`) ]]
+				if [[ (-n `echo $status | grep -asio -m1 "exists"`) ]]
 				then
 					MSG="WARNING: monitor with specified parameters already exists"
 					return 1
@@ -169,7 +171,7 @@ function add_custom_monitor {
 			return 3
 		fi	
 	else
-		MSG="Response is too long - perhaps received HTML response"
+		MSG="Unknown problem while adding monitor..."
 		return 3
 	fi
 	
@@ -202,7 +204,7 @@ function get_custom_monitor_info() {
 	response="$(curl -Gs $permdata $postdata $req)"
 	
 	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
-	then # Likely, we received correct answer
+	then # Seems, we received correct answer
 		#parsing
 		json=$response
 		prop="id"
@@ -215,8 +217,8 @@ function get_custom_monitor_info() {
 			return 3
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
-		return 3
+		MSG="Response is too long while getting monitor info..."
+		return 1
 	fi
 	return 0
 }
@@ -257,8 +259,8 @@ function get_custom_monitor_list() {
 			return 3
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
-		return 3
+		MSG="Response is too long while getting monitors list..."
+		return 1
 	fi
 	
 	MONITOR_ID=$id
@@ -299,11 +301,11 @@ function add_custom_monitor_data() {
 			MSG="$TRUE"
 		else
 			MSG='ERROR while adding custom monitor data. Response - '$response
-			return 3
+			return 1
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
-		return 3
+		MSG="Response is too long while adding monitor data..."
+		return 1
 	fi
 	return 0
 }
@@ -342,11 +344,11 @@ function add_custom_monitor_additional_data() {
 			MSG="$TRUE"
 		else
 			MSG='ERROR while adding custom monitor additional data. Response - '$response
-			return 3
+			return 1
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
-		return 3
+		MSG="Response is too long while adding aditional data..."
+		return 1
 	fi
 	return 0 
 }

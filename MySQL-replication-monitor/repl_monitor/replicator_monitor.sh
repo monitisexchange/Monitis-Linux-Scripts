@@ -10,7 +10,7 @@ declare -i prev_Slave_read_binlog_pos=0
 declare -i prev_Master_binlog_num=0
 declare -i prev_Master_binlog_pos=0
 declare -i prev_time=0
-declare -g return_value
+declare    return_value
 
 #Access to the MySQL located on remout host via SSH, 
 # execute command and keep the result in the local file
@@ -22,15 +22,21 @@ declare -g return_value
 #@param CMD {STRING} - executed command on remote MySQL
 #@param FILE {STRING} - file that receive the results
 function access_remout_MySQL {
-	HOST=$1
-	PORT=$2
-	USER=$3
-	PSWD=$4
-	CMD=$5
-	FILE=$6
-	MYSQL="mysql -u $USER -p$PSWD -h localhost -P $PORT"
-	SSH="ssh -f -L 3307:localhost:$PORT $USER@$HOST"
+	local HOST=$1
+	local PORT=$2
+	local USER=$3
+	local PSWD=$4
+	local CMD=$5
+	local FILE=$6
+	local MYSQL="mysql -u $USER -p$PSWD -h localhost -P $PORT"
+	local SSH="ssh -f -L 3307:localhost:$PORT $USER@$HOST"
 	$SSH "$MYSQL -e \"$CMD\" " | tee $FILE > /dev/null
+	local ret="$?"
+	if [[ ($ret -gt 0) ]]
+	then
+		return 1
+	fi
+	return $ret
 }
 
 #Function returns variable value from file
@@ -55,16 +61,23 @@ function extract_value() {
 
 function get_measure() {
 	#echo "********** check Slave parameters **********"
-	$(access_remout_MySQL $SLAVE_HOST $SLAVE_PORT $SLAVE_USER $SLAVE_PASSWORD  "SHOW SLAVE STATUS\G" sstatus )
-	
+	access_remout_MySQL $SLAVE_HOST $SLAVE_PORT $SLAVE_USER $SLAVE_PASSWORD  "SHOW SLAVE STATUS\G" sstatus
+	local ret_s="$?"
 	#echo "********** check Master parameters **********"
-	$(access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW MASTER STATUS\G" mstatus )
+	access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW MASTER STATUS\G" mstatus
+	local ret_m="$?"
+	if [[ (ret_s -gt 0) || (ret_m -gt 0) || ($(stat -c%s mstatus) -le 0) || ($(stat -c%s sstatus) -le 0) ]]
+	then
+	  MSG="Unknown problems while access remote mysql..."
+	  return 1
+	fi
+	#****Still OK****
 	if [ $initialized -eq 0 ]
 	then
-		$(access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW VARIABLES" mvariables )
-		initialized=1
+	  access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW VARIABLES" mvariables
+	  initialized=1
 	fi
-
+	
 	
 	#echo "*********** Retriving data for Master ***********"
 	local Max_binlog_size=$(extract_value mvariables max_binlog_size )
@@ -186,5 +199,6 @@ function get_measure() {
 	fi
 	local param="alive:$alive;late:$Slave_seconds_behind_master;desynch:$Desynch_percent;last_errno:$Slave_last_errno;discord:$discord"
 	return_value="$param | $details"
+	return 0
 }
 

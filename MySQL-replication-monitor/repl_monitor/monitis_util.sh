@@ -37,6 +37,17 @@ function trim {
     echo $*
 }
 
+# Tests whether *entire string* is JSON string
+# @param $1 - string to be checked 
+function isJSON(){
+	if [[ ( "x$1" != "x" ) && ( $1 == {*} ) ]]
+	then 
+		return 0
+	fi
+	
+	return 1
+}
+
 #Parsing JSON string and return the $prop value
 # @param json - json input string
 # @param prop - interesting key
