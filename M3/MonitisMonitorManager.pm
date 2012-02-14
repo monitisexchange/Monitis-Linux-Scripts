@@ -11,6 +11,7 @@ use Carp;
 use File::Basename;
 use URI::Escape;
 use Thread qw(async);
+use Date::Manip;
 use threads::shared;
 
 # use the same constant as in the Perl-SDK
@@ -109,6 +110,18 @@ sub dry_run {
 	}
 }
 
+# does the user want a mass load?
+# mass_load decides how to handle output
+# if it's set, we'll handle it line by one, allowing duplicate parameters
+sub mass_load {
+	my ($self) = @_;
+	if (defined($self->{mass_load}) and $self->{mass_load} == 1) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 # print the XML after it was templated
 sub templated_xml {
 	my ($self) = @_;
@@ -141,10 +154,12 @@ sub add_monitor {
 	my $monitor_tag = get_monitor_tag_from_name($monitor_name);
 	my $result_params = "";
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
-		my $uom = $monitor_xml_path->{metric}->{$metric_name}->{uom}[0];
-		my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
-		my $data_type = ${ $self->{monitis_datatypes} }{$metric_type} or croak "Incorrect data type '$metric_type'";
-		$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+		if ($self->metric_name_not_reserved($metric_name)) {
+			my $uom = $monitor_xml_path->{metric}->{$metric_name}->{uom}[0];
+			my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
+			my $data_type = ${ $self->{monitis_datatypes} }{$metric_type} or croak "Incorrect data type '$metric_type'";
+			$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+		}
 	}
 
 	# we'll let external execution plugins dictate if they want to expose
@@ -167,7 +182,8 @@ sub add_monitor {
 
 	# a simple sanity check
 	if ($result_params eq "") {
-		croak "ResultParams are empty! check your XML file...";
+		carp "ResultParams are empty for monitor '$monitor_name'... Skipping!";
+		return;
 	}
 
 	carp "Adding monitor '$monitor_name' with metrics '$result_params'" if DEBUG;
@@ -183,6 +199,8 @@ sub add_monitor {
 			resultParams => $result_params);
 		if ($response->{status} eq 'ok') {
 			print "OK\n";
+		} elsif ($response->{status} eq "monitorNameExists") {
+			print "OK (Monitor already exists)\n";
 		} else {
 			print "FAILED: '$response->{status}'\n";
 			carp Dumper($response) if DEBUG;
@@ -249,6 +267,21 @@ sub invoke_monitor {
 		croak "Could not find proper execution plugin for monitor '$monitor_name'";
 	}
 
+	my $retval = 1;
+	# if mass load is set, we'll handle the lines one by one
+	if ($self->mass_load()) {
+		foreach my $line (split /[\r\n]+/, $output) {
+			$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, $last_uri, \%results, $line);
+		}
+	} else {
+		$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, $last_uri, \%results, $output);
+	}
+}
+
+sub handle_output_chunk {
+	my ($self, $agent_name, $monitor_xml_path, $monitor_name, $last_uri, $ref_results, $output) = @_;
+	my %results = %$ref_results;
+
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
 		# call the relevant parsing plugin
 		my %returned_results = ();
@@ -277,16 +310,39 @@ sub invoke_monitor {
 		@results{keys %returned_results} = values %returned_results;
 	}
 
+	# TODO 'MONITIS_CHECK_TIME' hardcoded
+	# if MONITIS_CHECK_TIME is defined, use it as the timestamp for updating data
+	my $checktime = 0;
+	if (defined($results{MONITIS_CHECK_TIME})) {
+		my $date = new Date::Manip::Date;
+		$date->parse($results{MONITIS_CHECK_TIME});
+		# checktime here is seconds, update_data_for_monitor will multiply by
+		# 1000 to make it milliseconds
+		$checktime = $date->secs_since_1970_GMT();
+		# and remove it from the hash
+		delete $results{MONITIS_CHECK_TIME};
+	}
+
 	# format results
 	my $formatted_results = format_results(\%results);
 
 	# update the data
-	return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results);
+	if ($checktime ne "") {
+		# was the checktime specified and parsed?
+		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results, $checktime);
+	} else {
+		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results);
+	}
 }
 
 # update data for a monitor, calling Monitis API
 sub update_data_for_monitor {
-	my ($self, $agent_name, $monitor_name, $results) = @_;
+	my ($self, $agent_name, $monitor_name, $results, @va_list) = @_;
+	# get the time now (time returns time in seconds, multiply by 1000
+	# for miliseconds)
+	my $checktime = $va_list[0] || time;
+	$checktime *= 1000;
+
 	lock($monitis_api_lock);
 
 	# sanity check of results...
@@ -314,10 +370,6 @@ sub update_data_for_monitor {
 
 		carp "Obtained monitor_id '$monitor_id' from API call" if DEBUG;
 	}
-
-	# get the time now (time returns time in seconds, multiply by 1000
-	# for miliseconds)
-	my $checktime = time * 1000;
 
 	# call Monitis using the api context provided
 	carp "Calling API with '$monitor_id' '$checktime' '$results'" if DEBUG;
@@ -431,6 +483,11 @@ sub replace_template {
 	my ($template) = @_;
 	my $callback = "_get_$template";
 	return &$callback();
+}
+
+sub metric_name_not_reserved {
+	my ($self, $metric_name) = @_;
+	return $metric_name ne "MONITIS_CHECK_TIME";
 }
 
 1;
