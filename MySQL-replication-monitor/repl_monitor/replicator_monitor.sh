@@ -39,6 +39,24 @@ function access_remout_MySQL {
 	return $ret
 }
 
+#  Format a timestamp into the form 'x day hh:mm:ss'
+#  
+#  @param TIMESTAMP {NUMBER} the timestamp in sec
+# 
+function formatTimestamp(){
+	local time="$1"
+	local sec=$(( $time%60 ))
+	local min=$(( ($time/60)%60 ))
+	local hr=$(( ($time/3600)%24 ))
+	local da=$(( $time/86400 ))
+	local str=$(echo `printf "%u.%02u.%02u" $hr $min $sec`)
+	if [[ ($da -gt 0) ]]
+	then
+		str="$da day $str" 
+	fi
+	echo $str
+}
+
 #Function returns variable value from file
 #
 #@param FILENAME {STRING} - relative or absolute path to file 
@@ -177,7 +195,7 @@ function get_measure() {
 	
 	if [ $(echo "$discord > 5 || $discord < -5" | bc ) -ne 0 ]
 	then
-	    MSG[$errors]="WARNING - Inconsistency in replication has reached to $discord percent"
+	    MSG[$errors]="WARNING - Inconsistency in replication has reached to $discord percent \(master - $Master_load; slave - $Slave_load \)"
 	    errors=$(($errors+1))
 	fi
 	

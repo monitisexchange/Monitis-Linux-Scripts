@@ -47,12 +47,12 @@ To use existing scripts you need to do some changes that will correspond your ac
 
         in monitis_constant.sh 
         - replace ApiKey and SecretKey by your keys values (can be obtained from your Monitis account)
-        - you may do also definition of DURATION between measurements and sending results (currently it is declared as 60 sec)
         
         in monitor_constant.sh 
         - replace MONITOR_NAME, MONITOR_TAG and MONITOR_TYPE by your desired names
         - replace RESULT_PARAMS and ADDITIONAL_PARAMS strings by data formats definition of your monitor
         - provide the definition of Master and Slave machines and corresponding credentials to access them 
+        - you may do also definition of DURATION between measurements and sending results (currently it is declared as 5 min)
         
 That's all. Now you can run __monitor_start.sh__ and monitoring process will be started.
 

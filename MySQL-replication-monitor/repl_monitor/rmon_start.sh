@@ -4,6 +4,8 @@
 source monitis_api.sh        || exit 2
 source replicator_monitor.sh || error 2 monitor_constant.sh
 
+DURATION=$((60*$DURATION)) #convert to sec
+
 # obtaining TOKEN
 get_token
 ret="$?"
@@ -30,7 +32,7 @@ if [[ ($MONITOR_ID -le 0) ]]
 then 
 	echo MonitorId is still zero - try to obtain it from Monitis
 	
-	get_custom_monitor_list $MONITOR_TAG $MONITOR_TYPE
+	MONITOR_ID=`get_monitorID $MONITOR_NAME $MONITOR_TAG $MONITOR_TYPE `
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
