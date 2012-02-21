@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Declaration of monitor constants
-declare -r MEMCACHED_HOST=127.0.0.1						# host IP where located remote MySQL master
-declare -r MEMCACHED_PORT=11211							# remote MySQL master listen port
+declare    HOST_IP=<replace by your machine host IP>	# host mashine real IP-address
+declare    MEMCACHED_IP=127.0.0.1						# host IP where located remote MySQL master
+declare    MEMCACHED_PORT=11211							# remote MySQL master listen port
 
-declare -r MONITOR_NAME="Memcached_$MEMCACHED_HOST:$MEMCACHED_PORT" # name of custom monitor
+declare    MONITOR_NAME="Memcached_$HOST_IP-$MEMCACHED_IP:$MEMCACHED_PORT" # name of custom monitor
 declare -r MONITOR_TAG="memcached"						# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 # format of result params - name1:displayName1:uom1:Integer
@@ -16,13 +17,13 @@ declare -r RESULT_PARAMS="$P1;$P2;$P3"
 declare -r ADDITIONAL_PARAMS="details:Details::3"	
 
 declare -r NORM_STATE="OK"
-declare -r FAIL_STATE="FAIL"	
+declare -r FAIL_STATE="NOK"	
 declare -r UNAC_STATE="status:FAIL | details + Cannot access to the memcached engine"
 
 declare -r CMD_SETTING="stats settings"
-declare -r FILE_SETTING="setting"
+declare    FILE_SETTING="setting"
 declare -r CMD_STATUS="stats"
-declare -r FILE_STATUS="status"
-declare -r FILE_STATUS_PREV="status_"
+declare    FILE_STATUS="status"
+declare    FILE_STATUS_PREV="status_"
 
-declare -r DURATION=60	 							# information sending duration [sec] (REPLACE by any desired value)
+declare    DURATION=5	 							# information sending duration [min] (REPLACE by any desired value)

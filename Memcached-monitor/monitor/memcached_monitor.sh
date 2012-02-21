@@ -20,11 +20,17 @@ function access_memcached {
 	local PORT=$2
 	local CMD=$3
 	local FILE=$4
-	echo -e "$CMD" | nc -q 1 $HOST $PORT | tee $FILE > /dev/null
-	local ret="$?"
-	if [[ ($ret -gt 0) || !(-r $FILE) || ($(stat -c%s $FILE) -le 0) ]]
-	then
-		return 1
+	if [[ ("x$FILE" != "x") ]] #file specified
+	then	
+		echo -e "$CMD" | nc -q 1 $HOST $PORT | tee $FILE > /dev/null
+		ret="$?"
+		if [[ ($ret -gt 0) || !(-r $FILE) || ($(stat -c%s $FILE) -le 0) ]]
+		then
+			return 1
+		fi
+	else
+		echo -e "$CMD" | nc -q 1 $HOST $PORT
+		ret="$?"
 	fi
 	return $ret
 }
@@ -74,7 +80,7 @@ function get_measure() {
 	if [ $initialized -eq 0 ]	# first time calling - initialize and get settings
 	then
 	  `rm -f $FILE_STATUS $FILE_STATUS_PREV $FILE_SETTING`
-	  access_memcached "$MEMCACHED_HOST" "$MEMCACHED_PORT" "$CMD_SETTING" "$FILE_SETTING"
+	  access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "$CMD_SETTING" "$FILE_SETTING"
 	  if [[ ("$?" -gt 0) ]]
 	  then
 	    return_value=$UNAC_STATE
@@ -85,10 +91,11 @@ function get_measure() {
 	fi
 
 	#Current results
-    access_memcached "$MEMCACHED_HOST" "$MEMCACHED_PORT" "$CMD_STATUS" "$FILE_STATUS"
+    access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "$CMD_STATUS" "$FILE_STATUS"
 	if [[ ("$?" -gt 0) ]]
 	then
 	    return_value=$UNAC_STATE
+	    initialized=0
     	return 0
     fi
 

@@ -48,19 +48,39 @@ function isJSON(){
 	return 1
 }
 
-#Parsing JSON string and return the $prop value
-# @param json - json input string
-# @param prop - interesting key
+# Tests whether *entire string* is JSON array string
+# @param $1 - string to be checked 
+function isJSONarray(){
+	local str=${1:-""}
+	if [[ ( "x$str" != "x" ) && ( ${str:0:1} == "[" ) && ( ${str: -1} == "]" ) ]]
+	then 
+		return 0
+	fi
+	
+	return 1
+}
+
+# Parsing JSON string and return the $prop value
+# @param json - json input string*
+# @param prop - interesting key*
 # @return picurl - interesting key value
+# exit codes:
+#	0 - success
+#	1 - invalide input parameters
 # example 
 #	json=`curl -s -X GET http://twitter.com/users/show/$1.json`
 #	prop='profile_image_url'
 #	picurl=`jsonval`
 function jsonval {
-    #temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/\"\:\"/\|/g' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop`
-    #echo ${temp##*|}
-    temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop`
-    echo ${temp##*:}
+    local json=${1:-""}
+    local prop=${2:-""}
+    if [[ (-n $json) && (-n $prop) ]]
+    then
+	    temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop`
+    	echo ${temp#*:}
+    	return 0
+    fi
+    return 1
 }
 
 # compose additional data (JSON array) for 
