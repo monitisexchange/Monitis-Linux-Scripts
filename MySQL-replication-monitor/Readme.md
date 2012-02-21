@@ -54,7 +54,7 @@ To use existing scripts you need to do some changes that will correspond your ac
         - provide the definition of Master and Slave machines and corresponding credentials to access them 
         - you may do also definition of DURATION between measurements and sending results (currently it is declared as 5 min)
         
-That's all. Now you can run __monitor_start.sh__ and monitoring process will be started.
+That's all. Now you can run __rmon_start.sh__ and monitoring process will be started.
 
 #### Testing 
 To check the correctness of monitor workability, some tests was done on real  MySQL 5.0.x replicating Master-Slave configuration that was under real load. The Master and Slave are located in the cloud and has differ IPs.
