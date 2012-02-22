@@ -36,7 +36,7 @@ function get_token() {
 			local prop=$API_GET_TOKEN_ACTION
 			val=`jsonval`
 		else
-			MSG="Incorrect response..."
+			MSG="Incorrect response while obtaining token..."
 			TOKEN=""
 			TOKEN_OBTAIN_TIME=0
 			return 1
@@ -171,7 +171,7 @@ function add_custom_monitor {
 			return 3
 		fi	
 	else
-		MSG="Response is too long - perhaps received HTML response"
+		MSG="Unknown problem while adding monitor..."
 		return 3
 	fi
 	
@@ -200,7 +200,7 @@ function get_custom_monitor_info() {
 	postdata=$postdata" -d excludeHidden=true "
 	
 	req="$SERVER""customMonitorApi"
-		
+	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
 	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
@@ -217,7 +217,7 @@ function get_custom_monitor_info() {
 			return 3
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
+		MSG="Response is too long while getting monitor info..."
 		return 1
 	fi
 	return 0
@@ -259,7 +259,7 @@ function get_custom_monitor_list() {
 			return 3
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
+		MSG="Response is too long while getting monitors list..."
 		return 1
 	fi
 	
@@ -304,7 +304,7 @@ function add_custom_monitor_data() {
 			return 1
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
+		MSG="Response is too long while adding monitor data..."
 		return 1
 	fi
 	return 0
@@ -347,7 +347,7 @@ function add_custom_monitor_additional_data() {
 			return 1
 		fi
 	else
-		MSG="Response is too long - perhaps received HTML response"
+		MSG="Response is too long while adding aditional data..."
 		return 1
 	fi
 	return 0 

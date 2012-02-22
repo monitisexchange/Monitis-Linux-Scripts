@@ -19,3 +19,4 @@ declare -r RESULT_PARAMS="alive:Alive::1;late:Slave_late[sec]:sec:2;desynch:Desy
 # format of additional params - name:displayName:uom:String
 declare -r ADDITIONAL_PARAMS="details:Details::3"	
 	
+declare    DURATION=5	 							# information sending duration [min] (REPLACE by any desired value)
