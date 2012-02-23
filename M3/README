@@ -19,3 +19,5 @@ M3 has a plugin architecture. 2 types of plugins exist:
  1. Execution
  2. Parsing
 And they sit in the Execution and Parsing directories respectively.
+
+Learn more about Montis Monitor Manager Framework here: http://blog.monitis.com/index.php/tag/m3/
