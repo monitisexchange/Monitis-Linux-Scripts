@@ -38,9 +38,9 @@ M3 phases
 
 Plugin documentation
 --------------------
- * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Execution/README">Execution plugins</a>
- * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Parsing/README">Parsing plugins</a>
- * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Compute/README">Compute plugins</a>
+ * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Execution/README.md">Execution plugins</a>
+ * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Parsing/README.md">Parsing plugins</a>
+ * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Compute/README.md">Compute plugins</a>
 
 Very simple example
 -------------------
