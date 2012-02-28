@@ -314,11 +314,16 @@ sub handle_output_chunk {
 	# if MONITIS_CHECK_TIME is defined, use it as the timestamp for updating data
 	my $checktime = 0;
 	if (defined($results{MONITIS_CHECK_TIME})) {
-		my $date = new Date::Manip::Date;
-		$date->parse($results{MONITIS_CHECK_TIME});
-		# checktime here is seconds, update_data_for_monitor will multiply by
-		# 1000 to make it milliseconds
-		$checktime = $date->secs_since_1970_GMT();
+		if (int($results{MONITIS_CHECK_TIME}) == $results{MONITIS_CHECK_TIME}) {
+			# no need for date manipulation
+			$checktime = $results{MONITIS_CHECK_TIME};
+		} else {
+			my $date = new Date::Manip::Date;
+			$date->parse($results{MONITIS_CHECK_TIME});
+			# checktime here is seconds, update_data_for_monitor will multiply by
+			# 1000 to make it milliseconds
+			$checktime = $date->secs_since_1970_GMT();
+		}
 		# and remove it from the hash
 		delete $results{MONITIS_CHECK_TIME};
 	}
