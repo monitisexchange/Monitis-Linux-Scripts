@@ -131,17 +131,22 @@ sub templated_xml {
 
 # returns the monitor id with a given tag
 sub get_id_of_monitor {
-	my ($self, $monitor_tag) = @_;
+	my ($self, $monitor_tag, $monitor_name) = @_;
 
 	# call Monitis using the api context provided
 	my $response = $self->{monitis_api_context}->custom_monitors->get(
 		tag => $monitor_tag);
-	# return the first id of the monitor returned
-	if (defined($response->[0]->{id})) {
-		return $response->[0]->{id};
-	} else {
-		croak "Could not obtain ID for monitor '$monitor_tag'";
+
+	# iterate on all of them and compare the name
+	my $i = 0;
+	while (defined($response->[$i]->{id})) {
+		if ($response->[$i]->{name} eq $monitor_name) {
+			carp "Monitor tag/name: '$monitor_tag/$monitor_name' -> ID: '$response->[$i]->{id}'" if DEBUG;
+			return $response->[$i]->{id};
+		}
+		$i++;
 	}
+	croak "Could not obtain ID for monitor '$monitor_tag'";
 }
 
 # add a single monitor
@@ -151,7 +156,7 @@ sub add_monitor {
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
 
 	# format the monitor_tag with underscores (_) instead of spaces
-	my $monitor_tag = get_monitor_tag_from_name($monitor_name);
+	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
 	my $result_params = "";
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
 		if ($self->metric_name_not_reserved($metric_name)) {
@@ -370,8 +375,8 @@ sub update_data_for_monitor {
 		# we have to obtain the monitor id in order to update results
 		# to do this we first need the monitor tag
 		# TODO add a warning to tell the user to add the monitor id in the XML
-		my $monitor_tag = get_monitor_tag_from_name($monitor_name);
-		$monitor_id = $self->get_id_of_monitor($monitor_tag);
+		my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
+		$monitor_id = $self->get_id_of_monitor($monitor_tag, $monitor_name);
 
 		carp "Obtained monitor_id '$monitor_id' from API call" if DEBUG;
 	}
@@ -460,9 +465,17 @@ sub invoke_agent_monitors_loop {
 }
 
 # formats a monitor tag from a name
-sub get_monitor_tag_from_name {
-	my ($monitor_name) = @_;
-	{ $_ = $monitor_name; s/ /_/g; return $_ }
+sub get_monitor_tag {
+	my ($self, $agent_name, $monitor_name) = @_;
+	# if monitor tag is defined, use it!
+	if (defined ($self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{tag}) ) {
+		my $monitor_tag = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{tag};
+		carp "Obtained monitor tag '$monitor_tag' from XML" if DEBUG;
+		return $monitor_tag;
+	} else {
+		# make a monitor tag from name
+		{ $_ = $monitor_name; s/ /_/g; return $_ }
+	}
 }
 
 # formats the hash of results into a string
