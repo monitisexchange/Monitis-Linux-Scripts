@@ -43,6 +43,7 @@ The main purpose of current project is to show the possible way of using Monitis
  Please notice that the evaluation of replication parameters cannot have absolute precision of measurements in the presented approach because the measurement of replicating databases is provided sequentially (not in parallel). Since every remote measurement takes a while, it is the reason to receiving of  not fully synchronous data. Thus, the final results can have some measurement uncertainties in range about 0.5% - 1%.
 
 #### Customizing and Usage 
+
 To use existing scripts you need to do some changes that will correspond your account and data
 
         in monitis_constant.sh 
