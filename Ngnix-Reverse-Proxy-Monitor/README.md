@@ -65,9 +65,8 @@ For example, it could be look like this
 	        access_log  /var/log/nginx/access.log;
 	        error_log  /var/log/nginx/error.log;
 
-		..........
-
 ~~~~~
+
 
 #### Customizing and Usage 
 
