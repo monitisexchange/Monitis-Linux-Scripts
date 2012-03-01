@@ -1,0 +1,92 @@
+diff -urN jiffy-web.orig/ingestor/performance_log_inserter.pl jiffy-web.new/ingestor/performance_log_inserter.pl
+--- jiffy-web.orig/ingestor/performance_log_inserter.pl	2008-07-22 17:14:33.535924000 -0700
++++ jiffy-web.new/ingestor/performance_log_inserter.pl	2012-02-14 13:32:57.264121000 -0800
+@@ -122,7 +122,7 @@
+ ########
+ sub main {
+     # get runtime options
+-    getopts('hVDOMA:m:l:c:H:U:P:W:d:', \%OPTS);
++    getopts('hVDNOMA:m:l:c:H:U:P:W:d:', \%OPTS);
+     
+     # command line assignments
+     $VERBOSE=1  if ($OPTS{V});
+@@ -140,7 +140,7 @@
+     Usage() if ($OPTS{h}); # -h
+     Usage() if ($OPTS{O} && $OPTS{M}); # can't have both 
+ 	Usage() if (!$OPTS{d}); # must specify the database name
+-    Usage() if ((!$OPTS{O} && !$OPTS{M}) && !$DEBUG); # can't have neither except in debug mode
++    Usage() if ((!$OPTS{O} && !$OPTS{M} && !$OPTS{N}) && !$DEBUG); # can't have neither except in debug mode
+     Usage() if (((!$OPTS{H} && !$OPTS{M})|| !$OPTS{U}) && !$DEBUG); # need host + user except in debug mode
+     
+     # check access log
+@@ -160,6 +160,9 @@
+ 		$ENV{MYSQL_HOME} = $CLIENT_DIR;
+ 		$ENV{LD_LIBRARY_PATH} = "$CLIENT_DIR/lib";
+     }
++    elsif ($OPTS{N}) {
++	    $DBTYPE = "NULL";
++	}
+     else {
+         die "Unknown database" if (!$DEBUG);
+     }
+@@ -169,12 +172,13 @@
+ 	    	map {$_ ne 'server_time' ? "?" : "to_date(?,'yyyy-mm-dd hh24:mi:ss')"} @JIFFY_FIELDS );
+ 	} elsif ($DBTYPE eq "MYSQL") {
+ 		$SQL_VALUES = join(',', map {"?"} @JIFFY_FIELDS );
++	} elsif ($DBTYPE eq "NULL") {
+ 	} else {
+ 		die "Unknown database type $DBTYPE"; # this should never happen
+ 	}
+ 	
+     # open DB handle 
+-    if (!$DEBUG) {
++    if (!$DEBUG && $DBTYPE ne "NULL") {
+         #$DBH = DBI->connect($DSN, $USER, $PASS, { AutoCommit => 1, RaiseError => 1, }) 
+         $DBH = DBI->connect($DSN, $USER, $PASS, { AutoCommit => 0, PrintError => 0, RaiseError => 0, })
+                || die "Can't connect: $DBH::err";
+@@ -292,7 +296,7 @@
+     my $exception = $@;
+     
+     # close DB, remove locks
+-    if (!$DEBUG) {
++    if (!$DEBUG && $DBTYPE ne "NULL") {
+ 	# be sure the DB commit/disconect doesn't prevent us from releasing the lock
+         eval { $DBH->commit(); };      $exception .= " >> $@" if $@;
+         eval { $DBH->disconnect(); };  $exception .= " >> $@" if $@;
+@@ -326,7 +330,7 @@
+     }
+     else {
+         $sqlString = "INSERT INTO " . $DBASE . ".measurement_$entry->{table_partition} ($SQL_FIELDS) VALUES ($SQL_VALUES)";
+-        if ($DEBUG) {
++        if ($DEBUG || $DBTYPE eq "NULL") {
+             $last_sth = $sth = $sqlString;
+         }
+         else {
+@@ -337,7 +341,9 @@
+ 
+     if ($DEBUG) {
+         print "Would execute SQL<<$sth>> on \n", Dumper($entry);
+-    }
++    } elsif ($DBTYPE = "NULL") {
++		print $entry->{server_time} . " " . $entry->{page_name} . " " . $entry->{url} . " " . $entry->{elapsed_time} . "\n";
++	}
+     else {
+         my $param_i = 1;
+         for my $param (@JIFFY_FIELDS) {
+@@ -497,14 +503,14 @@
+ sub Usage {
+     print STDERR <<"EOF";
+ 
+-usage: $0 [-hVD] -l <file> -m <value> -W <value> -O|-M -c <client path> -H <host> -U <user> [-P <passwd>]
++usage: $0 [-hVD] -l <file> -m <value> -W <value> -N|-O|-M -c <client path> -H <host> -U <user> [-P <passwd>]
+ 
+  -h		: this message
+  -V		: verbose output
+  -D		: debug mode (no database interaction)
+  -l <file>	: file containing jiffy logs
+  -m <value>     : maximum number of lines to process this time (default $MAX_LINES)
+- -O|-M		: use Oracle | MySQL
++ -N|-O|-M		: use NULL | Oracle | MySQL
+  -c <path>	: path to client (ie ORACLE_HOME)
+  -A <file>	: file containing database auth (COMING SOON)
+  -H		: database host (or tnsname if -O)

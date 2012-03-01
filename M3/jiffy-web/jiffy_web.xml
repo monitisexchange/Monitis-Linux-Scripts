@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="File Agent" interval="60">
+		<monitor name="Jiffy-Web sample monitor - PHONE_FORM">
+			<!-- Execute them both here -->
+			<exectemplate>/usr/share/jiffy-web/ingestor/performance_log_inserter.pl -N -H NULL -d NULL -U NULL -l /usr/share/jiffy-web/examples/jiffy.log.example > /tmp/jiffy.temp.log</exectemplate>
+			<exectemplate>grep PHONE_FORM /tmp/jiffy.temp.log</exectemplate>
+			<metric name="URL">
+				<type>string</type>
+				<uom>N/A</uom>
+				<regex>^.* PHONE_FORM (.+) \d+</regex>
+			</metric>
+			<metric name="Elapsed Time">
+				<type>integer</type>
+				<uom>Seconds</uom>
+				<regex>^.* PHONE_FORM .+ (\d+)</regex>
+			</metric>
+			<metric name="MONITIS_CHECK_TIME">
+				<type>integer</type>
+				<uom>timestamp</uom>
+				<regex>^(.*) PHONE_FORM .+ (\d+)</regex>
+			</metric>
+		</monitor>
+		<monitor name="Jiffy-Web sample monitor - AREA_ZIP_FORM">
+			<exectemplate>grep AREA_ZIP_FORM /tmp/jiffy.temp.log</exectemplate>
+			<metric name="URL">
+				<type>string</type>
+				<uom>N/A</uom>
+				<regex>^.* AREA_ZIP_FORM (.+) \d+</regex>
+			</metric>
+			<metric name="Elapsed Time">
+				<type>integer</type>
+				<uom>Seconds</uom>
+				<regex>^.* AREA_ZIP_FORM .+ (\d+)</regex>
+			</metric>
+			<metric name="MONITIS_CHECK_TIME">
+				<type>integer</type>
+				<uom>timestamp</uom>
+				<regex>^(.*) AREA_ZIP_FORM .+ (\d+)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>

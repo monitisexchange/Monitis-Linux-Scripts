@@ -18,7 +18,7 @@ sub execute {
 	my ($self, $monitor_xml_path, $executable, $results) = @_;
 
 	# running with qx{} as it should run also on windows
-	my $output = qx{ $executable } || croak "Failed running '$executable': $!";
+	my $output = qx{ $executable } || carp "Failed running '$executable': $!" && return "";
 	return $output;
 }
 

@@ -19,7 +19,7 @@ sub parse {
 
 	# this handles the regex matching
 	# TODO will spliting with '\n' work on windows?? - it should...
-	foreach my $output_line ( split ('\n', $output) ) {
+	foreach my $output_line ( split /[\r\n]+/, $output ) {
 		# look for the metric regex on each line
 		if (defined($metric_xml_path->{$self->name()}[0])) {
 			my $metric_regex = $metric_xml_path->{$self->name()}[0];
