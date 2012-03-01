@@ -29,7 +29,7 @@ This project is based on Bash 4.x+ and require the Linux kernel 2.6.x or higher.
 
 #### Dependencies  
 
-The current version of NRP monitor provide HTTP access to the Monitis main server so you have to have installed the __NCURL__ library on Linux  machine where monitor will be run.  
+The current version of NRP monitor provide HTTP access to the Monitis main server so you have to have installed the __CURL__ library on Linux  machine where monitor will be run.  
 Besides, the monitor uses Linux calculator (named '__bc__') to provide floating points calculations. Thus, you have to have installed Linux calculator too.  
  
 #### Used approach
