@@ -2,7 +2,7 @@
 
 # sorces included
 source monitis_api.sh        || exit 2
-source replicator_monitor.sh || error 2 monitor_constant.sh
+source replicator_monitor.sh || error 2 replicator_monitor.sh
 
 DURATION=$((60*$DURATION)) #convert to sec
 
@@ -44,9 +44,6 @@ then
 fi
 
 # Periodically adding new data
-file=$ERR_FILE # errors record file 
-file_=$file"_" # temporary file
-
 while $(sleep "$DURATION")
 do
 	get_token				# get new token in case of the existing one is too old

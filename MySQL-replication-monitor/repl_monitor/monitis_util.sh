@@ -61,8 +61,8 @@ function isJSONarray(){
 }
 
 # Parsing JSON string and return the $prop value
-# @param json - json input string*
-# @param prop - interesting key*
+# @param $1 - json input string*
+# @param $2 - interesting key*
 # @return picurl - interesting key value
 # exit codes:
 #	0 - success
@@ -70,7 +70,8 @@ function isJSONarray(){
 # example 
 #	json=`curl -s -X GET http://twitter.com/users/show/$1.json`
 #	prop='profile_image_url'
-#	picurl=`jsonval`
+#	picurl=`jsonval $json $prop`
+#
 function jsonval {
     local json=${1:-""}
     local prop=${2:-""}
@@ -114,7 +115,6 @@ function create_additional_param() {
 		return 4
 	fi
 	return 0
-
 }
 
 # Provides errors processing
