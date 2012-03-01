@@ -5,27 +5,27 @@ This project is based on Bash 4.x+ and require the Linux kernel 2.6.x or higher.
 
 #### Content  
 
-    Monitis Open API wrapper
+   Monitis Open API wrapper  
 
-          monitis_api.sh	monitis api wrapper functions  
-          monitis_constant.sh	monitis api wrapper constants (and configuration)  
-          monitis_global.sh	monitis api wrapper global variables  
-          monitis_util.sh	monitis api wrapper utility functions  
+          monitis_api.sh        monitis api wrapper functions  
+          monitis_constant.sh   monitis api wrapper constants (and configuration)  
+          monitis_global.sh     monitis api wrapper global variables  
+          monitis_util.sh       monitis api wrapper utility functions  
 
-    Custom textual log file monitor  
+   Custom NRP monitor  
 
-          monitor.sh		custom monitor main part  
-          monitor_constant.sh	custom monitor constants (and configuration)  
-          nginx_monitor.sh	custom monitor main executor  
+          monitor.sh            custom monitor main part  
+          monitor_constant.sh   custom monitor constants (and configuration)  
+          nginx_monitor.sh      custom monitor main executor  
 
-    Nginx monitor log file simulator (for testing purpose)  
+   NRP monitor.log file test generator (for testing purpose)  
 
-          log_simulation.sh		log simulator (for testing purpose)  
+          log_simulation.sh     log simulator (for testing purpose)  
 
-    Processing part  
+   Service part  
 
-      start.sh			runs conveyor that contains log-simulator, monitor and executor
-      stop.sh			stops conveyor all parts
+          start.sh              runs conveyor that contains log-simulator, monitor and executor
+          stop.sh               stops conveyor all parts
 
 #### Dependencies  
 
@@ -36,10 +36,11 @@ Besides, the monitor uses Linux calculator (named '__bc__') to provide floating 
 
 The presented monitor in fact devided on two parts  
 
-     - watching part
-     - processing part
+   - watching part
+   - processing part
 
-The watching part follows for NRP monitor log and accumulates necessary statistics. The processing part periodically reads an accumulated statistics, executes necessary calculations and send them to Monitis main server.  
+The watching part follows for NRP monitor log and accumulates necessary statistics.  
+The processing part periodically reads an accumulated statistics, executes necessary calculations and send them to Monitis main server.  
 
 
 #### Nginx configuration  
@@ -49,14 +50,13 @@ Since Nginx server itself provides not enough statistic for NRP, the current mon
 
         <status code>#<responding host address>		e.g.  404#;12.13.11.12:80
 
-To do so, you have to add 2 additional lines in "/etc/ngnix/sites-available/default" config file near the definition of Nginx standard log files in the ngnix server block to define a new log file "monitor.log" like the following
-
+To do so, you have to add 2 additional lines in "/etc/ngnix/sites-available/default" config file near the definition of Nginx standard log files in the ngnix server block to define a new log file "monitor.log" like the following  
 
         log_format main '#$upstream_status#;$upstream_addr';    <- definision of new log file format
         access_log /var/log/nginx/monitor.log main;             <- specification of location for new log file
 
 
-For example, it could be look like this
+For example, it could be look like this  
 
         server {
                 listen       80;
