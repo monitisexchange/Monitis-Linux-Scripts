@@ -45,28 +45,29 @@ The watching part follows for NRP monitor log and accumulates necessary statisti
 #### Nginx configuration  
 
 Since Nginx server itself provides not enough statistic for NRP, the current monitor uses the specially configured log file (named as monitor.log file) and provides its watching on the fly to be grabbing of necessary monitoring statistic. The mentioned monitor log file should have the following format  
-~~~~~
-     <status code>#<responding host address>		e.g.  404#;12.13.11.12:80
-~~~~~
+
+
+        <status code>#<responding host address>		e.g.  404#;12.13.11.12:80
+
 To do so, you have to add 2 additional lines in "/etc/ngnix/sites-available/default" config file near the definition of Nginx standard log files in the ngnix server block to define a new log file "monitor.log" like the following
 
-~~~~~
-	log_format main '#$upstream_status#;$upstream_addr';    <- definision of new log file format
-	access_log /var/log/nginx/monitor.log main;             <- specification of location for new log file
-~~~~~
+
+        log_format main '#$upstream_status#;$upstream_addr';    <- definision of new log file format
+        access_log /var/log/nginx/monitor.log main;             <- specification of location for new log file
+
+
 For example, it could be look like this
-~~~~~
-	server {
-		listen       80;
-		server_name 10.137.25.110;
 
-	        log_format main '#$upstream_status#;$upstream_addr';
-        	access_log /var/log/nginx/monitor.log main;
-	        access_log  /var/log/nginx/access.log;
-	        error_log  /var/log/nginx/error.log;
+        server {
+                listen       80;
+                server_name 10.137.25.110;
 
-~~~~~
+                log_format main '#$upstream_status#;$upstream_addr';
+                access_log /var/log/nginx/monitor.log main;
+                access_log  /var/log/nginx/access.log;
+                error_log  /var/log/nginx/error.log;
 
+        }
 
 #### Customizing and Usage 
 
@@ -78,14 +79,16 @@ To use existing scripts you need to do some changes that will correspond your ac
 	- in monitor_constant.sh   
 		- replace SERVER_HOST, DEST_HOST_1 and DEST_HOST_2 by your NRP address, destination host 1 and 2 addresses.
 		  The specified destinations must be correspond to the ips defined in nginx config e.g. as the following
-~~~~~
-			  upstream 10.137.25.110 {
 
-				server www.google.com max_fails=3 fail_timeout=30s;       <- destination host 1
-				server www.yahoo.com max_fails=3 fail_timeout=30s;        <- destination host 2
+
+                    upstream 10.137.25.110 {
+
+                         server www.google.com max_fails=3 fail_timeout=30s;       <- destination host 1
+                         server www.yahoo.com max_fails=3 fail_timeout=30s;        <- destination host 2
 	
-			  }
-~~~~~
+                    }
+
+
 		- replace MONITOR_TAG and MONITOR_TYPE by your desired names 
 		  (MONITOR_NAME is formed authomatically, so you don't need to specify it)
 
