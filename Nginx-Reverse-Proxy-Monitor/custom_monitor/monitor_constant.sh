@@ -13,8 +13,8 @@ declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 declare -r RESULT_PARAMS="in:in_load:reqps:4;out1:dest1_load:reqps:4;out2:dest2_load:reqps:4;ok1:out1_2XX:perc:4;ok2:out2_2XX:perc:4" # format of result params - name1:displayName1:uom1:Integer
 declare -r ADDITIONAL_PARAMS="details:info::3"	# format of additional params - name:displayName:uom:String
 
-declare -r LOG_FILE=~/log/aaa.log				# Monitored server (Nginx) textual log file path (REPLACE by your file path)
-declare -r RES_FILE=~/log/res.txt				# temporary file
+declare -r LOG_FILE=~/log/monitor.log				# Monitored server (Nginx) textual log file path (REPLACE by your file path)
+declare -r RES_FILE=~/log/tmp.txt				# temporary file
 
 # declaration of pattern-strings for finding in log file
 # The string of any number of extended patterns can be defined in conform to format of "Linux grep tool"
