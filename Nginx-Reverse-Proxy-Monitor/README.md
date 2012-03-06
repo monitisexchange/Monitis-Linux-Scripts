@@ -29,7 +29,7 @@ This project is based on Bash 4.x+ and require the Linux kernel 2.6.x or higher.
 
 #### Dependencies  
 
-The current version of NRP monitor provide HTTP access to the Monitis main server so you have to have installed the __CURL__ library on Linux  machine where monitor will be run.  
+The current version of NRP monitor provide HTTP access to the Monitis main server so you have to have installed the __NCURL__ library on Linux  machine where monitor will be run.  
 Besides, the monitor uses Linux calculator (named '__bc__') to provide floating points calculations. Thus, you have to have installed Linux calculator too.  
  
 #### Used approach
@@ -98,7 +98,7 @@ To use existing scripts you need to do some changes that will correspond your ac
        - you can also replace ERR_FILE by any temporary file path  
          (it will be created by script)  
 
-That's all. Now you can click on start.sh to run your custom log-file monitor.  
+That's all. Now you can click on start.sh to run your custom Nginx monitor.  
 
 _Please notice that the start.sh, in addition, starts-up the NRP log simulator (for testing purpose only).  
 So, if you want to provide the real monitoring you should comment the corresponding line in the start.sh script to avoid run of simulator._

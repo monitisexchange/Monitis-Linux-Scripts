@@ -4,40 +4,63 @@
 source monitis_api.sh      || exit 2
 source monitor_constant.sh || error 2 monitor_constant.sh
 
+function isLiveProcess() {
+	name=$1
+	pid=`ps -efw | grep -i '$name' | grep -v grep | awk '{print $2} ' `
+	if test "$pid" ;  then
+	   return 0
+	fi 
+	return 1
+}
 
 function get_measure() {
 	local file=$RES_FILE # records file 
 	local file_=$file"_" # temporary file
 
-	#echo 'RENAMING...(for processing)'
-	`mv -f "$file" "$file_" `
-	local tmp=`cat $file_ `
-
-	local input=`echo $tmp | awk -F"|" '{print $1}'`
-	if [[ $input != 0 ]]; then
-		input=$(echo "scale=3;($input / $DURATION)" | bc )
-	fi
-
-	out1=`echo $tmp | awk -F"|" '{print $2}'`
-	out2=`echo $tmp | awk -F"|" '{print $3}'`
-	ok1=`echo $tmp | awk -F"|" '{print $4}'`
-	ok2=`echo $tmp | awk -F"|" '{print $5}'`
+	if [[ !( -e $file ) ]]
+	then	# resulting file is not created yet
+		# check the existence of process
+		isLiveProcess $SERVER_NAME
+		ret="$?"
+		if [[ ($ret -ne 0) ]]
+		then  # not found running process
+		   return_value="$DEAD_RESULT"
+        else  # process is running (probably don't have any load)
+		   return_value="$DUMMY_RESULT"
+		fi
+	else
+		
+		#echo 'RENAMING...(for processing)'
+		`mv -f "$file" "$file_" `
+		local tmp=`cat $file_ `
 	
-	if [[ $out1 != 0 ]]; then
-		okPerc1=$(echo "scale=1;100*($ok1 / $out1)" | bc ) #calculate the perc. of $
-        out1=$(echo "scale=3;($out1 / $DURATION)" | bc ) 
-	else
-		okPerc1=0
-	fi
+		local input=`echo $tmp | awk -F"|" '{print $1}'`
+		if [[ $input != 0 ]]; then
+			input=$(echo "scale=3;($input / $DURATION)" | bc )
+		fi
+	
+		out1=`echo $tmp | awk -F"|" '{print $2}'`
+		out2=`echo $tmp | awk -F"|" '{print $3}'`
+		ok1=`echo $tmp | awk -F"|" '{print $4}'`
+		ok2=`echo $tmp | awk -F"|" '{print $5}'`
+		
+		if [[ $out1 != 0 ]]; then
+			okPerc1=$(echo "scale=1;100*($ok1 / $out1)" | bc ) #calculate the perc. of $
+	        out1=$(echo "scale=3;($out1 / $DURATION)" | bc ) 
+		else
+			okPerc1=0
+		fi
+	
+		if [[ $out2 != 0 ]]; then
+			okPerc2=$(echo "scale=1;100*($ok2 / $out2)" | bc ) #calculate the perc. of $
+			out2=$(echo "scale=3;($out2 / $DURATION)" | bc )
+		else
+			okPerc2=0
+		fi
+	
+		return_value="$OK_STATUS;in:$input;out1:$out1;out2:$out2;ok1:$okPerc1;ok2:$okPerc2"
 
-	if [[ $out2 != 0 ]]; then
-		okPerc2=$(echo "scale=1;100*($ok2 / $out2)" | bc ) #calculate the perc. of $
-		out2=$(echo "scale=3;($out2 / $DURATION)" | bc )
-	else
-		okPerc2=0
 	fi
-
-	return_value="in:$input;out1:$out1;out2:$out2;ok1:$okPerc1;ok2:$okPerc2"
 	return 0
 }
 
@@ -47,6 +70,9 @@ then
 fi
 
 DURATION=$((60*$DURATION)) #convert to sec
+
+# remove temporary files
+rm $RES_FILE 
 
 # obtaining TOKEN
 get_token
