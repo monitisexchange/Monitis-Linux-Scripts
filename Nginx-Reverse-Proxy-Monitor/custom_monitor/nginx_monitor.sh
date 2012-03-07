@@ -8,7 +8,7 @@ declare    return_value
 
 function isLiveProcess() {
 	name=$1
-	pid=`ps -efw | grep -i '$name' | grep -v grep | awk '{print $2} ' `
+	pid=`ps -efw | grep -i "$name" | grep -v grep | awk '{print $2} ' `
 	if test "$pid" ;  then
 	   return 0
 	fi 
