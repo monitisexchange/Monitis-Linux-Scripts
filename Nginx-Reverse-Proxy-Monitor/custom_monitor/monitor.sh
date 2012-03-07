@@ -61,6 +61,24 @@ do
 	tmp="${hash[$tot]}"
 	tmp=$tmp"|${hash[${dir[0]}]}|${hash["${dir[0]}""$c1xx"]}|${hash["${dir[0]}""$c2xx"]}|${hash["${dir[0]}""$c3xx"]}|${hash["${dir[0]}""$c4xx"]}|${hash["${dir[0]}""$c5xx"]}"
 	tmp=$tmp"|${hash[${dir[1]}]}|${hash["${dir[1]}""$c1xx"]}|${hash["${dir[1]}""$c2xx"]}|${hash["${dir[1]}""$c3xx"]}|${hash["${dir[1]}""$c4xx"]}|${hash["${dir[1]}""$c5xx"]}"
+
+	if [[ !(-e $RES_FILE) ]]
+    then # initializing
+		hash[$tot]=0
+		hash[$successful]=0
+		hash[${dir[0]}]=0
+		hash[${dir[1]}]=0
+		hash["${dir[0]}""$c1xx"]=0
+		hash["${dir[1]}""$c1xx"]=0
+		hash["${dir[0]}""$c2xx"]=0
+		hash["${dir[1]}""$c2xx"]=0
+		hash["${dir[0]}""$c3xx"]=0
+		hash["${dir[1]}""$c3xx"]=0
+		hash["${dir[0]}""$c4xx"]=0
+		hash["${dir[1]}""$c4xx"]=0
+		hash["${dir[0]}""$c5xx"]=0
+		hash["${dir[1]}""$c5xx"]=0
+	fi
 	
 	echo "$tmp" > $RES_FILE #write to file
 done

@@ -13,7 +13,7 @@ declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 declare -r RESULT_PARAMS="status:status::3;in_load:in_load:reqps:4;o1_load:out1_load:reqps:4;o2_load:out2_load:reqps:4;o1_perc:out1_reqs:perc:4;o2_perc:out2_reqs:perc:4;ok1:out1_2XX:perc:4;ok2:out2_2XX:perc:4" # format of result params - name1:displayName1:uom1:Integer
 declare -r ADDITIONAL_PARAMS="details:info::3"	# format of additional params - name:displayName:uom:String
 
-declare -r DUMMY_RESULT="status:IDLE;in:0;out1:0;out2:0;ok1:0;ok2:0 | details + No input request to Nginx."
+declare -r DUMMY_RESULT="status:IDLE;in_load:0;o1_load:0;o2_load:0;o1_perc:0;o2_perc:0;ok1:0;ok2:0 | details + No input request to Nginx."
 declare -r DEAD_RESULT="status:DEAD | details + Nginx process not found"
 declare -r OK_STATUS="status:OK"
 
