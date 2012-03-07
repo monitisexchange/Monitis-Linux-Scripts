@@ -1,4 +1,4 @@
-## The file synchronization monitoring
+## The files synchronization monitoring
 
 This project presents the Linux Bash-script application that monitors file synchronization (FSM). It is implemeted as Monitis custom monitor and use the Monitis Open API.  
 This project is based on Bash 4.x+ and require the Linux kernel 2.6.x or higher.
