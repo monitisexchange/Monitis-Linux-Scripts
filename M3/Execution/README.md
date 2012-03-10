@@ -5,7 +5,7 @@
  3. DBI.pm - &lt;sql&gt; - SQL execution via DBI
  4. LinuxSysStatistics.pm - &lt;linuxsysstats&gt; - Linux statistics
  5. Perl.pm - &lt;perl&gt; - Perl code execution
- 6. Perl.pm - &lt;oid&gt; - SNMP OID query
+ 6. SNMP.pm - &lt;oid&gt; - SNMP OID query
 
 ### Executable.pm (&lt;exectemplate&gt; directive)
 
@@ -23,8 +23,8 @@ Simply fetches a URL using CURL.
 
 Any well formed URL is accepted:
 
- * &lt;url&gt;www.google.com/&lt;/url&gt;
- * &lt;url&gt;www.facebook.com/&lt;/url&gt;
+ * &lt;url&gt;www.google.com &lt;/url&gt;
+ * &lt;url&gt;www.facebook.com &lt;/url&gt;
 
 ### DBI.pm (&lt;sql&gt; directive)
 
