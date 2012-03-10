@@ -5,6 +5,7 @@
  3. DBI.pm - &lt;sql&gt; - SQL execution via DBI
  4. LinuxSysStatistics.pm - &lt;linuxsysstats&gt; - Linux statistics
  5. Perl.pm - &lt;perl&gt; - Perl code execution
+ 6. Perl.pm - &lt;oid&gt; - SNMP OID query
 
 ### Executable.pm (&lt;exectemplate&gt; directive)
 
@@ -66,3 +67,16 @@ Any valid (multi line!!) perl code is accepted:
  * &lt;perl&gt;print "hello world!\n";&lt;/perl&gt;
 
 Please make sure to properly xmlencode your code as M3's configuration is XML.
+
+### SNMP.pm (&lt;oid&gt; directive)
+
+Query a SNMP oid.
+
+Simply include your oid in the configuration:
+
+ * &lt;oid&gt;.1.3.6.1.2.1.1.3.0&lt;/oid&gt;
+
+Two other parameters may be specified:
+
+ * &lt;snmp_hostname&gt; - SNMP hostname to query ("localhost" will be used if unspecified)
+ * &lt;snmp_community&gt; - SNMP community to use for query ("public" will be used if unspecified)
