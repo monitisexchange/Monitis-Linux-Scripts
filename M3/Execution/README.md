@@ -23,8 +23,8 @@ Simply fetches a URL using CURL.
 
 Any well formed URL is accepted:
 
- * &lt;url&gt;www.google.com&lt;/url&gt;
- * &lt;url&gt;www.facebook.com&lt;/url&gt;
+ * &lt;url&gt;www.google.com/&lt;/url&gt;
+ * &lt;url&gt;www.facebook.com/&lt;/url&gt;
 
 ### DBI.pm (&lt;sql&gt; directive)
 
