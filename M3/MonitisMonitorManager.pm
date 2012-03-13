@@ -87,7 +87,7 @@ sub DESTROY {
 
 # a simple function to dynamically load all perl packages in a given
 # directory
-sub load_plugins_in_directory {
+sub load_plugins_in_directory($$$) {
 	my ($self, $plugin_table_name, $plugin_directory) = @_;
 	# initialize a new plugin table
 	$self->{$plugin_table_name} = ();
@@ -112,7 +112,7 @@ sub load_plugins_in_directory {
 }
 
 # does the user want a dry run?
-sub dry_run {
+sub dry_run($) {
 	my ($self) = @_;
 	if (defined($self->{dry_run}) and $self->{dry_run} == 1) {
 		return 1;
@@ -124,7 +124,7 @@ sub dry_run {
 # does the user want a mass load?
 # mass_load decides how to handle output
 # if it's set, we'll handle it line by one, allowing duplicate parameters
-sub mass_load {
+sub mass_load($) {
 	my ($self) = @_;
 	if (defined($self->{mass_load}) and $self->{mass_load} == 1) {
 		return 1;
@@ -134,14 +134,14 @@ sub mass_load {
 }
 
 # print the XML after it was templated
-sub templated_xml {
+sub templated_xml($) {
 	my ($self) = @_;
 	my $xmlout = XML::Simple->new(RootName => 'config');
 	return $xmlout->XMLout($self->{config_xml});
 }
 
 # returns the monitor id with a given tag
-sub get_id_of_monitor {
+sub get_id_of_monitor($$$) {
 	my ($self, $monitor_tag, $monitor_name) = @_;
 
 	# call Monitis using the api context provided
@@ -161,7 +161,7 @@ sub get_id_of_monitor {
 }
 
 # add a single monitor
-sub add_monitor {
+sub add_monitor($$$) {
 	my ($self, $agent_name, $monitor_name) = @_;
 
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
@@ -213,7 +213,7 @@ sub add_monitor {
 }
 
 # add all monitors for all agents
-sub add_agents {
+sub add_agents($) {
 	my ($self) = @_;
 
 	# iterate on agents and add them one by one
@@ -224,7 +224,7 @@ sub add_agents {
 }
 
 # add one agent
-sub add_agent_monitors {
+sub add_agent_monitors($$) {
 	my ($self, $agent_name) = @_;
 	
 	# iterate on all monitors and add them
@@ -235,7 +235,7 @@ sub add_agent_monitors {
 }
 
 # invoke a single monitor
-sub invoke_monitor {
+sub invoke_monitor($$$) {
 	my ($self, $agent_name, $monitor_name) = @_;
 
 	# get the xml path for that monitor
@@ -282,7 +282,7 @@ sub invoke_monitor {
 	}
 }
 
-sub handle_output_chunk {
+sub handle_output_chunk($$$$$$$) {
 	my ($self, $agent_name, $monitor_xml_path, $monitor_name, $last_uri, $ref_results, $output) = @_;
 	my %results = %$ref_results;
 
@@ -370,7 +370,7 @@ sub update_data_for_monitor {
 }
 
 # invoke all agents, one by one
-sub invoke_agents {
+sub invoke_agents($) {
 	my ($self) = @_;
 	foreach my $agent_name (keys %{$self->{agents}} ) {
 		$self->invoke_agent_monitors($agent_name);
@@ -378,7 +378,7 @@ sub invoke_agents {
 }
 
 # invoke all monitors, one by one
-sub invoke_agent_monitors {
+sub invoke_agent_monitors($$) {
 	my ($self, $agent_name) = @_;
 	foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}}) {
 		$self->invoke_monitor($agent_name, $monitor_name);
@@ -386,7 +386,7 @@ sub invoke_agent_monitors {
 }
 
 # signals threads to stop execution
-sub agents_loop_stop {
+sub agents_loop_stop() {
 	carp "Stopping execution...";
 	lock($condition_loop_stop);
 	$condition_loop_stop = 1;
@@ -394,7 +394,7 @@ sub agents_loop_stop {
 }
 
 # invoke all agents in a loop with timers enabled
-sub invoke_agents_loop {
+sub invoke_agents_loop($) {
 	my ($self) = @_;
 	# initialize all the agents
 	my @threads = ();
@@ -421,7 +421,7 @@ sub invoke_agents_loop {
 
 # invoke all monitors of an agent in a loop, taking care to sleep between
 # executions
-sub invoke_agent_monitors_loop {
+sub invoke_agent_monitors_loop($$) {
 	my ($self, $agent_name) = @_;
 	my $agent_interval = $self->{agents}->{$agent_name}->{interval};
 	carp "Agent '$agent_name' will be invoked every '$agent_interval' seconds'" if DEBUG;
@@ -437,7 +437,7 @@ sub invoke_agent_monitors_loop {
 }
 
 # formats a monitor tag from a name
-sub get_monitor_tag {
+sub get_monitor_tag($$$) {
 	my ($self, $agent_name, $monitor_name) = @_;
 	# if monitor tag is defined, use it!
 	if (defined ($self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{tag}) ) {
@@ -451,7 +451,7 @@ sub get_monitor_tag {
 }
 
 # formats the hash of results into a string
-sub format_results {
+sub format_results(%) {
 	my (%results) = %{$_[0]};
 	my $formatted_results = "";
 	foreach my $key (keys %results) {
@@ -464,18 +464,18 @@ sub format_results {
 
 # simply replaces the %SOMETHING% with the relevant
 # return of a defined function
-sub run_macros {
+sub run_macros() {
 	$_[0] =~ s/%(\w+)%/replace_template($1)/eg;
 }
 
 # macro functions
-sub replace_template {
+sub replace_template($) {
 	my ($template) = @_;
 	my $callback = "_get_$template";
 	return &$callback();
 }
 
-sub metric_name_not_reserved {
+sub metric_name_not_reserved($$) {
 	my ($self, $metric_name) = @_;
 	return $metric_name ne "MONITIS_CHECK_TIME";
 }

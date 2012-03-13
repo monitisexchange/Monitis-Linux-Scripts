@@ -9,6 +9,7 @@ use Carp;
 use Data::Dumper;
 
 # how long to wait between reconnection attempts
+# default would be 60 seconds, alright?
 use constant MONITIS_API_RETRY => 60;
 
 # use the same constant as in the Perl-SDK
@@ -36,53 +37,33 @@ sub new {
 	# cache for monitor ids, to access Monitis a bit less
 	$self->{monitor_ids_cache} = ();
 
+	# initialize Monitis API
+	carp "Initializing Monitis API with secretkey='$self->{secretkey}' and api_key='$self->{apikey}'" if DEBUG;
+	$self->{monitis_api_context} = Monitis->new(
+		secret_key => $self->{secretkey},
+		api_key => $self->{apikey} );
+
 	# main thread in execution
 	$self->{main_thread} = threads->create(\&main_loop, $self);
 
 	return $self;
 }
 
-# reconnect to monitis
-sub reconnect($) {
-	my ($self) = @_;
-
-	# lock before altering it
-	lock($self->{monitis_api_context_lock});
-
-	# connected? - do not reconnect
-	if (1 == $self->{monitis_connection}) {
-		# already connected :)
-		return;
-	}
-
-	# reconnect to Monitis!
-	carp "Initializing Monitis API with secretkey='$self->{secretkey}' and api_key='$self->{apikey}'" if DEBUG;
-	$self->{monitis_api_context} = Monitis->new(
-		secret_key => $self->{secretkey},
-		api_key => $self->{apikey} );
-
-	# assume we connected, although we might have not...
-	$self->{monitis_connection}  = 1;
-}
-
 # add a monitor
 sub add_monitor($$$$) {
 	my ($self, $monitor_name, $monitor_tag, $result_params) = @_;
-	if (not $self->reconnect()) {
-		croak "Could not reconnect to Monitis";
+
+	print "Adding monitor '$monitor_name'...";
+	my $response = $self->{monitis_api_context}->custom_monitors->add(
+		name => $monitor_name, tag => $monitor_tag,
+		resultParams => $result_params);
+	if ($response->{status} eq 'ok') {
+		print "OK\n";
+	} elsif ($response->{status} eq "monitorNameExists") {
+		print "OK (Monitor already exists)\n";
 	} else {
-		print "Adding monitor '$monitor_name'...";
-		my $response = $self->{monitis_api_context}->custom_monitors->add(
-			name => $monitor_name, tag => $monitor_tag,
-			resultParams => $result_params);
-		if ($response->{status} eq 'ok') {
-			print "OK\n";
-		} elsif ($response->{status} eq "monitorNameExists") {
-			print "OK (Monitor already exists)\n";
-		} else {
-			print "FAILED: '$response->{status}'\n";
-			carp Dumper($response) if DEBUG;
-		}
+		print "FAILED: '$response->{status}'\n";
+		carp Dumper($response) if DEBUG;
 	}
 }
 
@@ -90,15 +71,18 @@ sub add_monitor($$$$) {
 sub main_loop($) {
 	my ($self) = @_;
 	do {
-		# reconnect (will not reconnect if not needed)
-		$self->reconnect();
+		# assume we connected, although we might have not...
+		$self->{monitis_connection}  = 1;
 
 		# start handling items
 		$self->handle_queued_items();
 
-		# wait for work...
-		lock($self->{queue_condition});
-		cond_timedwait($self->{queue_condition}, time() + MONITIS_API_RETRY);
+		# need to quit?
+		if(0 == $self->{queue_condition}) {
+			# wait for work...
+			lock($self->{queue_condition});
+			cond_timedwait($self->{queue_condition}, time() + MONITIS_API_RETRY);
+		}
 
 		# were we signaled to quit?
 	} while(0 == $self->{queue_condition});
@@ -110,6 +94,7 @@ sub main_loop($) {
 	if ($self->{queue}->pending() > 0) {
 		croak "Left queue with '" . $self->{queue}->pending() ."' pending requests";
 	}
+	print "MonitisConnection stopped execution.\n";
 }
 
 # handles item in queue
@@ -119,7 +104,6 @@ sub handle_queued_items($) {
 	while ($self->{queue}->pending() > 0) {
 		# are we connected?
 		if (0 == $self->{monitis_connection}) {
-			print "NOT CONNECTED!!!";
 			return;
 		}
 
@@ -183,7 +167,6 @@ sub update_data_for_monitor($$$$$$) {
 
 	# we have to obtain the monitor id in order to update results
 	# to do this we first need the monitor tag
-	# TODO add a warning to tell the user to add the monitor id in the XML
 	my $monitor_id = $self->get_id_of_monitor($agent_name, $monitor_tag, $monitor_name);
 	if(0 == $monitor_id) {
 		return 0;
@@ -235,7 +218,7 @@ sub get_id_of_monitor($$$$) {
 		};
 		if ($@) {
 			# we assume a connection error...
-			carp "Error connecting to Monitis: $@";
+			print "Error connecting to Monitis: $@\n";
 			$self->{monitis_connection} = 0;
 			return 0;
 		}
@@ -244,7 +227,7 @@ sub get_id_of_monitor($$$$) {
 		eval {
 			if (defined($response) and defined($response->{error}) and
 					$response->{error} eq 'Invalid api key') {
-				# TODO is this clean??
+				# just exit, we don't want any business if the API key is invalid
 				carp "Invalid API key";
 				exit(1);
 			}
@@ -262,10 +245,11 @@ sub get_id_of_monitor($$$$) {
 			$i++;
 		}
 		# TODO perhaps add this monitor automatically?
-		croak "Could not obtain ID for monitor '$monitor_tag'";
+		carp "Could not obtain ID for monitor '$monitor_tag'/'$monitor_name'";
+		exit(1);
 	}
 }
-	
+
 # a simple class to represent a queue item
 package MonitisConnection::QueueItem;
 
