@@ -13,6 +13,7 @@ use URI::Escape;
 use Thread qw(async);
 use Date::Manip;
 use threads::shared;
+use MonitisConnection;
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -24,16 +25,14 @@ use constant {
 	COMPUTE_PLUGIN_DIR => "Compute",
 };
 
-our $VERSION = '0.3';
+our $VERSION = '1.0';
 
 our %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 );
 
 # a helper variable to signal threads to quit on time
 my $condition_loop_stop :shared = 0;
 
-# prevent multiple threads from accessing the monitis API
-my $monitis_api_lock :shared = 0;
-
+# constructor
 sub new {
 	my $class = shift;
 	my $self = {@_};
@@ -65,13 +64,25 @@ sub new {
 	# a shortcut to the agents structure
 	$self->{agents} = $self->{config_xml}->{agent};
 
-	# initialize Monitis
-	carp "Initializing Monitis API with secret_key='$self->{config_xml}->{apicredentials}[0]->{secretkey} and api_key='$self->{config_xml}->{apicredentials}[0]->{apikey}'" if DEBUG;
-	$self->{monitis_api_context} = Monitis->new(
-		secret_key => $self->{config_xml}->{apicredentials}[0]->{secretkey},
-		api_key => $self->{config_xml}->{apicredentials}[0]->{apikey} );
+	# initialize MonitisConnection - async class for Monitis interaction
+	$self->{monitis_connection} = MonitisConnection->new(
+		apikey => "$self->{config_xml}->{apicredentials}[0]->{apikey}",
+		secretkey => "$self->{config_xml}->{apicredentials}[0]->{secretkey}",
+	);
 
 	return $self;
+}
+
+# destructor
+sub DESTROY {
+    my $self = shift;
+	# call parent dtor (not that there is any, but just to make it clean)
+	$self->SUPER::DESTROY if $self->can("SUPER::DESTROY");
+	# umn, why would destroy be called multiple times?
+	# because we pass $self to every running thread, so shallow copying
+	# will occur. only the main thread will have MonitisConnection defined
+	# though
+	defined($self->{monitis_connection}) and $self->{monitis_connection}->stop();
 }
 
 # a simple function to dynamically load all perl packages in a given
@@ -192,24 +203,12 @@ sub add_monitor {
 	}
 
 	carp "Adding monitor '$monitor_name' with metrics '$result_params'" if DEBUG;
-	print "Adding monitor '$monitor_name'...";
 
 	# call Monitis using the api context provided
 	if ($self->dry_run()) {
-		print "OK\n";
 		carp "This is a dry run, the monitor '$monitor_name' was not really added.";
 	} else {
-		my $response = $self->{monitis_api_context}->custom_monitors->add(
-			name => $monitor_name, tag => $monitor_tag,
-			resultParams => $result_params);
-		if ($response->{status} eq 'ok') {
-			print "OK\n";
-		} elsif ($response->{status} eq "monitorNameExists") {
-			print "OK (Monitor already exists)\n";
-		} else {
-			print "FAILED: '$response->{status}'\n";
-			carp Dumper($response) if DEBUG;
-		}
+		$self->{monitis_connection}->add_monitor($monitor_name, $monitor_tag, $result_params);
 	}
 }
 
@@ -353,48 +352,21 @@ sub update_data_for_monitor {
 	my $checktime = $va_list[0] || time;
 	$checktime *= 1000;
 
-	lock($monitis_api_lock);
-
 	# sanity check of results...
 	if ($results eq "") {
-		carp "Result set is empty! did it parse well?"; 
+		carp "Result set is empty! did it parse well? - Will not update any data!"; 
+		return;
 	}
 
 	if ($self->dry_run()) {
-		print "OK\n";
+		carp "OK\n";
 		carp "This is a dry run, data for monitor '$monitor_name' was not really updated.";
 		return;
 	}
 
-	# get the monitor id, either from the XML, or by calling the API
-	my $monitor_id = 0;
-	if (defined ($self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{id}) ) {
-		$monitor_id = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{id};
-		carp "Obtained monitor_id '$monitor_id' from XML" if DEBUG;
-	} else {
-		# we have to obtain the monitor id in order to update results
-		# to do this we first need the monitor tag
-		# TODO add a warning to tell the user to add the monitor id in the XML
-		my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
-		$monitor_id = $self->get_id_of_monitor($monitor_tag, $monitor_name);
-
-		carp "Obtained monitor_id '$monitor_id' from API call" if DEBUG;
-	}
-
-	# call Monitis using the api context provided
-	carp "Calling API with '$monitor_id' '$checktime' '$results'" if DEBUG;
-
-	print "Updating data for monitor '$monitor_name'...";
-
-	my $response = $self->{monitis_api_context}->custom_monitors->add_results(
-		monitorId => $monitor_id, checktime => $checktime,
-		results => $results);
-	if ($response->{status} eq 'ok') {
-		print "OK\n";
-	} else {
-		print "FAILED: '$response->{status}'\n";
-		carp Dumper($response) if DEBUG;
-	}
+	# queue it on MonitisConnection which will handle the rest
+	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
+	$self->{monitis_connection}->queue($agent_name, $monitor_name, $monitor_tag, $checktime, $results);
 }
 
 # invoke all agents, one by one
@@ -444,7 +416,7 @@ sub invoke_agents_loop {
 			}
 		}
 		sleep 1;
-	} while(threads->list(threads::all) > 0);
+	} while($running_threads > 0);
 }
 
 # invoke all monitors of an agent in a loop, taking care to sleep between
