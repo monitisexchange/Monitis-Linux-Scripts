@@ -207,7 +207,7 @@ sub get_id_of_monitor($$$$) {
 	my ($self, $agent_name, $monitor_tag, $monitor_name) = @_;
 
 	# go through caching mechanism
-	my $monitor_id = $self->{monitor_ids_cache}->retrieve($agent_name . $monitor_tag . $monitor_name);
+	my $monitor_id = $self->{monitor_ids_cache}->retrieve($agent_name, $monitor_tag, $monitor_name);
 	if(0 != $monitor_id) {
 		return $monitor_id;
 	} else {
@@ -241,7 +241,7 @@ sub get_id_of_monitor($$$$) {
 				carp "Monitor tag/name: '$monitor_tag/$monitor_name' -> ID: '$response->[$i]->{id}'" if DEBUG;
 				# cache it for next time!
 				$monitor_id = $response->[$i]->{id};
-				$self->{monitor_ids_cache}->store($agent_name . $monitor_tag . $monitor_name, $monitor_id);
+				$self->{monitor_ids_cache}->store($agent_name, $monitor_tag, $monitor_name, $monitor_id);
 				return $monitor_id;
 			}
 			$i++;
