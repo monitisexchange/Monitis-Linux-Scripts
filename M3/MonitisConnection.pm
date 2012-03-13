@@ -34,8 +34,8 @@ sub new {
 	# status of the connection to monitis
 	$self->{monitis_connection} = 0;
 
-	# cache for monitor ids, to access Monitis a bit less
-	$self->{monitor_ids_cache} = ();
+	# cache of monitor ids
+	$self->{monitor_ids_cache} = MonitisConnection::MonitorIDCache->new();
 
 	# initialize Monitis API
 	carp "Initializing Monitis API with secretkey='$self->{secretkey}' and api_key='$self->{apikey}'" if DEBUG;
@@ -207,8 +207,9 @@ sub get_id_of_monitor($$$$) {
 	my ($self, $agent_name, $monitor_tag, $monitor_name) = @_;
 
 	# go through caching mechanism
-	if(defined($self->{monitor_ids_cache}{$agent_name . $monitor_tag . $monitor_name})) {
-		return $self->{monitor_ids_cache}{$agent_name . $monitor_tag . $monitor_name};
+	my $monitor_id = $self->{monitor_ids_cache}->retrieve($agent_name . $monitor_tag . $monitor_name);
+	if(0 != $monitor_id) {
+		return $monitor_id;
 	} else {
 		# call Monitis using the api context provided
 		my $response;
@@ -239,14 +240,43 @@ sub get_id_of_monitor($$$$) {
 			if ($response->[$i]->{name} eq $monitor_name) {
 				carp "Monitor tag/name: '$monitor_tag/$monitor_name' -> ID: '$response->[$i]->{id}'" if DEBUG;
 				# cache it for next time!
-				$self->{monitor_ids_cache}{$agent_name . $monitor_tag . $monitor_name} = $response->[$i]->{id};
-				return $response->[$i]->{id};
+				$monitor_id = $response->[$i]->{id};
+				$self->{monitor_ids_cache}->store($agent_name . $monitor_tag . $monitor_name, $monitor_id);
+				return $monitor_id;
 			}
 			$i++;
 		}
 		# TODO perhaps add this monitor automatically?
 		carp "Could not obtain ID for monitor '$monitor_tag'/'$monitor_name'";
 		exit(1);
+	}
+}
+
+# a simple class to represent a queue item
+package MonitisConnection::MonitorIDCache;
+
+sub new {
+	my $class = shift;
+	my $self = {@_};
+	bless $self, $class;
+
+	# cache for monitor ids, to access Monitis a bit less
+	$self->{cache} = ();
+
+	return $self;
+}
+
+sub store($$$$$) {
+	my ($self, $agent_name, $monitor_tag, $monitor_name, $monitor_id) = @_;
+	$self->{cache}{$agent_name . $monitor_tag . $monitor_name} = $monitor_id;
+}
+
+sub retrieve($$$$) {
+	my ($self, $agent_name, $monitor_tag, $monitor_name) = @_;
+	if(defined($self->{cache}{$agent_name . $monitor_tag . $monitor_name})) {
+		return $self->{cache}{$agent_name . $monitor_tag . $monitor_name};
+	} else {
+		return 0;
 	}
 }
 
