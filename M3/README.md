@@ -6,9 +6,6 @@ This is a utility that would help you to manage monitors in Monitis.
 
 ### M3 helper scripts
 
- * AddMonitors.pl - Adds all the monitors into Monitis, so later on data can be
-	inserted into their counters. It is mandatory to run this before you use Run.pl
-	or invoke_agents()
  * Run.pl - Executes all agents, then sends the monitoring data to Monitis.
  * DryRun.pl - Same as Run.pl, however does not send monitoring data to Monitis.
 	Can be used to debug your parsing.
@@ -18,6 +15,7 @@ This is a utility that would help you to manage monitors in Monitis.
     loading of data obtained from log files.
  * DryRunMassLoad.pl - Same as RunMassLoad.pl but goes with a dry run.\
  * NagiosToM3Converter.pl will convert a nagios configuration to M3 - still work in progress
+ * RRD/munin_xml_generator - Creates a M3 configuration from munin data
 
 Any of these scripts can be composed by yourself, it's a simple perl line.
 ### M3 Plugin architecture
