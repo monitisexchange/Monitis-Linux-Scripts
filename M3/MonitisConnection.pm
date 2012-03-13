@@ -64,6 +64,8 @@ sub add_monitor($$$$) {
 	} else {
 		print "FAILED: '$response->{status}'\n";
 		carp Dumper($response) if DEBUG;
+		# if we can add a monitor - we don't muck around...
+		exit(1);
 	}
 }
 

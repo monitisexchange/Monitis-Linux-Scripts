@@ -70,6 +70,9 @@ sub new {
 		secretkey => "$self->{config_xml}->{apicredentials}[0]->{secretkey}",
 	);
 
+	# automatically add monitors
+	$self->add_agents();
+
 	return $self;
 }
 
