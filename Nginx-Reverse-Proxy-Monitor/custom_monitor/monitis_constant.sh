@@ -17,6 +17,7 @@ declare -r API_ADD_RESULT="addResult"				# AddResult action
 declare -r API_ADD_ADDITIONAL_RESULT="addAdditionalResults"	# AddAdditionalResult action
 declare -r API_GET_MONITOR_INFO="getMonitorInfo"	# GetMonitorInfo action
 declare -r API_GET_MONITOR_LIST="getMonitors"		# GetMonitorsList action
+declare -r API_GET_MONITOR_RESULTS="getMonitorResults"	#getMonitorResults action
 
 # Declaration of constants that are internally used 
 declare -r RES_STATUS="status"
