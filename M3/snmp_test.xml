@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="SNMP Agent" interval="300">
+		<monitor name="SNMP sysUpTime %HOSTNAME%">
+			<oid>.1.3.6.1.2.1.1.3.0</oid>
+			<snmp_community>public</snmp_community>
+			<metric name="sysUpTime">
+				<type>string</type>
+				<uom>N/A</uom>
+				<line>1</line>
+			</metric>
+		</monitor>
+	</agent>
+</config>
