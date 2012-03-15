@@ -8,6 +8,7 @@ declare    ACCESS_CODE="monitis"						# access code for node monitor
 declare -r MONITOR_NAME="NServer_Monitor_$MON_SERVER"	# name of custom monitor
 declare -r MONITOR_TAG="Node_Server"					# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
+#declare -r MONITOR_TYPE="custom"						# type for custom monitor
 # monitor commands
 declare -r MON_PATHNAME="node_monitor"
 declare -r MON_ACTION="action"
@@ -32,3 +33,4 @@ declare -r RESP_DOWN="listen:NONE"
 # format of additional params - name:displayName:uom:String
 declare -r ADDITIONAL_PARAMS="details:Details::3"	
 	
+declare    DURATION=5	 							# information sending duration [min] (REPLACE by any desired value)
