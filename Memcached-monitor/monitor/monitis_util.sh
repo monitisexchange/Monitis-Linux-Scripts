@@ -25,6 +25,12 @@ function get_date_time() {
 	date -u +"%F%%20%T"
 }
 
+# returns the formated UTC date string
+# sample: 2011-08-09
+function get_date() {
+	date -u +"%F"
+}
+
 # returns current UTC Unix timestamp 
 # (milliseconds since 00:00:00, Jan 1, 1970)
 function get_timestamp() {
@@ -61,8 +67,8 @@ function isJSONarray(){
 }
 
 # Parsing JSON string and return the $prop value
-# @param json - json input string*
-# @param prop - interesting key*
+# @param $1 - json input string*
+# @param $2 - interesting key*
 # @return picurl - interesting key value
 # exit codes:
 #	0 - success
@@ -70,8 +76,9 @@ function isJSONarray(){
 # example 
 #	json=`curl -s -X GET http://twitter.com/users/show/$1.json`
 #	prop='profile_image_url'
-#	picurl=`jsonval`
-function jsonval {
+#	picurl=`jsonval $json $prop`
+#
+function jsonval() {
     local json=${1:-""}
     local prop=${2:-""}
     if [[ (-n $json) && (-n $prop) ]]
@@ -114,7 +121,6 @@ function create_additional_param() {
 		return 4
 	fi
 	return 0
-
 }
 
 # Provides errors processing

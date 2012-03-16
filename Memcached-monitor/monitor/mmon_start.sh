@@ -32,6 +32,7 @@ then
 fi
 
 DURATION=$((60*$DURATION)) #convert to sec
+
 MONITOR_NAME="Memcached_$HOST_IP-$MEMCACHED_IP:$MEMCACHED_PORT"
 FILE_SETTING="$FILE_SETTING$MEMCACHED_PORT"
 FILE_STATUS="$FILE_STATUS$MEMCACHED_PORT"
@@ -56,7 +57,7 @@ else
 fi
 
 # Adding custom monitor
-add_custom_monitor $MONITOR_NAME $MONITOR_TAG $RESULT_PARAMS $ADDITIONAL_PARAMS $MONITOR_TYPE
+add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 ret="$?"
 if [[ ($ret -ne 0) ]]
 then
@@ -101,6 +102,7 @@ do
 	    error "$ret" "$MSG"
 	    continue
 	fi
+
 	result=$return_value	# retrieve measure values
 	# Compose monitor data
 	param=$(echo ${result} | awk -F "|" '{print $1}' )
@@ -108,6 +110,9 @@ do
 	#echo DEBUG: Composed params is \"$param\" >&2
 	#echo
 	timestamp=`get_timestamp`
+	#echo
+	#echo DEBUG: Timestamp is \"$timestamp\" >&2
+	#echo
 	# Sending to Monitis
 	add_custom_monitor_data $param $timestamp
 	ret="$?"
