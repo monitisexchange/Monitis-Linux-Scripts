@@ -78,7 +78,7 @@ function isJSONarray(){
 #	prop='profile_image_url'
 #	picurl=`jsonval $json $prop`
 #
-function jsonval {
+function jsonval() {
     local json=${1:-""}
     local prop=${2:-""}
     if [[ (-n $json) && (-n $prop) ]]

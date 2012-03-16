@@ -137,7 +137,7 @@ function add_custom_monitor {
 		postdata=$postdata" -d additionalResultParams=$additional_params "
 	fi
 	
-	local req="$SERVER""customMonitorApi"
+	local req="$SERVER""$API_PATH"
 	
 	response="$(curl -s $permdata $postdata	 $req)"
 	
@@ -182,7 +182,7 @@ function add_custom_monitor {
 	return 0
 }
 
-# Returns the specified custom monitor info (if exist)
+# Returns the specified custom monitor info in JSON form (if exist)
 # @param $1 - monitor ID 
 function get_custom_monitor_info() {
 	local monitor_id=$1
@@ -196,7 +196,7 @@ function get_custom_monitor_info() {
 	postdata=$postdata" -d monitorId=$monitor_id "
 	postdata=$postdata" -d excludeHidden=true "
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
@@ -249,7 +249,7 @@ function get_monitors_list() {
 		postdata=$postdata" -d type=$monitor_type "
 	fi
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
@@ -345,7 +345,7 @@ function add_custom_monitor_data() {
 	postdata=$postdata" -d checktime=$timestamp "
 	postdata=$postdata" -d results=$results "
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -s $permdata $postdata	 $req)"
 	
@@ -391,7 +391,7 @@ function add_custom_monitor_additional_data() {
 	postdata=$postdata" -d checktime=$timestamp "
 	postdata=$postdata" -d results=$results "
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -s $permdata $postdata	 $req)"
 	
@@ -449,7 +449,7 @@ function get_custom_monitor_data(){
 	postdata=$postdata" -d month=$month "
 	postdata=$postdata" -d day=$day "
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
