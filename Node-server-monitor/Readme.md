@@ -94,7 +94,7 @@ To do so you should use __nmon_getdata.sh__ script by following pattern
 Notice that all parameters are optional.  
 The monitor registration ID should be specified in extreme situation only, e.g. if you have several monitors with same name or some monitor was deleted by accidentally but its data is very important.  
 
-After finishing you will see few files named like "_node_data_2012-03-11_"  
+After finishing you will see few files named like "_NServer_Monitor_10.137.25.15_2012-03-11.log_"  
 
 
 #### Dependencies
