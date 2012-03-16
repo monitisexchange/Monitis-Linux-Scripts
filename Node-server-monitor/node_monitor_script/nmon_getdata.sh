@@ -22,7 +22,7 @@ do
         esac
 done
 
-echo "*** Node.js server motoring data for $days days will be grabbed and stored in the $path directory with file name $file ***"
+echo "*** Motoring data for $days days will be grabbed and stored in the $path directory with file prefix $file_prefix ***"
 
 # obtaining TOKEN
 get_token
@@ -37,7 +37,8 @@ fi
 
 if [[ ($MONITOR_ID -eq 0) ]]
 then	# retrieve monitor ID
-	MONITOR_ID=`get_monitorID $MONITOR_NAME $MONITOR_TAG $MONITOR_TYPE `
+	echo "Retrieving monitor ID..."
+	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
@@ -47,6 +48,7 @@ then	# retrieve monitor ID
 		#echo "All is OK for now."
 	fi
 else	# retrieve the monitor name
+	echo "Getting Monitor info..."
 	get_custom_monitor_info "$MONITOR_ID"
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
@@ -108,7 +110,7 @@ do
  			error 1 "The response contains no data - skip it"
  		else
  			echo "***writing data for $d ***"
-			echo $response | sed 's/},{/\n/g' | sed 's/\[{//g' | sed 's/}\]//g' > $file"_"$d".txt"
+			echo $response | sed 's/},{/\n/g' | sed 's/\[{//g' | sed 's/}\]//g' > $file"_"$d".log"
 		fi
 	fi
 	timestamp=$(( $timestamp - (24*60*60) )) # calculates a previous day timestamp

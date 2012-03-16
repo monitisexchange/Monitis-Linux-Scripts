@@ -259,16 +259,16 @@ function get_monitors_list() {
 		id=`jsonval "$response" "id" `	
 		if [[ (-z $id) ]]
 		then
-			MSG="Response contains no any ID: \"$response\""
+			MSG="get_monitors_list - Response contains no any ID: \"$response\""
 			return 3
 		fi
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="No response received while getting monitors list..."
+			MSG="get_monitors_list - No response received while getting monitors list..."
 			return 1
 		else
-			MSG="Response is too long while getting monitors list..."
+			MSG="get_monitors_list - Response is too long while getting monitors list..."
 		fi
 	fi	
 	return 0
@@ -282,22 +282,25 @@ function get_monitorID {
 	local name=${1:-""}
 	local tag=${2:-""}
 	local type=${3:-""}
+	
     if [[ (-n $name) && (-n $tag) && (-n $type) ]]
     then
 		get_monitors_list $tag $type
 		ret="$?"
-		if [[ ($ret -eq 0) ]]
+		if [[ ($ret -ne 0) ]]
 		then
+			return $ret
+		else
 			isJSONarray $response
 			ret="$?"
 			if [[ ($ret -ne 0) ]]
 			then # not array
-				echo "Not an array"
+				MSG="get_monitorID - Not an array"
 				isJSON $response
 				ret="$?"
 				if [[ ($ret -ne 0) ]]
 				then
-					echo "Not a Json"
+					MSG="get_monitorID - Not a Json"
 				fi
 			else #array
 				tmp=$(echo $response | replace "[{" "{" | replace "}]" "}" | replace "}," "} | " | replace "{" " {" | replace "})" "} )" )
@@ -320,6 +323,7 @@ function get_monitorID {
 						fi
 					fi
 				done
+				MSG="get_monitorID - Monitor not found in resonse list"
 			fi
 		fi
 	fi
