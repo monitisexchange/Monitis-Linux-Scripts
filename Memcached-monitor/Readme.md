@@ -75,6 +75,23 @@ To use existing scripts you need to do some changes that will correspond your ac
         
 That's all. Now you can run __monitor_start.sh__ and monitoring process will be started.
 
+#### You can also getting monitoring data from monitis 
+To do so you should use __mmon_getdata.sh__ script by following pattern  
+
+        mmon_getdata.sh -d <number of days to get data for> -p <directory path to storing data-files> -f <file name prefix> -m <monitor id> 
+
+        where
+            -d parameter specifies how many days data do you want to get (default value is 1 day)
+               NOTE: each day's data will be stored in the separate files
+            -p parameter specifies the directory which will keep the data-files to (by default it is current directory)
+            -f parameter specifies the prefix for file name which will contain data (by default it is monitor name defined in monitor_constats.sh)
+            -m monitor registration ID 
+
+Notice that all parameters are optional.  
+The monitor registration ID should be specified in extreme situation only, e.g. if you have several monitors with same name or some monitor was deleted by accidentally but its data is very important.  
+
+After finishing you will see few files named like "_Memcached_10.37.125.50:11211_2012-03-15.log_"  
+
 #### Testing 
 To check the correctness of monitor workability, some tests was done on working Memcached (1.4.7) which was under real load.  
 
