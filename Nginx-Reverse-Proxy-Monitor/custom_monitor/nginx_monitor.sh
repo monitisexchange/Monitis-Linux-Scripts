@@ -128,7 +128,6 @@ then
 	fi
 fi
 
-
 # Periodically adding new data
 while $(sleep "$DURATION")
 do

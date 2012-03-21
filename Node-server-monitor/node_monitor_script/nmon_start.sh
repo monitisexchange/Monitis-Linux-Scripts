@@ -15,8 +15,10 @@ else
 	echo "All is OK for now."
 fi
 
+DURATION=$((60*$DURATION)) #convert to sec
+
 # Adding custom monitor
-add_custom_monitor $MONITOR_NAME $MONITOR_TAG $RESULT_PARAMS $ADDITIONAL_PARAMS $MONITOR_TYPE
+add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 ret="$?"
 if [[ ($ret -ne 0) ]]
 then
@@ -30,7 +32,7 @@ if [[ ($MONITOR_ID -le 0) ]]
 then 
 	echo MonitorId is still zero - try to obtain it from Monitis
 	
-	get_custom_monitor_list $MONITOR_TAG $MONITOR_TYPE
+	MONITOR_ID=`get_monitorID $MONITOR_NAME $MONITOR_TAG $MONITOR_TYPE `
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
@@ -58,6 +60,7 @@ do
 	    error "$ret" "$MSG"
 	    continue
 	fi
+
 	result=$return_value	# retrieve measure values
 	# Compose monitor data
 	param=$(echo ${result} | awk -F "|" '{print $1}' )

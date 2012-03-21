@@ -69,15 +69,33 @@ To use existing scripts you will need to do some changes that will correspond yo
 
         in monitis_constant.sh 
         - replace ApiKey and SecretKey by your keys values (can be obtained from your Monitis account)
-        - you may do also definition of DURATION between measurements and sending results (currently it is declared as 60 sec)
-        
+         
         in monitor_constant.sh 
         - replace MONITOR_NAME, MONITOR_TAG and MONITOR_TYPE by your desired names
         - replace RESULT_PARAMS and ADDITIONAL_PARAMS strings by data formats definition of your monitor
         - replace MON_SERVER string by your server IP address (it is necessary for title only)
+        - you may do also definition of DURATION between sending results (currently it is declared as 5 mins)
         - optionally you can also change the node server monitor access url - NODE_MONITOR and other constats (strongly no recommended) 
         
-That's all. Now you can run __monitor_start.sh__ and monitoring process will be started.
+That's all. Now you can run __nmon_start.sh__ and monitoring process will be started.
+
+##### You can also getting monitoring data from monitis 
+To do so you should use __nmon_getdata.sh__ script by following pattern  
+
+        nmon_getdata.sh -d <number of days to get data for> -p <directory path to storing data-files> -f <file name prefix> -m <monitor id> 
+
+        where
+            -d parameter specifies how many days data do you want to get (default value is 1 day)
+               NOTE: each day's data will be stored in the separate files
+            -p parameter specifies the directory which will keep the data-files to (by default it is current directory)
+            -f parameter specifies the prefix for file name which will contain data (by default it is monitor name defined in monitor_constats.sh)
+            -m monitor registration ID 
+
+Notice that all parameters are optional.  
+The monitor registration ID should be specified in extreme situation only, e.g. if you have several monitors with same name or some monitor was deleted by accidentally but its data is very important.  
+
+After finishing you will see few files named like "_NServer_Monitor_10.137.25.15_2012-03-11.log_"  
+
 
 #### Dependencies
 There are some dependencies for monitor plugin  

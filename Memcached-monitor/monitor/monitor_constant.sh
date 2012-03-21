@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Declaration of monitor constants
-declare    HOST_IP=<replace by your machine host IP>	# host mashine real IP-address
+declare    HOST_IP="174.37.16.80"						# host mashine real IP-address
 declare    MEMCACHED_IP=127.0.0.1						# host IP where located remote MySQL master
 declare    MEMCACHED_PORT=11211							# remote MySQL master listen port
 
 declare    MONITOR_NAME="Memcached_$HOST_IP-$MEMCACHED_IP:$MEMCACHED_PORT" # name of custom monitor
 declare -r MONITOR_TAG="memcached"						# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
+#declare -r MONITOR_TYPE="custom"						# type for custom monitor
 # format of result params - name1:displayName1:uom1:Integer
 declare -r P1="status:status::3;uptime:uptime::3"
 declare -r P2="get_miss:get_miss:perc:4;delete_miss:delete_miss:perc:4;incr_miss:incr_miss:perc:4;decr_miss:decr_miss:perc:4;evictions:evictions:perc:4"

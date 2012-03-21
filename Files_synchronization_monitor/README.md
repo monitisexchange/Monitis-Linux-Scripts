@@ -14,7 +14,7 @@ This project is based on Bash 4.x+ and require the Linux kernel 2.6.x or higher.
 
    Custom FSM monitor  
 
-		  dmon_start.sh         custom monitor main part and executor  
+          dmon_start.sh         custom monitor main part and executor  
           monitor_constant.sh   custom monitor constants (and configuration)  
           dir_synch.sh          custom monitor on remote server executor
 
