@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="CPU and Memory" interval="10">
+
+		<!-- CPU Usage -->
+		<monitor name="CPU">
+			<linuxsysstats>cpustats->{cpu}{total}</linuxsysstats>
+			<metric name="Total">
+				<type>integer</type>
+				<uom>N/A</uom>
+				<line>1</line>
+				<avg>30</avg>
+			</metric>
+		</monitor>
+
+		<!-- Memory -->
+		<monitor name="Memory">
+			<linuxsysstats>memstats->{memtotal}</linuxsysstats>
+			<linuxsysstats>memstats->{memused}</linuxsysstats>
+			<metric name="Total">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>1</line>
+				<avg>30</avg>
+			</metric>
+			<metric name="Used">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>2</line>
+				<avg>30</avg>
+			</metric>
+		</monitor>
+
+	</agent>
+</config>
