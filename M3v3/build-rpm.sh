@@ -37,11 +37,10 @@ build_monitis_m3_rpm() {
 
 main() {
 	# build the perl module
-	# TODO TODO
 	build_perl_module_rpm MonitisMonitorManager
 
 	# build the m3 init.d service package
-	#build_monitis_m3_rpm monitis-m3
+	build_monitis_m3_rpm monitis-m3
 }
 
 main "$@"
