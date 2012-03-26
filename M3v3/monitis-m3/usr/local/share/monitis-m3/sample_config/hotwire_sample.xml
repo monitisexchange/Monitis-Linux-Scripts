@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Hotwire" interval="300">
+		<monitor name="Hotels in Paris">
+			<url>http://api.hotwire.com/v1/deal/hotel?dest=paris&amp;apikey=XXXXXXXX&amp;limit=1</url>
+			<metric name="Cheapest hotel">
+				<type>float</type>
+				<uom>Price</uom>
+				<xpath>{Result}[0]->{HotelDeal}[0]->{Price}[0]</xpath>
+			</metric>
+		</monitor>
+	</agent>
+</config>

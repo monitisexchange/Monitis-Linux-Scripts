@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Twitter monitor" interval="300">
+		<monitor name="Twitter">
+			<url>http://api.twitter.com/1/users/show.json?screen_name=monitis</url>
+			<metric name="Followers">
+				<type>integer</type>
+				<uom>nr</uom>
+				<json>{'followers_count'}</json>
+			</metric>
+		</monitor>
+	</agent>
+</config>
