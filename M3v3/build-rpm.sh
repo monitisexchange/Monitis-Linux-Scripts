@@ -1,16 +1,19 @@
 #!/bin/bash
 declare -r RPM_SOURCE_DIR=`rpm --eval '%{_sourcedir}'`
 
-build_perl_module_rpm() {
+# $1 - prefix of module
+# $2 - package name
+build_rpm_from_perl_module() {
+	local prefix_path=$1; shift
 	local pkg_name=$1; shift
-	# parse version from the perl module itself
-	local pkg_version=`grep VERSION $pkg_name/lib/$pkg_name.pm | cut -d"'" -f2`
+	local pkg_version=`grep 'our $VERSION' $prefix_path/lib/*.pm | cut -d"'" -f2`
 
-	tar -czf $RPM_SOURCE_DIR/$pkg_name-$pkg_version.tar.gz $pkg_name && \
+	tar -czf $RPM_SOURCE_DIR/$pkg_name-$pkg_version.tar.gz $prefix_path && \
 	cpanflute2 --buildall $RPM_SOURCE_DIR/$pkg_name-$pkg_version.tar.gz && \
 	rm -f $RPM_SOURCE_DIR/$pkg_name-$pkg_version.tar.gz
 }
 
+# $1 - package name to use
 build_monitis_m3_rpm() {
 	local package_name=$1; shift
 	local spec_file=$package_name.spec
@@ -36,8 +39,11 @@ build_monitis_m3_rpm() {
 }
 
 main() {
+	# build the Perl-SDK module
+	build_rpm_from_perl_module ../../Perl-SDK Monitis
+
 	# build the perl module
-	build_perl_module_rpm MonitisMonitorManager
+	build_rpm_from_perl_module MonitisMonitorManager MonitisMonitorManager
 
 	# build the m3 init.d service package
 	build_monitis_m3_rpm monitis-m3
