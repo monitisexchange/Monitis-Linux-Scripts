@@ -1,6 +1,6 @@
 package MonitisMonitorManager;
 
-use 5.014002;
+use 5.008008;
 use strict;
 # don't use strict "refs" as we are going to call templated functions
 # that depend on variable names...
