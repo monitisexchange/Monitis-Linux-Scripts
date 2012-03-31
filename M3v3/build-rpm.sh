@@ -20,12 +20,13 @@ build_monitis_m3_rpm() {
 	local package_version=`grep "^Version:" monitis-m3.spec | awk '{print $2}'`
 	local package_release=`grep "^Release:" monitis-m3.spec | awk '{print $2}'`
 
+
 	local buildroot_dir=`mktemp -d /tmp/buildroot.XXXXX`
 	mkdir -p $buildroot_dir/$package_name-$package_version
 	cp -av $package_name/* $buildroot_dir/$package_name-$package_version
-	(cd $buildroot_dir; tar -czf $package_name-$package_version.tar.gz $package_name-$package_version)
+	(cd $buildroot_dir; tar -czf $package_name.tar.gz $package_name-$package_version)
 	echo $buildroot_dir
-	cp -a $buildroot_dir/$package_name-$package_version.tar.gz $RPM_SOURCE_DIR
+	cp -a $buildroot_dir/$package_name.tar.gz $RPM_SOURCE_DIR
 
 	rm -rf $buildroot_dir
 

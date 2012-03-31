@@ -1,12 +1,12 @@
 Summary:	Monitis M3 service
 Name:		monitis-m3
-Version:	3.0
+Version:	1.0
 Release:	1
 License:	GPL
 URL:		http://www.monitis.com/
 Packager:	Dan Fruehauf <malkodan gmail com>
 Group:		Applications/System
-Source:		monitis-m3-3.0.tar.gz
+Source:		monitis-m3.tar.gz
 Requires:	perl-MonitisMonitorManager
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root-%(id -u -n)
 
