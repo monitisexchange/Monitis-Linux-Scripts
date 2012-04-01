@@ -8,10 +8,21 @@ my $monitis_config_dir = "/etc/m3.d";
 defined($ENV{M3_CONFIG_DIR}) and $monitis_config_dir = $ENV{M3_CONFIG_DIR};
 require "$monitis_config_dir/M3Templates.pm";
 
+sub usage {
+	my $command = $0;
+	$command =~ s#^.*/##;
+	print "$command [--dry-run] [--once] [--help] configuration.xml\n";
+	exit;
+}
+
 sub main {
 	my $dry_run = 0;
 	my $once = 0;
-	GetOptions("dry-run" => \$dry_run, "once" => \$once);
+	my $help = 0;
+	GetOptions("dry-run" => \$dry_run, "once" => \$once, "help" => \$help);
+	if ($help) {
+		usage();
+	}
 
 	my $xmlfile = shift @ARGV;
 
