@@ -36,6 +36,9 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/logrotate.d/m3
 %config(noreplace) /etc/sysconfig/m3
 
+%post
+chkconfig --add m3
+
 %changelog
 * Fri Mar 23 2012 Dan Fruehauf <malkodan gmail com> 3.0-1
 - Initial release
