@@ -7,6 +7,7 @@ MONITOR="apacheMonitor"
 WGET=`which wget`
 URL="http://localhost/server-status?auto"
 RET=`$WGET --quiet -O - "$URL"`
+MONITIS_ADD_DATA="~/monitis/Monitis-Linux-Scripts/API/monitis_add_data.sh"
 
 RESULT=
 IFS="$(echo -e "\n\r")"
@@ -22,7 +23,7 @@ done
 
 if [[ $RESULT != "" ]]
 then
-  /home/mpchlets/monitis/Monitis-Linux-Scripts/API/monitis_add_data.sh -m $MONITOR -r $RESULT -a API_Key -s Secret_Key > /dev/null
+   $MONITIS_ADD_DATA -m $MONITOR -r $RESULT -a API_Key -s Secret_Key > /dev/null
 fi
 
 
