@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/sh 
 # apache stats monitor for Monitis
 # Written by Michael Chletsos 2011-06-18
 
