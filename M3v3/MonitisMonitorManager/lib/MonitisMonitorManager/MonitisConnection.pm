@@ -50,13 +50,13 @@ sub new {
 }
 
 # add a monitor
-sub add_monitor($$$$) {
-	my ($self, $monitor_name, $monitor_tag, $result_params) = @_;
+sub add_monitor($$$$@) {
+	my ($self, $monitor_name, $monitor_tag, $result_params, @optional_params) = @_;
 
 	print "Adding monitor '$monitor_name'...";
 	my $response = $self->{monitis_api_context}->custom_monitors->add(
 		name => $monitor_name, tag => $monitor_tag,
-		resultParams => $result_params);
+		resultParams => $result_params, @optional_params);
 	if ($response->{status} eq 'ok') {
 		print "OK\n";
 	} elsif ($response->{status} eq "monitorNameExists") {

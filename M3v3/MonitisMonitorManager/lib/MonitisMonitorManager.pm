@@ -3,7 +3,7 @@ package MonitisMonitorManager;
 use 5.008008;
 use strict;
 # don't use strict "refs" as we are going to call templated functions
-# that depend on variable names...
+# that depend on variable names
 no strict "refs";
 use warnings;
 use XML::Simple;
@@ -196,7 +196,7 @@ sub add_monitor($$$) {
 
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
 
-	# format the monitor_tag with underscores (_) instead of spaces
+	# get the monitor tag
 	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
 	my $result_params = "";
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
@@ -207,6 +207,9 @@ sub add_monitor($$$) {
 			$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
 		}
 	}
+
+	# monitor type (can also be undef)
+	my $monitor_type = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{type};
 
 	# we'll let external execution plugins dictate if they want to expose
 	# additional counters (HTTP statistics for instance)
@@ -238,7 +241,10 @@ sub add_monitor($$$) {
 	if ($self->dry_run()) {
 		carp "This is a dry run, the monitor '$monitor_name' was not really added.";
 	} else {
-		$self->{monitis_connection}->add_monitor($monitor_name, $monitor_tag, $result_params);
+		my @add_monitor_optional_params;
+		defined($monitor_type) && push @add_monitor_optional_params, type => $monitor_type;
+		$self->{monitis_connection}->add_monitor(
+			$monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
 	}
 }
 
