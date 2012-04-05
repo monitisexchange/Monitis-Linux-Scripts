@@ -103,13 +103,15 @@ deb_build_monitis_m3() {
 ### COMMON ###
 ##############
 
+PACKAGE_MANAGER=""
+RPM_SOURCE_DIR=""
 # detetcs package manager and returns it
 detect_package_manager() {
 	if which rpm >& /dev/null; then
-		declare -g -r RPM_SOURCE_DIR=`rpm --eval '%{_sourcedir}'`
-		declare -g -r PACKAGE_MANAGER="rpm"
+		RPM_SOURCE_DIR=`rpm --eval '%{_sourcedir}'`
+		PACKAGE_MANAGER="rpm"
 	elif which dpkg >& /dev/null; then
-		declare -g -r PACKAGE_MANAGER="deb"
+		PACKAGE_MANAGER="deb"
 	else
 		echo "Could not detect package manager!"
 		exit 1
@@ -121,6 +123,10 @@ main() {
 	# avoid running `detect_package_manager` as it will run inside a subshell
 	# and will not allow us to set variables on the environment
 	detect_package_manager
+	if [ x"$PACKAGE_MANAGER" = x ]; then
+		echo "Could not detect package manager"
+		exit 1
+	fi
 
 	# build the Perl-SDK module
 	${PACKAGE_MANAGER}_build_perl_module ../../Perl-SDK Monitis
