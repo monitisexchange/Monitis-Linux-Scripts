@@ -190,6 +190,27 @@ sub get_id_of_monitor($$$) {
 	croak "Could not obtain ID for monitor '$monitor_tag'";
 }
 
+# handles a raw command (add_monitor, update_data)
+sub handle_raw_command($$) {
+	my ($self, $raw) = @_;
+	print "$raw\n";
+	my ($command, $monitor_name, @raw_parameters) = split /\s+/, $raw;
+
+	# a quick debug message
+	carp "Handling raw command: '$command', monitor_name: '$monitor_name'" if DEBUG;
+
+	for ($command) {
+		/add_monitor/ and do {
+			my ($monitor_tag, $result_params) = @raw_parameters;
+			$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params);
+		};
+		/update_data/ and do {
+			my ($monitor_tag, $result_params) = @raw_parameters;
+			$self->update_data_for_monitor_raw("", $monitor_name, $monitor_tag, time, $result_params);
+		};
+	}
+}
+
 # add a single monitor
 sub add_monitor($$$) {
 	my ($self, $agent_name, $monitor_name) = @_;
@@ -243,9 +264,15 @@ sub add_monitor($$$) {
 	} else {
 		my @add_monitor_optional_params;
 		defined($monitor_type) && push @add_monitor_optional_params, type => $monitor_type;
-		$self->{monitis_connection}->add_monitor(
-			$monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
+		$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
 	}
+}
+
+# updated raw data for monitor
+sub add_monitor_raw($$$$@) {
+	my ($self, $monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params) = @_;
+	$self->{monitis_connection}->add_monitor(
+		$monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
 }
 
 # add all monitors for all agents
@@ -381,7 +408,7 @@ sub handle_output_chunk($$$$$$$) {
 }
 
 # update data for a monitor, calling Monitis API
-sub update_data_for_monitor {
+sub update_data_for_monitor($$$$@) {
 	my ($self, $agent_name, $monitor_name, $results, @va_list) = @_;
 	# get the time now (time returns time in seconds, multiply by 1000
 	# for miliseconds)
@@ -402,6 +429,12 @@ sub update_data_for_monitor {
 
 	# queue it on MonitisConnection which will handle the rest
 	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
+	$self->update_data_for_monitor_raw($agent_name, $monitor_name, $monitor_tag, $checktime, $results);
+}
+
+# update data for a monitor, the internal function
+sub update_data_for_monitor_raw($$$$$@) {
+	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results) = @_;
 	$self->{monitis_connection}->queue($agent_name, $monitor_name, $monitor_tag, $checktime, $results);
 }
 
