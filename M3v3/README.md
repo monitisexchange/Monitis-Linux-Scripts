@@ -23,9 +23,9 @@ And they sit in the Execution, Parsing and Compute directories respectively.
 
 ### Plugin documentation
 
- * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Execution/README.md">Execution plugins</a>
- * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Parsing/README.md">Parsing plugins</a>
- * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3/Compute/README.md">Compute plugins</a>
+ * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3v3/MonitisMonitorManager/lib/MonitisMonitorManager/Execution/README.md">Execution plugins</a>
+ * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3v3/MonitisMonitorManager/lib/MonitisMonitorManager/Parsing/README.md">Parsing plugins</a>
+ * <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3v3/MonitisMonitorManager/lib/MonitisMonitorManager/Compute/README.md">Compute plugins</a>
 
 ### Very simple example
 
