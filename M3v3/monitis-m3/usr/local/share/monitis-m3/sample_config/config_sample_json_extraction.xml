@@ -3,8 +3,10 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Weather monitor" interval="300">
 		<monitor name="Weather in Sunnyvale">
-			<url>http://weather.yahooapis.com/forecastjson?w=2502265</url>
-			<http_statistics>1</http_statistics>
+			<url>
+				<url>http://weather.yahooapis.com/forecastjson?w=2502265</url>
+				<http_statistics>1</http_statistics>
+			</url>
 			<metric name="Temperature">
 				<type>integer</type>
 				<uom>F</uom>

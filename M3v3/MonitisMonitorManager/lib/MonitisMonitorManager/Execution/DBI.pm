@@ -27,19 +27,19 @@ sub name {
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
 	# OK, lets extract all the goodies from the XML:
-	# db_query, db_driver, db_host, db_name, db_username and db_password
-	my $db_query = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
-	my $db_driver = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_driver");
-	my $db_host = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_host");
-	my $db_name = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_name");
-	my $db_username = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_username");
-	my $db_password = M3PluginCommon::get_optional_parameter($plugin_xml_base, "db_password");
-	my $db_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "db_statistics", 0);
+	# db_query, db_driver, db_hostname, db_name, db_username and db_password
+	my $db_query = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "query");
+	my $db_driver = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "driver");
+	my $db_hostname = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "hostname");
+	my $db_name = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "name");
+	my $db_username = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "username");
+	my $db_password = M3PluginCommon::get_optional_parameter($plugin_xml_base, "password");
+	my $db_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "statistics", 0);
 
-	# db_host
-	if (!defined($db_host)) {
+	# db_hostname
+	if (!defined($db_hostname)) {
 		# we will just not a hostname for connection
-		$db_host = "";
+		$db_hostname = "";
 	}
 
 	# db_password, use it or not?
@@ -49,9 +49,9 @@ sub execute {
 	# for the DSN
 	my $dsn .= "DBI:$db_driver:$db_name";
 
-	# add db_host if it's defined
-	if ($db_host ne "") {
-		$dsn .= ":$db_host";
+	# add db_hostname if it's defined
+	if ($db_hostname ne "") {
+		$dsn .= ":$db_hostname";
 	}
 	carp "DB: '$db_username\@$dsn', Query: '$db_query'\n";
 
@@ -112,7 +112,7 @@ sub execute {
 sub extra_counters_cb {
 	my ($self, $monitis_datatypes, $plugin_xml_base) = @_;
 	# db_statistics exists?
-	my $db_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "db_statistics", 0);
+	my $db_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "statistics", 0);
 
 	# return value, extra counters for result parameters
 	my $result_params = "";

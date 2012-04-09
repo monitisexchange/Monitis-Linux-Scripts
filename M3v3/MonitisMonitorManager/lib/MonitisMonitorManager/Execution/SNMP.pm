@@ -19,8 +19,8 @@ sub name {
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
 	my $oid = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
-	my $snmp_hostname = M3PluginCommon::get_optional_parameter($plugin_xml_base, "snmp_hostname", "localhost");
-	my $snmp_community = M3PluginCommon::get_optional_parameter($plugin_xml_base, "snmp_community", "public");
+	my $snmp_hostname = M3PluginCommon::get_optional_parameter($plugin_xml_base, "hostname", "localhost");
+	my $snmp_community = M3PluginCommon::get_optional_parameter($plugin_xml_base, "community", "public");
 
 	my ($session, $error) = Net::SNMP->session(
 		-hostname  => $snmp_hostname,

@@ -3,7 +3,9 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Hotwire" interval="300">
 		<monitor name="Hotels in Paris">
-			<url>http://api.hotwire.com/v1/deal/hotel?dest=paris&amp;apikey=XXXXXXXX&amp;limit=1</url>
+			<url>
+				<url>http://api.hotwire.com/v1/deal/hotel?dest=paris&amp;apikey=XXXXXXXX&amp;limit=1</url>
+			</url>
 			<metric name="Cheapest hotel">
 				<type>float</type>
 				<uom>Price</uom>

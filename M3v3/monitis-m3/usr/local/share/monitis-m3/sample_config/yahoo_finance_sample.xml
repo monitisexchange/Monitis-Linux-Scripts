@@ -3,7 +3,9 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Yahoo finance" interval="300">
 		<monitor name="SNP 500">
-			<url>http://finance.yahoo.com/d/quotes.csv?s=^GSPC&amp;f=p</url>
+			<url>
+				<url>http://finance.yahoo.com/d/quotes.csv?s=^GSPC&amp;f=p</url>
+			</url>
 			<metric name="SNP 500">
 				<type>float</type>
 				<uom>Points</uom>
@@ -11,7 +13,9 @@
 			</metric>
 		</monitor>
 		<monitor name="USD to EUR">
-			<url>http://finance.yahoo.com/d/quotes.csv?e=.csv&amp;f=l1&amp;s=USDEUR=X</url>
+			<url>
+				<url>http://finance.yahoo.com/d/quotes.csv?e=.csv&amp;f=l1&amp;s=USDEUR=X</url>
+			</url>
 			<metric name="USD to EUR">
 				<type>float</type>
 				<uom>Rate</uom>

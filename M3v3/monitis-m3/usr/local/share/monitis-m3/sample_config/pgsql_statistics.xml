@@ -48,12 +48,14 @@
 
 		<!-- TPS (Transactions per second) -->
 		<monitor name="Transactions">
-			<db_driver>Pg</db_driver>
-			<db_name>dbname=postgres</db_name>
-			<db_username>dan</db_username>
-			<db_password></db_password>
-			<sql>SELECT SUM(xact_commit) AS count_req FROM pg_stat_database
-					WHERE datname='%PGSQL_DB_NAME%';</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT SUM(xact_commit) AS count_req FROM pg_stat_database
+						WHERE datname='%PGSQL_DB_NAME%';</query>
+			</sql>
 			<metric name="Committed Transactions/sec">
 				<type>integer</type>
 				<uom>Committed transactions/sec</uom>
@@ -64,18 +66,20 @@
 
 		<!-- Cache Hit Ratio -->
 		<monitor name="Cache Hit Ratio">
-			<db_driver>Pg</db_driver>
-			<db_name>dbname=postgres</db_name>
-			<db_username>dan</db_username>
-			<db_password></db_password>
-			<sql>SELECT
-					ROUND(100.*sd.blks_hit/(sd.blks_read+sd.blks_hit), 2) AS dhitratio,
-					d.datname
-					FROM pg_stat_database sd
-					JOIN pg_database d ON (d.oid=sd.datid)
-					JOIN pg_user u ON (u.usesysid=d.datdba)
-					WHERE sd.blks_read+sd.blks_hit&lt;&gt;0
-					AND d.datname='%PGSQL_DB_NAME%';</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT
+						ROUND(100.*sd.blks_hit/(sd.blks_read+sd.blks_hit), 2) AS dhitratio,
+						d.datname
+						FROM pg_stat_database sd
+						JOIN pg_database d ON (d.oid=sd.datid)
+						JOIN pg_user u ON (u.usesysid=d.datdba)
+						WHERE sd.blks_read+sd.blks_hit&lt;&gt;0
+						AND d.datname='%PGSQL_DB_NAME%';</query>
+			</sql>
 			<metric name="Cache Hit Ratio">
 				<type>integer</type>
 				<uom>N/A</uom>
@@ -85,18 +89,20 @@
 
 		<!-- Commit Ratio -->
 		<monitor name="Commit Ratio">
-			<db_driver>Pg</db_driver>
-			<db_name>dbname=postgres</db_name>
-			<db_username>dan</db_username>
-			<db_password></db_password>
-			<sql>SELECT
-					ROUND(100.*sd.xact_commit/(sd.xact_commit+sd.xact_rollback), 2) AS dcommitratio,
-					d.datname
-					FROM pg_stat_database sd
-					JOIN pg_database d ON (d.oid=sd.datid)
-					JOIN pg_user u ON (u.usesysid=d.datdba)
-					WHERE sd.xact_commit+sd.xact_rollback&lt;&gt;0
-					AND d.datname='%PGSQL_DB_NAME%';</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT
+						ROUND(100.*sd.xact_commit/(sd.xact_commit+sd.xact_rollback), 2) AS dcommitratio,
+						d.datname
+						FROM pg_stat_database sd
+						JOIN pg_database d ON (d.oid=sd.datid)
+						JOIN pg_user u ON (u.usesysid=d.datdba)
+						WHERE sd.xact_commit+sd.xact_rollback&lt;&gt;0
+						AND d.datname='%PGSQL_DB_NAME%';</query>
+			</sql>
 			<metric name="Commit Ratio">
 				<type>integer</type>
 				<uom>N/A</uom>
@@ -106,14 +112,22 @@
 
 		<!-- Blocks Read by PgSQL -->
 		<monitor name="Blocks Read">
-			<db_driver>Pg</db_driver>
-			<db_name>dbname=postgres</db_name>
-			<db_username>dan</db_username>
-			<db_password></db_password>
-			<sql>SELECT SUM(blks_read) FROM pg_stat_database
-					WHERE datname='%PGSQL_DB_NAME%'</sql>
-			<sql>SELECT SUM(blks_hit) FROM pg_stat_database
-					WHERE datname='%PGSQL_DB_NAME%'</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT SUM(blks_read) FROM pg_stat_database
+						WHERE datname='%PGSQL_DB_NAME%'</query>
+			</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT SUM(blks_hit) FROM pg_stat_database
+						WHERE datname='%PGSQL_DB_NAME%'</query>
+			</sql>
 			<metric name="Blocks Read/sec">
 				<type>integer</type>
 				<uom>N/A</uom>
@@ -130,12 +144,20 @@
 
 		<!-- User Connections -->
 		<monitor name="User Connections">
-			<db_driver>Pg</db_driver>
-			<db_name>dbname=postgres</db_name>
-			<db_username>dan</db_username>
-			<db_password></db_password>
-			<sql>SELECT count(*) FROM pg_stat_activity;</sql>
-			<sql>SELECT setting FROM pg_settings WHERE name = 'max_connections';</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT count(*) FROM pg_stat_activity;</query>
+			</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT setting FROM pg_settings WHERE name = 'max_connections';</query>
+			</sql>
 			<metric name="Users">
 				<type>integer</type>
 				<uom>N/A</uom>
@@ -174,11 +196,13 @@
 		<monitor name="PgSQL Disk Usage">
 			<linuxsysstats>diskusage->{'/dev/%PGSQL_DEVICE%'}{total}</linuxsysstats>
 			<linuxsysstats>diskusage->{'/dev/%PGSQL_DEVICE%'}{usage}</linuxsysstats>
-			<db_driver>Pg</db_driver>
-			<db_name>dbname=postgres</db_name>
-			<db_username>dan</db_username>
-			<db_password></db_password>
-			<sql>SELECT pg_database_size('%PGSQL_DB_NAME%') / 1024;</sql>
+			<sql>
+				<driver>Pg</driver>
+				<name>dbname=postgres</name>
+				<username>dan</username>
+				<password></password>
+				<query>SELECT pg_database_size('%PGSQL_DB_NAME%') / 1024;</query>
+			</sql>
 			<metric name="Total">
 				<type>integer</type>
 				<uom>KB</uom>

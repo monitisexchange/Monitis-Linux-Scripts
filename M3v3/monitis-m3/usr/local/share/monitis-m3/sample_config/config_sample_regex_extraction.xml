@@ -3,8 +3,9 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Weather monitor" interval="300">
 		<monitor name="Weather in Wanaka">
-			<url>http://www.holidaycheck.com/climate-wetter_Wanaka-ebene_oid-id_6163.html</url>
-			<!--exectemplate>cat /tmp/wanaka</exectemplate-->
+			<url>
+				<url>http://www.holidaycheck.com/climate-wetter_Wanaka-ebene_oid-id_6163.html</url>
+			</url>
 			<metric name="Temperature">
 				<type>integer</type>
 				<uom>C</uom>

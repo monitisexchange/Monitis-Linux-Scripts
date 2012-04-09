@@ -24,10 +24,10 @@ sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
 
 	# OK, lets extract all the goodies from the XML:
-	# protocol, host, port, username, password
+	# protocol, hostname, port, username, password
 	my $remote_command = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
 	my $protocol = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "protocol");
-	my $host = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "host");
+	my $hostname = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "hostname");
 	my $username = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "username");
 	my $password = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "password");
 	my $port = M3PluginCommon::get_optional_parameter($plugin_xml_base, "password");
@@ -43,9 +43,9 @@ sub execute {
 		my @telnet_args;
 		defined($port) and push @telnet_args, Port => $port;
 
-		# connect to remote host
+		# connect to remote hostname
 		my $telnet_connection = new Net::Telnet(Timeout => 10, @telnet_args);
-		$telnet_connection->open($host);
+		$telnet_connection->open($hostname);
 		$telnet_connection->login($username, $password);
 		$output = join "\n", $telnet_connection->cmd($remote_command);
 		$telnet_connection->close();
@@ -56,7 +56,7 @@ sub execute {
 		defined($ENV{MONITIS_DEBUG}) and push @ssh_args, debug => 1;
 
 		# login and run command
-		my $ssh_connection = Net::SSH::Perl->new($host, @ssh_args);
+		my $ssh_connection = Net::SSH::Perl->new($hostname, @ssh_args);
 		$ssh_connection->login($username, $password);
 		my($ssh_output, $stderr, $exit) = $ssh_connection->cmd($remote_command);
 		$output = $ssh_output;

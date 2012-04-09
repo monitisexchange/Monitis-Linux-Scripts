@@ -3,13 +3,15 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="MySQL Agent" interval="300">
 		<monitor name="Sample MySQL Monitor">
-			<sql>select count(*) from mysql.user;</sql>
-			<db_driver>mysql</db_driver>
-			<db_host>localhost</db_host>
-			<db_name>mysql</db_name>
-			<db_username>root</db_username>
-			<db_password>XXX</db_password>
-			<db_statistics>1</db_statistics>
+			<sql>
+				<query>select count(*) from mysql.user;</query>
+				<driver>mysql</driver>
+				<hostname>localhost</hostname>
+				<name>mysql</name>
+				<username>root</username>
+				<password>XXX</password>
+				<statistics>1</statistics>
+			</sql>
 			<metric name="Number of users">
 				<type>integer</type>
 				<uom>number</uom>

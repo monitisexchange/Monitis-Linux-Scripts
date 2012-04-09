@@ -28,17 +28,17 @@ sub name {
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
 	my $url = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
-	my $user = M3PluginCommon::get_optional_parameter($plugin_xml_base, "user");
+	my $username = M3PluginCommon::get_optional_parameter($plugin_xml_base, "username");
 	my $password = M3PluginCommon::get_optional_parameter($plugin_xml_base, "password");
-	my $http_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "http_statistics");
+	my $http_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "statistics");
 
 	# initialize LWP
 	my $browser = LWP::UserAgent->new;
 
 	# credentials defined?
-	if (defined($user) and defined($password)) {
-		carp "Using authentication '" . $user . "'/'" . $password . "'";
-		$browser->credentials($user => $password);
+	if (defined($username) and defined($password)) {
+		carp "Using authentication '" . $username . "'/'" . $password . "'";
+		$browser->credentials($username => $password);
 	}
 
 	# invoke it!
@@ -65,7 +65,7 @@ sub execute {
 sub extra_counters_cb {
 	my ($self, $monitis_datatypes, $plugin_xml_base) = @_;
 	# db_statistics exists?
-	my $http_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "http_statistics", 0);
+	my $http_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "statistics", 0);
 
 	# return value, extra counters for result parameters
 	my $result_params = "";
