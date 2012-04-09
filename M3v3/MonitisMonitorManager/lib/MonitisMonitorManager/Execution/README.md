@@ -6,6 +6,7 @@
  4. LinuxSysStatistics.pm - &lt;linuxsysstats&gt; - Linux statistics
  5. Perl.pm - &lt;perl&gt; - Perl code execution
  6. SNMP.pm - &lt;oid&gt; - SNMP OID query
+ 7. RemoteCommand.pm - &lt;remote_command&gt; - Remote command such as SSH or telnet
 
 ### Executable.pm (&lt;exectemplate&gt; directive)
 
@@ -80,3 +81,22 @@ Two other parameters may be specified:
 
  * &lt;snmp_hostname&gt; - SNMP hostname to query ("localhost" will be used if unspecified)
  * &lt;snmp_community&gt; - SNMP community to use for query ("public" will be used if unspecified)
+
+### RemoteCommand.pm (&lt;remote_command&gt; directive)
+
+Query a remote server using SSH or Telnet.
+
+Include your command in the configuration:
+
+ * &lt;remote_command&gt;ls -l /etc | wc -l&lt;/remote_command&gt;
+
+Few other parameters must be specified:
+
+ * &lt;protocol&gt; - Protocol to use, currently 'ssh' and 'telnet' are supported
+ * &lt;host&gt; - Hostname to connect to
+ * &lt;username&gt; - Username to use
+ * &lt;password&gt; - Password to use
+
+Optional parameters:
+
+ * &lt;port&gt; - Port to use, if unspecified the default port would be used

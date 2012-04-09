@@ -16,6 +16,7 @@ lib/MonitisMonitorManager/Execution/LinuxSysStatistics.pm
 lib/MonitisMonitorManager/Execution/SNMP.pm
 lib/MonitisMonitorManager/Execution/Executable.pm
 lib/MonitisMonitorManager/Execution/DBI.pm
+lib/MonitisMonitorManager/Execution/RemoteCommand.pm
 lib/MonitisMonitorManager/Compute/Min.pm
 lib/MonitisMonitorManager/Compute/README.md
 lib/MonitisMonitorManager/Compute/Math.pm
