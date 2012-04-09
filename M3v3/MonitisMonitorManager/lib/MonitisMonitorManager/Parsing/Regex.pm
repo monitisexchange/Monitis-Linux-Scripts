@@ -15,7 +15,7 @@ sub name {
 
 # matches regexes the user defined
 sub parse {
-	my ($self, $metric_name, $metric_xml_path, $output, $output_command, $results) = @_;
+	my ($self, $metric_name, $metric_xml_path, $output, $results) = @_;
 
 	# this handles the regex matching
 	# TODO will spliting with '\n' work on windows?? - it should...
@@ -39,7 +39,7 @@ sub parse {
 				# yield a warning here if it's already in the hash
 				if (defined(${$results}{$metric_name})) {
 					carp "Metric '$metric_name' with regex '$metric_regex' was already parsed!!";
-					carp "You should fix your script output ('$output_command') to have '$metric_regex' only once in the output";
+					carp "You should fix your script output to have '$metric_regex' only once in the output";
 				}
 				# push into hash, we'll format it later...
 				${$results}{$metric_name} = $data;

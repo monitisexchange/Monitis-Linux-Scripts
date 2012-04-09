@@ -1,5 +1,6 @@
 package Execution::SNMP;
 use strict;
+use MonitisMonitorManager::M3PluginCommon;
 use Carp;
 use Data::Dumper;
 use Net::SNMP;
@@ -16,16 +17,10 @@ sub name {
 
 # execute perl code executable and return the output
 sub execute {
-	my ($self, $monitor_xml_path, $oid, $results) = @_;
-
-	# hostname defined?
-	my $snmp_hostname = "localhost";
-	defined($monitor_xml_path->{snmp_hostname}[0]) and $snmp_hostname = $monitor_xml_path->{snmp_hostname}[0];
-	print "HOST: $snmp_hostname\n";
-
-	# community defined?
-	my $snmp_community = "public";
-	defined($monitor_xml_path->{snmp_community}[0]) and $snmp_community = $monitor_xml_path->{snmp_community}[0];
+	my ($self, $plugin_xml_base, $results) = @_;
+	my $oid = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
+	my $snmp_hostname = M3PluginCommon::get_optional_parameter($plugin_xml_base, "snmp_hostname", "localhost");
+	my $snmp_community = M3PluginCommon::get_optional_parameter($plugin_xml_base, "snmp_community", "public");
 
 	my ($session, $error) = Net::SNMP->session(
 		-hostname  => $snmp_hostname,

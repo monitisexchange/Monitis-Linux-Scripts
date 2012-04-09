@@ -1,5 +1,6 @@
 package Execution::Perl;
 use strict;
+use MonitisMonitorManager::M3PluginCommon;
 use Carp;
 use Data::Dumper;
 use File::Temp qw/tempfile tempdir/;
@@ -16,7 +17,9 @@ sub name {
 
 # execute perl code executable and return the output
 sub execute {
-	my ($self, $monitor_xml_path, $code, $results) = @_;
+	my ($self, $plugin_xml_base, $results) = @_;
+	my $code = M3PluginCommon::get_mandatory_parameter($plugin_xml_base);
+
 	my ($fh, $perl_filename) = tempfile();
 	print $perl_filename . "\n";
 	print $fh $code;

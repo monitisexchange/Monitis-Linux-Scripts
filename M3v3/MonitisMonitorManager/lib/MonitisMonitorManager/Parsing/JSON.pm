@@ -16,7 +16,7 @@ sub name {
 
 # matches all XML strings in the given output
 sub parse {
-	my ($self, $metric_name, $metric_xml_path, $output, $url, $results) = @_;
+	my ($self, $metric_name, $metric_xml_path, $output, $results) = @_;
 	# handle JSON pattern matching
 	# eval is like a try() catch() block
 	eval {

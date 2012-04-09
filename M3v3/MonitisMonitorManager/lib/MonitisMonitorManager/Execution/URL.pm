@@ -1,5 +1,6 @@
 package Execution::URL;
 use strict;
+use MonitisMonitorManager::M3PluginCommon;
 use Carp;
 use Data::Dumper;
 use LWP::UserAgent;
@@ -25,15 +26,17 @@ sub name {
 
 # execute an executable and return the output
 sub execute {
-	my ($self, $monitor_xml_path, $url, $results) = @_;
+	my ($self, $plugin_xml_base, $results) = @_;
+	my $url = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
+	my $user = M3PluginCommon::get_optional_parameter($plugin_xml_base, "user");
+	my $password = M3PluginCommon::get_optional_parameter($plugin_xml_base, "password");
+	my $http_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "http_statistics");
 
 	# initialize LWP
 	my $browser = LWP::UserAgent->new;
 
 	# credentials defined?
-	if (defined($monitor_xml_path->{user}[0]) and defined($monitor_xml_path->{password}[0])) {
-		my $user = $monitor_xml_path->{user}[0];
-		my $password = $monitor_xml_path->{password}[0];
+	if (defined($user) and defined($password)) {
 		carp "Using authentication '" . $user . "'/'" . $password . "'";
 		$browser->credentials($user => $password);
 	}
@@ -44,7 +47,7 @@ sub execute {
 	my $output = $response->content;
 
 	# add HTTP statistics if user wants it
-	if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
+	if (defined($http_statistics) and $http_statistics == 1) {
 		# this will be the response time in ms
 		${$results}{&HTTP_DELAY}=int((clock_gettime() - $response_begin) * 1000);
 
@@ -60,13 +63,15 @@ sub execute {
 
 # we can add extra counters in this function, such as statistics etc.
 sub extra_counters_cb {
-	my ($self, $monitis_datatypes, $monitor_xml_path) = @_;
+	my ($self, $monitis_datatypes, $plugin_xml_base) = @_;
+	# db_statistics exists?
+	my $http_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "http_statistics", 0);
 
 	# return value, extra counters for result parameters
 	my $result_params = "";
 
 	# do we need any http statistics in the monitor?
-	if (defined($monitor_xml_path->{http_statistics}[0]) && $monitor_xml_path->{http_statistics}[0] == 1) {
+	if (1 == $http_statistics) {
 		# add these counters also when adding a monitor
 		$result_params .= HTTP_DELAY . ":" . HTTP_DELAY . ":ms:" . $monitis_datatypes->{integer} . ";";
 		$result_params .= HTTP_CODE . ":" . HTTP_CODE . ":code:" . $monitis_datatypes->{integer} . ";";

@@ -1,5 +1,6 @@
 package Execution::RemoteCommand;
 use strict;
+use MonitisMonitorManager::M3PluginCommon;
 use Carp;
 use Data::Dumper;
 use Time::HiRes qw(clock_gettime);
@@ -20,52 +21,23 @@ sub name {
 
 # execute a DBI (SQL) query and return the last row fetched
 sub execute {
-	my ($self, $monitor_xml_path, $remote_command, $results) = @_;
+	my ($self, $plugin_xml_base, $results) = @_;
 
 	# OK, lets extract all the goodies from the XML:
 	# protocol, host, port, username, password
-	my ($protocol, $host, $port, $username, $password, $output);
-
-	# lets go!!
-	# protocol
-	if (!defined($monitor_xml_path->{protocol}[0])) {
-		croak "'protocol' undefined";
-	} else {
-		$protocol = $monitor_xml_path->{protocol}[0];
-	}
-
-	# host
-	if (!defined($monitor_xml_path->{host}[0])) {
-		# we will just not a hostname for connection
-		$host = "";
-	} else {
-		$host = $monitor_xml_path->{host}[0];
-	}
-
-	# port
-	$port = $monitor_xml_path->{port}[0];
-
-	# username
-	if (!defined($monitor_xml_path->{username}[0])) {
-		croak "'username' undefined";
-	} else {
-		$username = $monitor_xml_path->{username}[0];
-	}
-
-	# password
-	my $use_password = 0;
-	if (!defined($monitor_xml_path->{password}[0])) {
-		# we will just not a password for connection
-	} else {
-		$use_password = 1;
-		$password = $monitor_xml_path->{password}[0];
-	}
+	my $remote_command = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
+	my $protocol = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "protocol");
+	my $host = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "host");
+	my $username = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "username");
+	my $password = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "password");
+	my $port = M3PluginCommon::get_optional_parameter($plugin_xml_base, "password");
 
 	# change encoding to iso-8859-1
 	Encode::from_to($remote_command, 'utf8', 'iso-8859-1');
 	Encode::from_to($username, 'utf8', 'iso-8859-1');
 	Encode::from_to($password, 'utf8', 'iso-8859-1');
 
+	my $output;
 	if ($protocol eq "telnet") {
 		# configure arguements
 		my @telnet_args;

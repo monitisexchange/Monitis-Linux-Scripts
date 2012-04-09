@@ -1,5 +1,6 @@
 package Execution::Executable;
 use strict;
+use MonitisMonitorManager::M3PluginCommon;
 use Carp;
 use Data::Dumper;
 
@@ -15,7 +16,8 @@ sub name {
 
 # execute an executable and return the output
 sub execute {
-	my ($self, $monitor_xml_path, $executable, $results) = @_;
+	my ($self, $plugin_xml_base, $results) = @_;
+	my $executable = M3PluginCommon::get_mandatory_parameter($plugin_xml_base);
 
 	# running with qx{} as it should run also on windows
 	my $output = qx{ $executable } || carp "Failed running '$executable': $!" && return "";

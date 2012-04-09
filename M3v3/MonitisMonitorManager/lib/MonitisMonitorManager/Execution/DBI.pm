@@ -1,5 +1,6 @@
 package Execution::DBI;
 use strict;
+use MonitisMonitorManager::M3PluginCommon;
 use Carp;
 use Data::Dumper;
 use Time::HiRes qw(clock_gettime);
@@ -24,50 +25,26 @@ sub name {
 
 # execute a DBI (SQL) query and return the last row fetched
 sub execute {
-	my ($self, $monitor_xml_path, $db_query, $results) = @_;
-
+	my ($self, $plugin_xml_base, $results) = @_;
 	# OK, lets extract all the goodies from the XML:
-	# db_driver, db_host, db_name, db_username and db_password
-	my ($db_driver, $db_host, $db_name, $db_username, $db_password, $output);
-
-	# lets go!!
-	# db_driver
-	if (!defined($monitor_xml_path->{db_driver}[0])) {
-		croak "'db_driver' undefined";
-	} else {
-		$db_driver = $monitor_xml_path->{db_driver}[0];
-	}
+	# db_query, db_driver, db_host, db_name, db_username and db_password
+	my $db_query = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
+	my $db_driver = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_driver");
+	my $db_host = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_host");
+	my $db_name = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_name");
+	my $db_username = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, "db_username");
+	my $db_password = M3PluginCommon::get_optional_parameter($plugin_xml_base, "db_password");
+	my $db_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "db_statistics", 0);
 
 	# db_host
-	if (!defined($monitor_xml_path->{db_host}[0])) {
+	if (!defined($db_host)) {
 		# we will just not a hostname for connection
 		$db_host = "";
-	} else {
-		$db_host = $monitor_xml_path->{db_host}[0];
 	}
 
-	# db_name
-	if (!defined($monitor_xml_path->{db_name}[0])) {
-		croak "'db_name' undefined";
-	} else {
-		$db_name = $monitor_xml_path->{db_name}[0];
-	}
-
-	# db_username
-	if (!defined($monitor_xml_path->{db_username}[0])) {
-		croak "'db_username' undefined";
-	} else {
-		$db_username = $monitor_xml_path->{db_username}[0];
-	}
-
-	# db_password
+	# db_password, use it or not?
 	my $use_password = 0;
-	if (!defined($monitor_xml_path->{db_password}[0])) {
-		# we will just not a password for connection
-	} else {
-		$use_password = 1;
-		$db_password = $monitor_xml_path->{db_password}[0];
-	}
+	defined($db_password) and $use_password = 1;
 
 	# for the DSN
 	my $dsn .= "DBI:$db_driver:$db_name";
@@ -102,7 +79,7 @@ sub execute {
 		$success_code = 0;
 	}
 
-	if (defined($monitor_xml_path->{db_statistics}[0]) && $monitor_xml_path->{db_statistics}[0] == 1) {
+	if (1 == $db_statistics) {
 		# this will be the response time in ms
 		${$results}{&SQL_DELAY}=int((clock_gettime() - $time_begin) * 1000);
 
@@ -111,9 +88,10 @@ sub execute {
 	}
 
 	# fetch the last result
-	# TODO only fetchs the last result, as assume the user knows what he is
+	# TODO only fetchs the last result, assuming the user knows what he is
 	# doing and the query is well defined
 	my $number_of_rows = 0;
+	my $output;
 	while (my @data = $sth->fetchrow_array()) {
 		$output = $data[0];
 		$number_of_rows++;
@@ -132,13 +110,15 @@ sub execute {
 
 # we can add extra counters in this function, such as statistics etc.
 sub extra_counters_cb {
-	my ($self, $monitis_datatypes, $monitor_xml_path) = @_;
+	my ($self, $monitis_datatypes, $plugin_xml_base) = @_;
+	# db_statistics exists?
+	my $db_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "db_statistics", 0);
 
 	# return value, extra counters for result parameters
 	my $result_params = "";
 
 	# do we need any http statistics in the monitor?
-	if (defined($monitor_xml_path->{db_statistics}[0]) && $monitor_xml_path->{db_statistics}[0] == 1) {
+	if (1 == $db_statistics) {
 		# add these counters also when adding a monitor
 		$result_params .= SQL_DELAY . ":" . SQL_DELAY . ":ms:" . $monitis_datatypes->{integer} . ";";
 		$result_params .= SQL_SUCCESS . ":" . SQL_SUCCESS . ":code:" . $monitis_datatypes->{boolean} . ";";

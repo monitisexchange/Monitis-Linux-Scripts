@@ -1,5 +1,6 @@
 package Execution::LinuxSysStatistics;
 use strict;
+use MonitisMonitorManager::M3PluginCommon;
 use Carp;
 use Data::Dumper;
 use Sys::Statistics::Linux;
@@ -18,7 +19,9 @@ sub name {
 
 # execute perl code executable and return the output
 sub execute {
-	my ($self, $monitor_xml_path, $value, $results) = @_;
+	my ($self, $plugin_xml_base, $results) = @_;
+	my $value = M3PluginCommon::get_mandatory_parameter($plugin_xml_base);
+
 	my $sysinfo  = $linux_sys_statistics->get(1);
 	carp "Evaluating: \$sysinfo->$value == " . eval "\$sysinfo->$value";
 	my $output = eval "\$sysinfo->$value";

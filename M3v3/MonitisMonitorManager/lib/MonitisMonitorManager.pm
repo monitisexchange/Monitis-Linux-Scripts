@@ -42,7 +42,8 @@ our @EXPORT = qw(
 our $VERSION = '3.0';
 
 # use the same constant as in the Perl-SDK
-use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
+# TODO TODO
+use constant DEBUG => $ENV{MONITIS_DEBUG} || 1;
 
 # constants for HTTP statistics
 use constant {
@@ -238,12 +239,13 @@ sub add_monitor($$$) {
 	# function
 	foreach my $execution_plugin (keys %{$self->{execution_plugins}} ) {
 		if (defined($monitor_xml_path->{$execution_plugin}[0])) {
-			# executable, URL, SQL command...
-			carp "Calling extra_counters_cb for plugin: '$execution_plugin', monitor_name->'$monitor_name'" if DEBUG;
-			$result_params .= $self->{execution_plugins}{$execution_plugin}->extra_counters_cb($self->{monitis_datatypes}, $monitor_xml_path);
-
-			# iteration can be broken as we've found the execution plugin
-			last;
+			foreach my $execution_xml_base (@{$monitor_xml_path->{$execution_plugin}}) {
+				# it's called a URI since it can be anything, from a command line
+				# executable, URL, SQL command...
+				carp "Calling extra_counters_cb for plugin: '$execution_plugin', monitor_name->'$monitor_name'" if DEBUG;
+				# executable, URL, SQL command...
+				$result_params .= $self->{execution_plugins}{$execution_plugin}->extra_counters_cb($self->{monitis_datatypes}, $execution_xml_base);
+			}
 		}
 	}
 
@@ -305,7 +307,7 @@ sub invoke_monitor($$$) {
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
 
 	my $output = "";
-	my $last_uri = undef;
+	my $execution_called = undef;
 
 	# result set hash
 	my %results = ();
@@ -314,23 +316,23 @@ sub invoke_monitor($$$) {
 	# TODO execution might be out of order in some cases
 	foreach my $execution_plugin (keys %{$self->{execution_plugins}} ) {
 		if (defined($monitor_xml_path->{$execution_plugin}[0])) {
-			foreach my $uri (@{$monitor_xml_path->{$execution_plugin}}) {
+			foreach my $execution_xml_base (@{$monitor_xml_path->{$execution_plugin}}) {
 				# it's called a URI since it can be anything, from a command line
 				# executable, URL, SQL command...
-				carp "Calling execution plugin: '$execution_plugin', URI->'$uri', monitor_name->'$monitor_name'" if DEBUG;
+				carp "Calling execution plugin: '$execution_plugin', execution_xml_base->'$execution_xml_base', monitor_name->'$monitor_name'" if DEBUG;
 				my %returned_results = ();
-				$output .= $self->{execution_plugins}{$execution_plugin}->execute($monitor_xml_path, $uri, \%returned_results);
+				$output .= $self->{execution_plugins}{$execution_plugin}->execute($execution_xml_base, \%returned_results);
 				$output .= "\n";
 
 				# merge the returned results into the main %results hash
 				@results{keys %returned_results} = values %returned_results;
 
 				# we will not break execution as we might execute a few plugins
-				$last_uri = $uri;
+				$execution_called = 1;
 			}
 		}
 	}
-	if (!defined($last_uri)) {
+	if (!defined($execution_called)) {
 		croak "Could not find proper execution plugin for monitor '$monitor_name'";
 	}
 
@@ -338,15 +340,15 @@ sub invoke_monitor($$$) {
 	# if mass load is set, we'll handle the lines one by one
 	if ($self->mass_load()) {
 		foreach my $line (split /[\r\n]+/, $output) {
-			$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, $last_uri, \%results, $line);
+			$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, $line);
 		}
 	} else {
-		$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, $last_uri, \%results, $output);
+		$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, $output);
 	}
 }
 
 sub handle_output_chunk($$$$$$$) {
-	my ($self, $agent_name, $monitor_xml_path, $monitor_name, $last_uri, $ref_results, $output) = @_;
+	my ($self, $agent_name, $monitor_xml_path, $monitor_name, $ref_results, $output) = @_;
 	my %results = %$ref_results;
 
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
@@ -357,7 +359,7 @@ sub handle_output_chunk($$$$$$$) {
 		foreach my $potential_parsing_plugin (keys %{$monitor_xml_path->{metric}->{$metric_name}}) {
 			if (defined($self->{parsing_plugins}{$potential_parsing_plugin})) {
 				carp "Calling parsing plugin: '$potential_parsing_plugin'" if DEBUG;
-				$self->{parsing_plugins}{$potential_parsing_plugin}->parse($metric_name, $monitor_xml_path->{metric}->{$metric_name}, $output, $last_uri, \%returned_results);
+				$self->{parsing_plugins}{$potential_parsing_plugin}->parse($metric_name, $monitor_xml_path->{metric}->{$metric_name}, $output, \%returned_results);
 			}
 		}
 
