@@ -24,6 +24,9 @@ WriteMakefile(
 		'Time::HiRes' >= 0,
 		'URI::Escape' >= 0,
 		'XML::Simple' >= 0,
+		'Net::Telnet' >= 0,
+		'Net::SSH::Perl' >= 0,
+		'Encode' >= 0,
 	}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/MonitisMonitorManager.pm', # retrieve abstract from module
