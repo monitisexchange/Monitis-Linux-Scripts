@@ -6,6 +6,7 @@
  4. LinuxSysStatistics.pm - &lt;linuxsysstats&gt; - Linux statistics
  5. Perl.pm - &lt;perl&gt; - Perl code execution
  6. SNMP.pm - &lt;oid&gt; - SNMP OID query
+ 7. RemoteCommand.pm - &lt;remote_command&gt; - Remote command such as SSH or telnet
 
 ### Executable.pm (&lt;exectemplate&gt; directive)
 
@@ -23,8 +24,13 @@ Simply fetches a URL using CURL.
 
 Any well formed URL is accepted:
 
- * &lt;url&gt;www.google.com &lt;/url&gt;
- * &lt;url&gt;www.facebook.com &lt;/url&gt;
+ * &lt;url&gt;
+     &lt;url&gt;www.google.com &lt;/url&gt;
+   &lt;/url&gt;
+ * &lt;url&gt;
+     &lt;url&gt;www.facebook.com &lt;/url&gt;
+     &lt;statistics&gt;1&lt;/statistics&gt; - Add statistics to query
+   &lt;/url&gt;
 
 ### DBI.pm (&lt;sql&gt; directive)
 
@@ -32,17 +38,19 @@ Ported from the stand-alone <a href="https://github.com/monitisexchange/Monitis-
 
 This very powerful plugin lets you run SQL queries in front of any DBI supported database.
 
-Under the &lt;sql&gt; statement you are required to have a well format statement:
+Under the &lt;query&gt; statement you are required to have a well format statement:
 
- * &lt;sql&gt;select count(*) from users;&lt;/sql&gt;
+ * &lt;query&gt;select count(*) from users;&lt;/query&gt;
 
 Together with the &lt;sql&gt; directive, other connection data should be provided as well:<br>
 
- * &lt;db_driver&gt; - Database driver (such as Pg, MySQL, etc.)
- * &lt;db_name&gt; - Database name
- * &lt;db_host&gt; - Database hostname to connect to, can be left blank to assume 'localhost'
- * &lt;db_username&gt; - Database username to connect with
- * &lt;db_password&gt; - Can be left blank if your password is blank
+ * &lt;driver&gt; - Database driver (such as Pg, MySQL, etc.)
+ * &lt;name&gt; - Database name
+ * &lt;hostname&gt; - Database hostname to connect to, can be left blank to assume 'localhost'
+ * &lt;username&gt; - Database username to connect with
+ * &lt;password&gt; - Can be left blank if your password is blank
+
+Example can be found in <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3v3/monitis-m3/usr/local/share/monitis-m3/sample_config/dbi_sample.xml">here</a>
 
 ### LinuxSysStatistics.pm (&lt;linuxsysstats&gt; directive)
 
@@ -78,5 +86,27 @@ Simply include your oid in the configuration:
 
 Two other parameters may be specified:
 
- * &lt;snmp_hostname&gt; - SNMP hostname to query ("localhost" will be used if unspecified)
- * &lt;snmp_community&gt; - SNMP community to use for query ("public" will be used if unspecified)
+ * &lt;hostname&gt; - SNMP hostname to query ("localhost" will be used if unspecified)
+ * &lt;community&gt; - SNMP community to use for query ("public" will be used if unspecified)
+
+Example can be found in <a href="https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3v3/monitis-m3/usr/local/share/monitis-m3/sample_config/snmp_test.xml">here</a>
+
+### RemoteCommand.pm (&lt;remote_command&gt; directive)
+
+Query a remote server using SSH or Telnet.
+
+Include your command in the configuration:
+
+ * &lt;remote_command&gt;ls -l /etc | wc -l&lt;/remote_command&gt;
+
+Few other parameters must be specified:
+
+ * &lt;protocol&gt; - Protocol to use, currently 'ssh' and 'telnet' are supported
+ * &lt;hostname&gt; - Hostname to connect to
+ * &lt;username&gt; - Username to use
+ * &lt;password&gt; - Password to use
+
+Optional parameters:
+
+ * &lt;port&gt; - Port to use, if unspecified the default port would be used
+
