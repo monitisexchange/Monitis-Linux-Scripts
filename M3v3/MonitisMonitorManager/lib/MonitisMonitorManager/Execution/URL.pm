@@ -27,10 +27,10 @@ sub name {
 # execute an executable and return the output
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
-	my $url = M3PluginCommon::get_mandatory_parameter($plugin_xml_base, name());
-	my $username = M3PluginCommon::get_optional_parameter($plugin_xml_base, "username");
-	my $password = M3PluginCommon::get_optional_parameter($plugin_xml_base, "password");
-	my $http_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "statistics");
+	my $url = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "address");
+	my $username = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "username");
+	my $password = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "password");
+	my $http_statistics = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics");
 
 	# initialize LWP
 	my $browser = LWP::UserAgent->new;

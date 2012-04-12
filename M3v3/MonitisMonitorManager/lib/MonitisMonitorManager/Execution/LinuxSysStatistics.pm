@@ -20,7 +20,7 @@ sub name {
 # execute perl code executable and return the output
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
-	my $value = M3PluginCommon::get_mandatory_parameter($plugin_xml_base);
+	my $value = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base);
 
 	my $sysinfo  = $linux_sys_statistics->get(1);
 	carp "Evaluating: \$sysinfo->$value == " . eval "\$sysinfo->$value";

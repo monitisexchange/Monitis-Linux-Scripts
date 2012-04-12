@@ -5,7 +5,7 @@ use Carp;
 
 # returns the parameter specified or croaks on an error
 sub get_mandatory_parameter {
-	my ($plugin_xml_base, $parameter_name) = @_;
+	my ($self, $plugin_xml_base, $parameter_name) = @_;
 	# if $parameter_name is undefined, we'll return the string referenced
 	# by $plugin_xml_base
 	my $xml_path;
@@ -18,7 +18,7 @@ sub get_mandatory_parameter {
 	}
 
 	if (!defined($xml_path)) {
-		croak "Parameter '$parameter_name' undefined in plugin TODO TODO";
+		croak "Parameter '$parameter_name' undefined in plugin '" . $self->name() . "'";
 	} else {
 		return $xml_path;
 	}
