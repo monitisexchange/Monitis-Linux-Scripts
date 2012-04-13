@@ -13,7 +13,7 @@ require "$monitis_config_dir/M3Templates.pm";
 sub usage() {
 	my $command = $0;
 	$command =~ s#^.*/##;
-	print "$command [--dry-run] [--once] [--raw RAW_COMMAND] [--help] configuration.xml" . "\n";
+	print "$command [--dry-run] [--once] [--raw RAW_COMMAND] [--test-config] [--help] configuration.xml" . "\n";
 	print "Example for raw command: $command --raw \"add_monitor memory RRD_localhost_munin_memory free:free:Bytes:2;active:active:Bytes:2\"" . "\n";
 	print "Example for raw command: $command --raw \"update_data memory RRD_localhost_munin_memory free:305594368;active:879394816\"" . "\n";
 	exit;
@@ -37,11 +37,13 @@ sub main() {
 	my $dry_run = 0;
 	my $once = 0;
 	my $help = 0;
+	my $test_config = 0;
 	my $raw = "";
 	GetOptions(
 		"d|dry-run" => \$dry_run,
 		"o|once" => \$once,
 		"r|raw=s" => \$raw,
+		"t|test-config" => \$test_config,
 		"h|help" => \$help);
 
 	# display help
@@ -52,6 +54,9 @@ sub main() {
 	# get the configuration XML
 	my $xmlfile = shift @ARGV || "";
 
+	# if test_config is defined - run once and as a dry run - DUH!
+	(1 == $test_config) and $dry_run = 1 and $once = 1;
+
 	# if an XML was not specified - use a simple one just with API and
 	# secret key
 	my $tmp_xml_file_created = "";
@@ -60,7 +65,10 @@ sub main() {
 	}
 
 	# initialize M3
-	my $M3 = MonitisMonitorManager->new(configuration_xml => $xmlfile, dry_run => $dry_run);
+	my $M3 = MonitisMonitorManager->new(
+		configuration_xml => $xmlfile,
+		dry_run => $dry_run,
+		test_config => $test_config);
 
 	# invoke all the agents
 	if ($raw ne "") {

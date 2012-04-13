@@ -14,10 +14,22 @@ sub name {
 	return "exectemplate";
 }
 
+# returns 0 if configuration is OK
+# and populates the given %plugin_parameters hashref
+sub get_config {
+	my ($self, $plugin_xml_base, $plugin_parameters) = @_;
+	
+	${$plugin_parameters}{executable} = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base);
+}
+
 # execute an executable and return the output
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
-	my $executable = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base);
+
+	# extract executable command
+	my %plugin_parameters = ();
+	$self->get_config($plugin_xml_base, \%plugin_parameters);
+	my $executable = $plugin_parameters{executable};
 
 	# running with qx{} as it should run also on windows
 	my $output = qx{ $executable } || carp "Failed running '$executable': $!" && return "";

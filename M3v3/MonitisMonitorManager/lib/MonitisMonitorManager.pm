@@ -151,6 +151,16 @@ sub dry_run($) {
 	}
 }
 
+# does the user just want to test configuration?
+sub test_config($) {
+	my ($self) = @_;
+	if (defined($self->{test_config}) and $self->{test_config} == 1) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
 # does the user want a mass load?
 # mass_load decides how to handle output
 # if it's set, we'll handle it line by one, allowing duplicate parameters
@@ -261,7 +271,8 @@ sub add_monitor($$$) {
 
 	# call Monitis using the api context provided
 	if ($self->dry_run()) {
-		carp "This is a dry run, the monitor '$monitor_name' was not really added.";
+		# don't output this line if just testing configuration
+		not $self->test_config and carp "This is a dry run, the monitor '$monitor_name' was not really added.";
 	} else {
 		my @add_monitor_optional_params;
 		defined($monitor_type) && push @add_monitor_optional_params, type => $monitor_type;
@@ -311,6 +322,10 @@ sub invoke_monitor($$$) {
 	# result set hash
 	my %results = ();
 
+	# if just testing monitors - print a nice message
+	($self->test_config) and carp "Testing monitor '$monitor_name': ";
+	my $config_ok = 1;
+
 	# find the relevant execution plugin and execute it
 	# TODO execution might be out of order in some cases
 	foreach my $execution_plugin (keys %{$self->{execution_plugins}} ) {
@@ -320,17 +335,36 @@ sub invoke_monitor($$$) {
 				# executable, URL, SQL command...
 				carp "Calling execution plugin: '$execution_plugin', execution_xml_base->'$execution_xml_base', monitor_name->'$monitor_name'" if DEBUG;
 				my %returned_results = ();
-				$output .= $self->{execution_plugins}{$execution_plugin}->execute($execution_xml_base, \%returned_results);
-				$output .= "\n";
+				if ($self->test_config()) {
+					my %tmp_hash = ();
+					eval {
+						$self->{execution_plugins}{$execution_plugin}->get_config($execution_xml_base, \%tmp_hash);
+					};
+					if ($@) {
+						carp "Configuration error: $@";
+						$config_ok = 0;
+					}
+				} else {
+					$output .= $self->{execution_plugins}{$execution_plugin}->execute($execution_xml_base, \%returned_results, $monitor_name);
+					$output .= "\n";
 
-				# merge the returned results into the main %results hash
-				@results{keys %returned_results} = values %returned_results;
+					# merge the returned results into the main %results hash
+					@results{keys %returned_results} = values %returned_results;
 
-				# we will not break execution as we might execute a few plugins
-				$execution_called = 1;
+					# we will not break execution as we might execute a few plugins
+					$execution_called = 1;
+				}
 			}
 		}
 	}
+
+	# just testing configuration? - alright, quit!
+	if ($self->test_config) {
+		($config_ok == 1) and carp "Monitor '$monitor_name' -> Configuration is OK";
+		return;
+	}
+
+	# did we call anything at all??
 	if (!defined($execution_called)) {
 		croak "Could not find proper execution plugin for monitor '$monitor_name'";
 	}

@@ -12,8 +12,6 @@ sub get_mandatory_parameter {
 	if (defined($parameter_name)) {
 		$xml_path = $plugin_xml_base->{$parameter_name}[0];
 	} else {
-		use Data::Dumper;
-		print $plugin_xml_base;
 		$xml_path = $plugin_xml_base;
 	}
 
@@ -26,9 +24,9 @@ sub get_mandatory_parameter {
 
 # returns an optional parameter or undef
 sub get_optional_parameter {
-	my ($plugin_xml_base, $parameter_name, $default_value) = @_;
+	my ($self, $plugin_xml_base, $parameter_name, $default_value) = @_;
 	my $return_value = $plugin_xml_base->{$parameter_name}[0];
-	if(!defined($return_value) and defined($default_value)) {
+	if(not defined($return_value) and defined($default_value)) {
 		return $default_value;
 	} else {
 		return $return_value;

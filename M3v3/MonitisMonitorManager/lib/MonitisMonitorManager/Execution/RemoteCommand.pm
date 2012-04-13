@@ -19,21 +19,44 @@ sub name {
 	return "remote_command";
 }
 
+# returns 0 if configuration is OK
+# and populates the given %plugin_parameters hashref
+sub get_config {
+	my ($self, $plugin_xml_base, $plugin_parameters) = @_;
+	
+	${$plugin_parameters}{command} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "command");
+	${$plugin_parameters}{protocol} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "protocol");
+	${$plugin_parameters}{hostname} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "hostname");
+	${$plugin_parameters}{username} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
+	${$plugin_parameters}{password} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "password");
+	${$plugin_parameters}{port} =
+		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "port");
+}
+
 # execute a DBI (SQL) query and return the last row fetched
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
 
 	# OK, lets extract all the goodies from the XML:
 	# protocol, hostname, port, username, password
-	my $remote_command = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "command");
-	my $protocol = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "protocol");
-	my $hostname = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "hostname");
-	my $username = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
-	my $password = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "password");
-	my $port = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "port");
+	my %plugin_parameters = ();
+	$self->get_config($plugin_xml_base, \%plugin_parameters);
+
+	# use shortcuts for parameters
+	my $command = $plugin_parameters{command};
+	my $protocol = $plugin_parameters{protocol};
+	my $hostname = $plugin_parameters{hostname};
+	my $username = $plugin_parameters{username};
+	my $password = $plugin_parameters{password};
+	my $port = $plugin_parameters{port};
 
 	# change encoding to iso-8859-1
-	Encode::from_to($remote_command, 'utf8', 'iso-8859-1');
+	Encode::from_to($command, 'utf8', 'iso-8859-1');
 	Encode::from_to($username, 'utf8', 'iso-8859-1');
 	Encode::from_to($password, 'utf8', 'iso-8859-1');
 
@@ -48,7 +71,7 @@ sub execute {
 			my $telnet_connection = new Net::Telnet(Timeout => 10, @telnet_args);
 			$telnet_connection->open($hostname);
 			$telnet_connection->login($username, $password);
-			$output = join "\n", $telnet_connection->cmd($remote_command);
+			$output = join "\n", $telnet_connection->cmd($command);
 			$telnet_connection->close();
 		}
 	} elsif ($protocol eq "ssh") {
@@ -61,7 +84,7 @@ sub execute {
 			# login and run command
 			my $ssh_connection = Net::SSH::Perl->new($hostname, @ssh_args);
 			$ssh_connection->login($username, $password);
-			my($ssh_output, $stderr, $exit) = $ssh_connection->cmd($remote_command);
+			my($ssh_output, $stderr, $exit) = $ssh_connection->cmd($command);
 			$output = $ssh_output;
 		}
 	}

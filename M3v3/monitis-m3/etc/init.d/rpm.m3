@@ -51,7 +51,7 @@ start()
 			return 1
 		fi
 
-		/usr/bin/monitis-m3.pl $M3_CONFIG_XML >> $M3_LOG_FILE 2>&1 &
+		$m3 $M3_CONFIG_XML >> $M3_LOG_FILE 2>&1 &
 		success; echo
 	else
 		echo -n " already running!"
@@ -96,7 +96,7 @@ restart() {
 # return true if configuration is OK
 checkconfig() {
 	# TODO this is a very shallow check
-	xmlwf $M3_CONFIG_XML
+	xmlwf $M3_CONFIG_XML && $m3 --test-config $M3_CONFIG_XML
 }
 
 # See how we were called.

@@ -23,50 +23,74 @@ sub name {
 	return "sql";
 }
 
+# returns 0 if configuration is OK
+# and populates the given %plugin_parameters hashref
+sub get_config {
+	my ($self, $plugin_xml_base, $plugin_parameters) = @_;
+	
+	${$plugin_parameters}{query} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "query");
+	${$plugin_parameters}{driver} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "driver");
+	${$plugin_parameters}{hostname} =
+		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "hostname", "localhost");
+	${$plugin_parameters}{name} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "name");
+	${$plugin_parameters}{username} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
+	${$plugin_parameters}{password} =
+		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "password");
+	${$plugin_parameters}{statistics} =
+		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics");
+}
+
 # execute a DBI (SQL) query and return the last row fetched
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
 	# OK, lets extract all the goodies from the XML:
-	# db_query, db_driver, db_hostname, db_name, db_username and db_password
-	my $db_query = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "query");
-	my $db_driver = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "driver");
-	my $db_hostname = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "hostname");
-	my $db_name = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "name");
-	my $db_username = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
-	my $db_password = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "password");
-	my $db_statistics = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics", 0);
+	# query, driver, hostname, name, username and password
+	my %plugin_parameters = ();
+	$self->get_config($plugin_xml_base, \%plugin_parameters);
 
-	# db_hostname
-	if (!defined($db_hostname)) {
+	my $query = $plugin_parameters{query};
+	my $driver = $plugin_parameters{driver};
+	my $hostname = $plugin_parameters{hostname};
+	my $name = $plugin_parameters{name};
+	my $username = $plugin_parameters{username};
+	my $password = $plugin_parameters{password};
+	my $statistics = $plugin_parameters{statistics};
+
+	# hostname
+	if (!defined($hostname)) {
 		# we will just not a hostname for connection
-		$db_hostname = "";
+		$hostname = "";
 	}
 
-	# db_password, use it or not?
+	# password, use it or not?
 	my $use_password = 0;
-	defined($db_password) and $use_password = 1;
+	defined($password) and $use_password = 1;
 
 	# for the DSN
-	my $dsn .= "DBI:$db_driver:$db_name";
+	my $dsn .= "DBI:$driver:$name";
 
-	# add db_hostname if it's defined
-	if ($db_hostname ne "") {
-		$dsn .= ":$db_hostname";
+	# add hostname if it's defined
+	if ($hostname ne "") {
+		$dsn .= ":$hostname";
 	}
-	carp "DB: '$db_username\@$dsn', Query: '$db_query'\n";
+	carp "DB: '$username\@$dsn', Query: '$query'\n";
 
 	# connect to DB and run the query
 	my $dbh;
 	if ($use_password == 1) {
-		$dbh = DBI->connect("$dsn", "$db_username", "$db_password")
-			|| carp "Could not connect to database '$db_username\@$dsn': $DBI::errstr" && return "";
+		$dbh = DBI->connect("$dsn", "$username", "$password")
+			|| carp "Could not connect to database '$username\@$dsn': $DBI::errstr" && return "";
 	} else {
-		$dbh = DBI->connect("$dsn", "$db_username")
-			|| carp "Could not connect to database '$db_username\@$dsn': $DBI::errstr" && return "";
+		$dbh = DBI->connect("$dsn", "$username")
+			|| carp "Could not connect to database '$username\@$dsn': $DBI::errstr" && return "";
 	}
 
-	my $sth = $dbh->prepare($db_query)
-		|| carp "Could not prepare query '$db_query': $DBI::errstr" && return "";
+	my $sth = $dbh->prepare($query)
+		|| carp "Could not prepare query '$query': $DBI::errstr" && return "";
 
 	# measure time
 	my $time_begin = clock_gettime();
@@ -75,11 +99,11 @@ sub execute {
 
 	# execute query and fetch result
 	if (!$sth->execute()) {
-		carp "Could not execute statement '$db_query': $DBI::errstr";
+		carp "Could not execute statement '$query': $DBI::errstr";
 		$success_code = 0;
 	}
 
-	if (1 == $db_statistics) {
+	if (1 == $statistics) {
 		# this will be the response time in ms
 		${$results}{&SQL_DELAY}=int((clock_gettime() - $time_begin) * 1000);
 
@@ -111,14 +135,14 @@ sub execute {
 # we can add extra counters in this function, such as statistics etc.
 sub extra_counters_cb {
 	my ($self, $monitis_datatypes, $plugin_xml_base) = @_;
-	# db_statistics exists?
-	my $db_statistics = M3PluginCommon::get_optional_parameter($plugin_xml_base, "statistics", 0);
+	# statistics exists?
+	my $statistics = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics", 0);
 
 	# return value, extra counters for result parameters
 	my $result_params = "";
 
 	# do we need any http statistics in the monitor?
-	if (1 == $db_statistics) {
+	if (1 == $statistics) {
 		# add these counters also when adding a monitor
 		$result_params .= SQL_DELAY . ":" . SQL_DELAY . ":ms:" . $monitis_datatypes->{integer} . ";";
 		$result_params .= SQL_SUCCESS . ":" . SQL_SUCCESS . ":code:" . $monitis_datatypes->{boolean} . ";";
