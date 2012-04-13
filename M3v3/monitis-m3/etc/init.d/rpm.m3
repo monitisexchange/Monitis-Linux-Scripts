@@ -95,8 +95,13 @@ restart() {
 
 # return true if configuration is OK
 checkconfig() {
-	# TODO this is a very shallow check
-	xmlwf $M3_CONFIG_XML && $m3 --test-config $M3_CONFIG_XML
+	xmlwf_output=`xmlwf $M3_CONFIG_XML`
+	if [ x"$xmlwf_output" != x ]; then
+		echo $xmlwf_output
+		return 2
+	fi
+	# if the XML test passed, try this
+	$m3 --test-config $M3_CONFIG_XML
 }
 
 # See how we were called.

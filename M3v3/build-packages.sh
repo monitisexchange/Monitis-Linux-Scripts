@@ -129,7 +129,7 @@ main() {
 	fi
 
 	# build the Perl-SDK module
-	#${PACKAGE_MANAGER}_build_perl_module ../../Perl-SDK Monitis
+	${PACKAGE_MANAGER}_build_perl_module ../../Perl-SDK Monitis
 
 	# build the perl module
 	${PACKAGE_MANAGER}_build_perl_module MonitisMonitorManager MonitisMonitorManager
