@@ -18,7 +18,7 @@ sub name {
 # execute perl code executable and return the output
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
-	my $code = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base);
+	my $code = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base);
 
 	my ($fh, $perl_filename) = tempfile();
 	print $perl_filename . "\n";

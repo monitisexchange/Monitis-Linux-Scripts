@@ -3,6 +3,7 @@ Makefile.PL
 MANIFEST
 README
 t/MonitisMonitorManager.t
+lib/MonitisMonitorManager/M3PluginCommon.pm
 lib/MonitisMonitorManager/MonitisConnection.pm
 lib/MonitisMonitorManager/Parsing/README.md
 lib/MonitisMonitorManager/Parsing/XPath.pm

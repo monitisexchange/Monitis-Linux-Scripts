@@ -25,12 +25,12 @@ sub execute {
 
 	# OK, lets extract all the goodies from the XML:
 	# protocol, hostname, port, username, password
-	my $remote_command = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "command");
-	my $protocol = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "protocol");
-	my $hostname = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "hostname");
-	my $username = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
-	my $password = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "password");
-	my $port = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "port");
+	my $remote_command = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "command");
+	my $protocol = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "protocol");
+	my $hostname = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "hostname");
+	my $username = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
+	my $password = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "password");
+	my $port = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "port");
 
 	# change encoding to iso-8859-1
 	Encode::from_to($remote_command, 'utf8', 'iso-8859-1');

@@ -17,7 +17,7 @@ sub name {
 # execute an executable and return the output
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
-	my $executable = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base);
+	my $executable = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base);
 
 	# running with qx{} as it should run also on windows
 	my $output = qx{ $executable } || carp "Failed running '$executable': $!" && return "";

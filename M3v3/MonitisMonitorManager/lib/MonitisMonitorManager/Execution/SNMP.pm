@@ -18,9 +18,9 @@ sub name {
 # execute perl code executable and return the output
 sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
-	my $oid = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, name());
-	my $snmp_hostname = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "hostname", "localhost");
-	my $snmp_community = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "community", "public");
+	my $oid = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, name());
+	my $snmp_hostname = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "hostname", "localhost");
+	my $snmp_community = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "community", "public");
 
 	my ($session, $error) = Net::SNMP->session(
 		-hostname  => $snmp_hostname,

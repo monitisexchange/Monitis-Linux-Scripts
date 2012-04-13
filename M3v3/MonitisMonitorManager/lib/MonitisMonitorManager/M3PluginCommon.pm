@@ -1,4 +1,4 @@
-package M3PluginCommon;
+package MonitisMonitorManager::M3PluginCommon;
 use strict;
 no strict "refs";
 use Carp;

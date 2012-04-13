@@ -42,8 +42,7 @@ our @EXPORT = qw(
 our $VERSION = '3.0';
 
 # use the same constant as in the Perl-SDK
-# TODO TODO
-use constant DEBUG => $ENV{MONITIS_DEBUG} || 1;
+use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
 
 # constants for HTTP statistics
 use constant {

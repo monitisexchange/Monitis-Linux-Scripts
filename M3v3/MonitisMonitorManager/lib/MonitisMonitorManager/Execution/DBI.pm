@@ -28,13 +28,13 @@ sub execute {
 	my ($self, $plugin_xml_base, $results) = @_;
 	# OK, lets extract all the goodies from the XML:
 	# db_query, db_driver, db_hostname, db_name, db_username and db_password
-	my $db_query = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "query");
-	my $db_driver = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "driver");
-	my $db_hostname = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "hostname");
-	my $db_name = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "name");
-	my $db_username = M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
-	my $db_password = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "password");
-	my $db_statistics = M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics", 0);
+	my $db_query = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "query");
+	my $db_driver = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "driver");
+	my $db_hostname = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "hostname");
+	my $db_name = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "name");
+	my $db_username = MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
+	my $db_password = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "password");
+	my $db_statistics = MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics", 0);
 
 	# db_hostname
 	if (!defined($db_hostname)) {
