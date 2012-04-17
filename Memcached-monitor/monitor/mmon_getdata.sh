@@ -67,6 +67,8 @@ else	# retrieve the monitor name
 # 			echo "$response"
  			tickParse "$response"
  			nmon=``name``
+			tag=``tag``
+			type=``type``
 # 			nm=`jsonval "$response" "name" `
 # 			ret="$?"
 # 			if [[ ($ret -ne 0) ]]
@@ -74,7 +76,7 @@ else	# retrieve the monitor name
  			then
 	 			error 3 "The response contains no \"name\" key while getCustomMonitorInfo\($MONITOR_ID\)"
  			else
- 				echo "Custom monitor name - $nmon"
+ 				echo "Custom monitor name - $nmon ; tag - $tag ; type - $type ; ID - $MONITOR_ID"
  				MONITOR_NAME="$nmon"
  			fi
  		fi	
