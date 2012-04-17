@@ -1,0 +1,10 @@
+Package: monitis-m3
+Version: 3.0
+Section: web 
+Priority: optional
+Architecture: all
+Essential: no
+Depends: libmonitis-perl
+Maintainer: Dan Fruehauf [malkodan gmail com]
+Provides: monitis-m3
+Description: Monitis Monitor Manager, or M3 in short service

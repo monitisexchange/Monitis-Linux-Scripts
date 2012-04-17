@@ -1,0 +1,127 @@
+#!/bin/bash
+
+# munin/interface.sh - an integration of munin and monitis
+# Written by Dan Fruehauf <malkodan@gmail.com>
+
+# this will usually not change
+declare -r MUNIN_DIR=/var/lib/munin
+
+# TODO some end in g.rrd, c.rrd and d.rrd - find out the meaning of it
+declare -r MUNIN_RRD_SUFFIX=".rrd"
+
+# this is the tag prefix in monitis
+declare -r MONITIS_TAG_PREFIX="munin"
+
+# prints XML header
+print_header() {
+	echo '<?xml version="1.0"?>'
+	echo '<config>'
+	echo '	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>'
+	echo '	<agent name="Munin Agent" interval="60">'
+
+}
+
+# print XML footer
+print_footer() {
+	echo '	</agent>'
+	echo '</config>'
+}
+
+# prints a M3 XML for a munin host
+# $1 - hostname
+# $2 - monitor (optional)
+print_xml() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	print_header
+	if [ x"$monitor" != x ]; then
+		print_xml_for_monitor $hostname $monitor
+	else
+		for monitor in `list_monitors $hostname`; do
+			print_xml_for_monitor $hostname $monitor
+		done
+	fi
+	print_footer
+}
+
+# print a XML for a single monitor and all its counters
+# $1 - hostname
+# $2 - monitor
+print_xml_for_monitor() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	# monitor header
+	echo "		<monitor name=\"$monitor\" tag=\"${MONITIS_TAG_PREFIX}_${hostname}\">"
+	# this line will extract the timestamp
+	echo "			<exectemplate>rrdtool lastupdate $MUNIN_DIR/$hostname/$hostname-$monitor-*-*$MUNIN_RRD_SUFFIX | tail -1 | cut -d: -f1</exectemplate>"
+	local monitor_uom=`get_monitor_uom $hostname $monitor`
+
+	local counter
+	for counter in `list_counters_for_monitor $hostname $monitor`; do
+		echo "			<exectemplate>rrdtool lastupdate $MUNIN_DIR/$hostname/$hostname-$monitor-$counter-*$MUNIN_RRD_SUFFIX | tail -1 | cut -d: -f2</exectemplate>"
+	done
+
+	# this will extract the time of the test
+	echo '			<metric name="MONITIS_CHECK_TIME">'
+	echo '				<type>integer</type>'
+	echo '				<uom>timestamp</uom>'
+	echo '				<line>1</line>'
+	echo '			</metric>'
+
+	local -i i=2
+	for counter in `list_counters_for_monitor $hostname $monitor`; do
+		echo "			<metric name=\"$counter\">"
+		echo "				<type>integer</type>"
+		echo "				<uom>$monitor_uom</uom>"
+		echo "				<line>$i</line>"
+		echo "			</metric>"
+		let i=$i+1
+	done
+	echo "		</monitor>"
+}
+
+# list all hosts
+list_hosts() {
+	(cd $MUNIN_DIR && ls -1d */ | cut -d'/' -f1 | grep -v "^plugin-state$") | sort | uniq
+}
+
+# list all monitors
+# $1 - munin directory
+# $2 - hostname
+list_monitors() {
+	local hostname=$1; shift
+	ls -1 $MUNIN_DIR/$hostname/$hostname-* | cut -d'-' -f2 | sort | uniq
+}
+
+# returns the counters a monitor supports
+# $1 - hostname
+# $2 - monitor name
+list_counters_for_monitor() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	(cd $MUNIN_DIR/$hostname && ls -1 $hostname-$monitor-* | cut -d'-' -f3) 2> /dev/null
+}
+
+# returns the UOM (unit of measurement) of a monitor
+# $1 - hostname
+# $2 - monitor name
+get_monitor_uom() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	grep "$hostname;$hostname:$monitor\.graph_vlabel" $MUNIN_DIR/datafile | cut -d' ' -f2-
+}
+
+# $1 - hostname
+# $2 - monitor
+main() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	if [ x"$hostname" != x ]; then
+		print_xml $hostname $monitor
+	else
+		echo "Usage: $0 hostname [ monitor ]"
+		return 1
+	fi
+}
+
+main "$@"

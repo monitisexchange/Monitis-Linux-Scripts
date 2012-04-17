@@ -1,0 +1,7 @@
+/var/log/m3.log {
+	copytruncate
+	daily
+	rotate 7
+	compress
+	missingok
+}

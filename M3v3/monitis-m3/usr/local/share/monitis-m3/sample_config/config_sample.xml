@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="iostat monitor" interval="300">
+		<monitor name="IOStat for %HOSTNAME%">
+			<exectemplate>iostat -x sda</exectemplate>
+			<metric name="Read Requests per Second">
+				<type>integer</type>
+				<uom>Req/sec</uom>
+				<regex>^sda\s+\S+\s+\S+\s+(\S+)</regex>
+			</metric>
+			<metric name="Write Requests per Second">
+				<type>integer</type>
+				<uom>Req/sec</uom>
+				<regex>^sda\s+\S+\s+\S+\s+\S+\s+(\S+)</regex>
+			</metric>
+		</monitor>
+		<monitor name="Top for %HOSTNAME%">
+			<exectemplate>top -b -n 1</exectemplate>
+			<metric name="Free memory">
+				<type>integer</type>
+				<uom>KBytes</uom>
+				<regex>^Mem:\s+\d+k total,\s+\d+k used,\s+(\d+)k free,</regex>
+			</metric>
+			<metric name="Used swap">
+				<type>integer</type>
+				<uom>KBytes</uom>
+				<regex>^Swap:\s+\d+k total,\s+(\d+)k used</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>

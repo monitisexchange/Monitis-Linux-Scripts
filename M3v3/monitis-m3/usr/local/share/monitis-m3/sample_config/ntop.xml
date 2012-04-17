@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="NTop Agent" interval="60">
+		<monitor name="NTop monitor - bytes" tag="ntop">
+			<exectemplate>rrdtool lastupdate /var/lib/ntop/rrd/interfaces/wlan0/ethernetBytes.rrd | \
+				tail -1 | cut -d: -f1</exectemplate>
+			<exectemplate>rrdtool lastupdate /var/lib/ntop/rrd/interfaces/wlan0/ethernetBytes.rrd | \
+				tail -1 | cut -d: -f2</exectemplate>
+			<exectemplate>rrdtool lastupdate /var/lib/ntop/rrd/interfaces/wlan0/IP_HTTPBytes.rrd | \
+				tail -1 | cut -d: -f2</exectemplate>
+			<!-- Output would look like: -->
+			<!-- CHECK_TIME -->
+			<!-- TOTAL_BYTES -->
+			<!-- HTTP_BYTES -->
+			<metric name="MONITIS_CHECK_TIME">
+				<type>integer</type>
+				<uom>timestamp</uom>
+				<line>1</line>
+			</metric>
+			<metric name="Total Bytes">
+				<type>integer</type>
+				<uom>Bytes</uom>
+				<line>2</line>
+			</metric>
+			<metric name="HTTP Bytes">
+				<type>integer</type>
+				<uom>Bytes</uom>
+				<line>3</line>
+			</metric>
+		</monitor>
+		<monitor name="NTop monitor - Throughput" tag="ntop">
+			<exectemplate>rrdtool lastupdate /var/lib/ntop/rrd/interfaces/wlan0/throughput.rrd | tail -1</exectemplate>
+			<metric name="Bytes">
+				<type>integer</type>
+				<uom>Bytes/s</uom>
+				<regex>\d+:\s+(\d+)</regex>
+			</metric>
+			<metric name="MONITIS_CHECK_TIME">
+				<type>integer</type>
+				<uom>timestamp</uom>
+				<regex>(\d+):\s+\d+</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>

@@ -1,0 +1,5 @@
+Revision history for Perl extension MonitisMonitorManager.
+
+3.0  Thu Mar 22 23:09:32 2012
+	- Initial release of version 3 includes packaging as a perl module
+
