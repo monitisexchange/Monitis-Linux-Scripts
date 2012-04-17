@@ -247,13 +247,13 @@ function monitorResultsToString(mon_server){
 	ret = "listen:"+mon_server['listen']
 		+ ";uptime:"+escape(utils.formatTimestamp((mon_server['timeE'] - time_start) / 1000))
 		+ ";reqs:"+mon_server['requests']
-		+ ";post:"+((mon_server['requests']==0?100.0:((mon_server['post_count']/mon_server['requests']*100)).toFixed(1)))
+		+ ";post:"+(mon_server['requests']==0?100.0:((100*mon_server['post_count']/mon_server['requests']).toFixed(1)))
 		+ ";avr_resp:"+(mon_server['avr_resp_time']/1000).toFixed(3)
 		+ ";max_resp:"+(mon_server['max_resp_time']/1000).toFixed(3)
 		+ ";in_rate:"+((mon_server['bytes_read']/time_window/1000).toFixed(3))
 		+ ";out_rate:"+((mon_server['bytes_written']/time_window/1000).toFixed(3))
-		+ ";2xx:"+((mon_server['requests']==0?100.0:((mon_server['2xx']/mon_server['requests']*100)).toFixed(1)))
-		+ ";active:"+(mon_server['active']/time_window*100).toFixed(2)
+		+ ";2xx:"+((mon_server['requests']==0?100.0:((100*mon_server['2xx']/mon_server['requests']).toFixed(1)))
+		+ ";active:"+(100*mon_server['active']/time_window).toFixed(2)
 		+ ";load:"+(load).toFixed(3)
 		+ ";mon_time:"+(time_window).toFixed(3);
 	mon_server['info'].add("codes", "1xx", mon_server['1xx']);
