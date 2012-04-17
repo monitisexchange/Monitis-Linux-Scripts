@@ -39,6 +39,9 @@ The main purpose of current project is to show the possible way of using Monitis
 
         discord_factor = 1 - Slave_load / Master_load
 
+Thus, you can see the following view  
+
+<a href="http://i.imgur.com/oPSt2"><img src="http://i.imgur.com/oPSt2.png" title="MySQL replication monitoring" /></a>
 
  Please notice that the evaluation of replication parameters cannot have absolute precision of measurements in the presented approach because the measurement of replicating databases is provided sequentially (not in parallel). Since every remote measurement takes a while, it is the reason to receiving of  not fully synchronous data. Thus, the final results can have some measurement uncertainties in range about 0.5% - 1%.
 
@@ -56,6 +59,18 @@ To use existing scripts you need to do some changes that will correspond your ac
         - you may do also definition of DURATION between measurements and sending results (currently it is declared as 5 min)
         
 That's all. Now you can run __rmon_start.sh__ and monitoring process will be started.
+
+#### You can also getting monitoring data from monitis 
+To do so you should use __rmon_getdata.sh__ script by following pattern  
+
+        rmon_getdata.sh -d <number of days to get data for> -p <directory path to storing data-files> -f <file name prefix> -m <monitor id> 
+
+        where
+            -d parameter specifies how many days data do you want to get (default value is 1 day)
+               NOTE: each day's data will be stored in the separate files
+            -p parameter specifies the directory which will keep the data-files to (by default it is current directory)
+            -f parameter specifies the prefix for file name which will contain data (by default it is monitor name defined in monitor_constats.sh)
+            -m monitor registration ID 
 
 #### Testing 
 To check the correctness of monitor workability, some tests was done on real  MySQL 5.0.x replicating Master-Slave configuration that was under real load. The Master and Slave are located in the cloud and has differ IPs.

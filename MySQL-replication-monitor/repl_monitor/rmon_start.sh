@@ -4,7 +4,6 @@
 source monitis_api.sh        || exit 2
 source replicator_monitor.sh || error 2 replicator_monitor.sh
 
-DURATION=$((60*$DURATION)) #convert to sec
 
 # obtaining TOKEN
 get_token
@@ -17,8 +16,10 @@ else
 	echo "All is OK for now."
 fi
 
+DURATION=$((60*$DURATION)) #convert to sec
+
 # Adding custom monitor
-add_custom_monitor $MONITOR_NAME $MONITOR_TAG $RESULT_PARAMS $ADDITIONAL_PARAMS $MONITOR_TYPE
+add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 ret="$?"
 if [[ ($ret -ne 0) ]]
 then
@@ -60,6 +61,7 @@ do
 	    error "$ret" "$MSG"
 	    continue
 	fi
+
 	result=$return_value	# retrieve measure values
 	# Compose monitor data
 	param=$(echo ${result} | awk -F "|" '{print $1}' )
@@ -67,6 +69,9 @@ do
 	#echo DEBUG: Composed params is \"$param\" >&2
 	#echo
 	timestamp=`get_timestamp`
+	#echo
+	#echo DEBUG: Timestamp is \"$timestamp\" >&2
+	#echo
 	# Sending to Monitis
 	add_custom_monitor_data $param $timestamp
 	ret="$?"

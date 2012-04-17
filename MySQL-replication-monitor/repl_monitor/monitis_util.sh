@@ -25,6 +25,12 @@ function get_date_time() {
 	date -u +"%F%%20%T"
 }
 
+# returns the formated UTC date string
+# sample: 2011-08-09
+function get_date() {
+	date -u +"%F"
+}
+
 # returns current UTC Unix timestamp 
 # (milliseconds since 00:00:00, Jan 1, 1970)
 function get_timestamp() {
@@ -72,7 +78,7 @@ function isJSONarray(){
 #	prop='profile_image_url'
 #	picurl=`jsonval $json $prop`
 #
-function jsonval {
+function jsonval() {
     local json=${1:-""}
     local prop=${2:-""}
     if [[ (-n $json) && (-n $prop) ]]

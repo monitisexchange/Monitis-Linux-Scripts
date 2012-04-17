@@ -131,13 +131,13 @@ function add_custom_monitor {
 #	postdata=$postdata" -d resultParams=`uri_escape "$(result_params)"` "
 	postdata=$postdata" -d tag=$monitor_tag "
 	if [[ (-n "$monitor_type") ]] ; then
-		postdata=$postdata" -d 'type'=$monitor_type "
+		postdata=$postdata" -d type=$monitor_type "
 	fi
 	if [[ (-n "$additional_params") ]] ; then
 		postdata=$postdata" -d additionalResultParams=$additional_params "
 	fi
 	
-	local req="$SERVER""customMonitorApi"
+	local req="$SERVER""$API_PATH"
 	
 	response="$(curl -s $permdata $postdata	 $req)"
 	
@@ -182,7 +182,7 @@ function add_custom_monitor {
 	return 0
 }
 
-# Returns the specified custom monitor info (if exist)
+# Returns the specified custom monitor info in JSON form (if exist)
 # @param $1 - monitor ID 
 function get_custom_monitor_info() {
 	local monitor_id=$1
@@ -196,7 +196,7 @@ function get_custom_monitor_info() {
 	postdata=$postdata" -d monitorId=$monitor_id "
 	postdata=$postdata" -d excludeHidden=true "
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
@@ -246,10 +246,10 @@ function get_monitors_list() {
 		postdata=$postdata" -d tag=$monitor_tag "
 	fi
 	if [[ (-n "$monitor_type") ]] ; then
-		postdata=$postdata" -d 'type'=$monitor_type "
+		postdata=$postdata" -d type=$monitor_type "
 	fi
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
@@ -259,16 +259,16 @@ function get_monitors_list() {
 		id=`jsonval "$response" "id" `	
 		if [[ (-z $id) ]]
 		then
-			MSG="Response contains no any ID: \"$response\""
+			MSG="get_monitors_list - Response contains no any ID: \"$response\""
 			return 3
 		fi
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="No response received while getting monitors list..."
+			MSG="get_monitors_list - No response received while getting monitors list..."
 			return 1
 		else
-			MSG="Response is too long while getting monitors list..."
+			MSG="get_monitors_list - Response is too long while getting monitors list..."
 		fi
 	fi	
 	return 0
@@ -282,22 +282,25 @@ function get_monitorID {
 	local name=${1:-""}
 	local tag=${2:-""}
 	local type=${3:-""}
+	
     if [[ (-n $name) && (-n $tag) && (-n $type) ]]
     then
 		get_monitors_list $tag $type
 		ret="$?"
-		if [[ ($ret -eq 0) ]]
+		if [[ ($ret -ne 0) ]]
 		then
+			return $ret
+		else
 			isJSONarray $response
 			ret="$?"
 			if [[ ($ret -ne 0) ]]
 			then # not array
-				echo "Not an array"
+				MSG="get_monitorID - Not an array"
 				isJSON $response
 				ret="$?"
 				if [[ ($ret -ne 0) ]]
 				then
-					echo "Not a Json"
+					MSG="get_monitorID - Not a Json"
 				fi
 			else #array
 				tmp=$(echo $response | replace "[{" "{" | replace "}]" "}" | replace "}," "} | " | replace "{" " {" | replace "})" "} )" )
@@ -320,6 +323,7 @@ function get_monitorID {
 						fi
 					fi
 				done
+				MSG="get_monitorID - Monitor not found in resonse list"
 			fi
 		fi
 	fi
@@ -345,7 +349,7 @@ function add_custom_monitor_data() {
 	postdata=$postdata" -d checktime=$timestamp "
 	postdata=$postdata" -d results=$results "
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -s $permdata $postdata	 $req)"
 	
@@ -391,7 +395,7 @@ function add_custom_monitor_additional_data() {
 	postdata=$postdata" -d checktime=$timestamp "
 	postdata=$postdata" -d results=$results "
 	
-	req="$SERVER""customMonitorApi"
+	req="$SERVER""$API_PATH"
 	
 	response="$(curl -s $permdata $postdata	 $req)"
 	
@@ -417,3 +421,53 @@ function add_custom_monitor_additional_data() {
 	fi
 	return 0 
 }
+
+#Request specific parameters
+#Parameter Name 	Value Type 	Value
+#action * 	string 	getMonitorResults
+#monitorId * 	integer 	id of the monitor to get results for
+#year * 	integer 	year that results should be retrieved for
+#month * 	integer 	month that results should be retrieved for
+#day * 	integer 	day that results should be retrieved for
+#timezone 	integer 	offset relative to GMT, used to show results in the timezone of the user
+
+# gets data for a custom monitor
+#
+# $1 - date that results should be retrieved for (in form YYYY-MM-DD)
+#
+function get_custom_monitor_data(){
+	local date=${1:-$(get_date)}
+	MSG=""
+	
+	local year=$(echo ${date} | awk -F "-" '{print $1}' )
+	local month=$(echo ${date} | awk -F "-" '{print $2}' )
+	local day=$(echo ${date} | awk -F "-" '{print $3}' )
+	
+	# GET request permanent paramenters 
+	local permdata=`get_permanent_get_param`
+	
+	# monitor parameters
+	local postdata=" -d action=$API_GET_MONITOR_RESULTS "
+	postdata=$postdata" -d monitorId=$MONITOR_ID "
+	postdata=$postdata" -d year=$year "
+	postdata=$postdata" -d month=$month "
+	postdata=$postdata" -d day=$day "
+	
+	req="$SERVER""$API_PATH"
+	
+	response="$(curl -Gs $permdata $postdata $req)"
+	
+	if [[ (${#response} -gt 0) ]]	# Normally, the response received
+	then # Likely, we received correct answer
+		MSG="OK"
+	else
+		MSG="NO RESPONSE"
+		return 1
+	fi
+	
+	return 0
+}
+
+
+
+
