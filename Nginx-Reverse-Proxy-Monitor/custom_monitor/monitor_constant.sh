@@ -34,4 +34,4 @@ declare -r c3xx="3xx"
 declare -r c4xx="4xx"
 declare -r c5xx="5xx"
 	
-declare    DURATION=1	 							# information sending duration [min] (REPLACE by any desired value)
+declare    DURATION=5	 							# information sending duration [min] (REPLACE by any desired value)

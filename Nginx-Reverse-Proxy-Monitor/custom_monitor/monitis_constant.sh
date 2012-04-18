@@ -3,6 +3,8 @@
 # Declaration of constants used by Monitis API
 
 declare -r SERVER="http://www.monitis.com/"			# Monitis server
+declare -r API_PATH="customMonitorApi"				# Custom API path
+
 declare -r APIKEY="2P3RI6SEQB0GDRV60VDH66F06M"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
 declare -r SECRETKEY="1K3ASR3D29N1GHHPR654LGIL9J"	# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
 

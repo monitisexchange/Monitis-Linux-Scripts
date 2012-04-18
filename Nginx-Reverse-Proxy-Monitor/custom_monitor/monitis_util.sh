@@ -43,6 +43,15 @@ function trim {
     echo $*
 }
 
+# Convert json array to set of json objects separated by "|"
+# @param $1 - array string to be transformed
+# returns result into "response" variable
+# sample:
+# [{id:1},{id:2}] -> {id:1} | {id:2}
+jsonArray2ss(){ 
+	echo -E "$@" | sed 's/\[{/{/g;s/}\]/}/g;s/},/} \| /g;s/{/ {/g;s/})/} )/g'
+}
+
 # Tests whether *entire string* is JSON string
 # @param $1 - string to be checked 
 function isJSON(){
@@ -78,7 +87,7 @@ function isJSONarray(){
 #	prop='profile_image_url'
 #	picurl=`jsonval $json $prop`
 #
-function jsonval {
+function jsonval() {
     local json=${1:-""}
     local prop=${2:-""}
     if [[ (-n $json) && (-n $prop) ]]
