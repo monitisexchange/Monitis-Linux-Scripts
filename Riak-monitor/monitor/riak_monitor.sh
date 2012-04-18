@@ -109,7 +109,8 @@ postdata=$postdata"pbc_active:$pbc_active;"
 result=$result"pbc_active:PBC+active:$UOM:2;";
 #
 #end of get_data
+test -f .tmp_riak && rm .tmp_riak > /dev/null
+#
 }
 #
 #
-rm .tmp_riak
