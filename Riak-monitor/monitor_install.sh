@@ -23,11 +23,13 @@ function copy_data()
 function add_to_crontab()
 {
 	crontab -l | { cat; echo "*/1 * * * * $1/$RIAK_HOME/riakm_start.sh > 2>&1"; } | crontab -
+	service cron restart
 }
 #
 function remove_from_crontab()
 {
 	crontab -l|grep -v 'riakm_start.sh' | { cat; } | crontab -
+	service cron restart
 }
 #
 function destroy_environment()
