@@ -2,7 +2,7 @@ MONITORING RIAK WITH MONITIS
 
 Original Author: Arthur Tumanyan
 Company: Netangels
-Website: http://www.netangels.net
+Web Site: http://www.netangels.net
 
 OVERVIEW:
 ---------
