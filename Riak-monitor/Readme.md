@@ -2,7 +2,7 @@ MONITORING RIAK WITH MONITIS
 
 Original Author: Arthur Tumanyan
 Company: Netangels
-Website: http://www.netangels.net
+Web Site: http://www.netangels.net
 
 OVERVIEW:
 ---------
@@ -35,3 +35,4 @@ Bourne Again Shell
 OTHER:
 ------
 Be sure you have right to run monitor_install.sh script
+Change APIKEY & SECRETKEY in monitis_constant.sh according to your settings
