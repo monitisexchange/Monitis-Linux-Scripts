@@ -303,7 +303,8 @@ function get_monitorID {
 					MSG="get_monitorID - Not a Json"
 				fi
 			else #array
-				tmp=$(echo $response | replace "[{" "{" | replace "}]" "}" | replace "}," "} | " | replace "{" " {" | replace "})" "} )" )
+				#tmp=$(echo $response | replace "[{" "{" | replace "}]" "}" | replace "}," "} | " | replace "{" " {" | replace "})" "} )" )
+				tmp=`jsonArray2ss "${response}" `
 				set -- "$tmp" 				
 					OIFS=$IFS
 					IFS="|"
