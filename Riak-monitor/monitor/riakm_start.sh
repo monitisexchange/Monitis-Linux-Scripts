@@ -1,5 +1,10 @@
 #!/bin/bash
-# set -x
+#############################################################################
+#	RIAK MONITOR START SCRIPT                                           #
+#	Author: Arthur Tumanyan <arthurtumanyan@yahoo.com>                  #
+#	Company: Netangels <http://www.netangels.net>                       # 
+#############################################################################
+# 
 # sources included
 source monitis_api.sh   || exit 2
 source monitis_constant.sh || exit 2

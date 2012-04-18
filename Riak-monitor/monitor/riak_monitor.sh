@@ -1,7 +1,12 @@
 #!/bin/bash
+#############################################################################
+#	RIAK MONITOR CORE SCRIPT                                            #
+#	Author: Arthur Tumanyan <arthurtumanyan@yahoo.com>                  #
+#	Company: Netangels <http://www.netangels.net>                       # 
+#############################################################################
 :
 #
-#set -x
+#
 declare data
 declare postdata
 declare result

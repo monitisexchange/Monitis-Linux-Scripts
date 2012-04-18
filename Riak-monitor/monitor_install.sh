@@ -1,5 +1,9 @@
 #!/bin/bash
-#
+#############################################################################
+#	RIAK MONITOR INSTALL SCRIPT                                         #
+#	Author: Arthur Tumanyan <arthurtumanyan@yahoo.com>                  #
+#	Company: Netangels <http://www.netangels.net>                       # 
+#############################################################################
 DIR='/opt'
 DIR2='/usr'
 RIAK_HOME='monitis-riak-monitor'
