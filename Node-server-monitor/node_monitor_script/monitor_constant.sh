@@ -7,8 +7,8 @@ declare    ACCESS_CODE="monitis"						# access code for node monitor
 
 declare    MONITOR_NAME="NServer_Monitor_$MON_SERVER"	# name of custom monitor
 declare -r MONITOR_TAG="Node_Server"					# tag for custom monitor
-declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
-#declare -r MONITOR_TYPE="custom"						# type for custom monitor
+#declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
+declare -r MONITOR_TYPE="custom"						# type for custom monitor
 # monitor commands
 declare -r MON_PATHNAME="node_monitor"
 declare -r MON_ACTION="action"

@@ -25,6 +25,12 @@ function get_date_time() {
 	date -u +"%F%%20%T"
 }
 
+# returns the formated UTC date string
+# sample: 2011-08-09
+function get_date() {
+	date -u +"%F"
+}
+
 # returns current UTC Unix timestamp 
 # (milliseconds since 00:00:00, Jan 1, 1970)
 function get_timestamp() {
@@ -35,6 +41,15 @@ function get_timestamp() {
 # sample: echo "'$(trim "  one   two    three  ")'"
 function trim {
     echo $*
+}
+
+# Convert json array to set of json objects separated by "|"
+# @param $1 - array string to be transformed
+# returns result into "response" variable
+# sample:
+# [{id:1},{id:2}] -> {id:1} | {id:2}
+jsonArray2ss(){ 
+	echo -E "$@" | sed 's/\[{/{/g;s/}\]/}/g;s/},/} \| /g;s/{/ {/g;s/})/} )/g'
 }
 
 # Tests whether *entire string* is JSON string
@@ -72,7 +87,7 @@ function isJSONarray(){
 #	prop='profile_image_url'
 #	picurl=`jsonval $json $prop`
 #
-function jsonval {
+function jsonval() {
     local json=${1:-""}
     local prop=${2:-""}
     if [[ (-n $json) && (-n $prop) ]]

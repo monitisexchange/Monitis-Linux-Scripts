@@ -15,7 +15,7 @@ declare -r MONITOR_NAME="MySQL_replication_$MASTER_HOST->$SLAVE_HOST" 	# name of
 declare -r MONITOR_TAG="replication"					# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 # format of result params - name1:displayName1:uom1:Integer
-declare -r RESULT_PARAMS="alive:Alive::1;late:Slave_late[sec]:sec:2;desynch:Desynch[pr]:pr:4;last_errno:Last_errno::2;discord:Discord[pr]::4" 	
+declare -r RESULT_PARAMS="alive:Alive::3;late:Slave_late[sec]:sec:2;desynch:Desynch[pr]:pr:4;last_errno:Last_errno::2;discord:Discord[pr]::4" 	
 # format of additional params - name:displayName:uom:String
 declare -r ADDITIONAL_PARAMS="details:Details::3"	
 	
