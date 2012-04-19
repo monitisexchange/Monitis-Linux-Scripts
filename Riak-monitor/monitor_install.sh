@@ -22,7 +22,7 @@ function copy_data()
 #
 function add_to_crontab()
 {
-	crontab -l | { cat; echo "*/1 * * * * $1/$RIAK_HOME/riakm_start.sh > 2>&1"; } | crontab -
+	crontab -l | { cat; echo "*/1 * * * * (cd $1/$RIAK_HOME/ && bash riakm_start.sh > /dev/null)"; } | crontab -
 	service cron restart
 }
 #
@@ -35,12 +35,16 @@ function remove_from_crontab()
 function destroy_environment()
 {
 	echo -n "Removing directory $1/$RIAK_HOME "
+	if [[ ! -d $1/$RIAK_HOME ]];then
+		echo "NOTHING TO REMOVE"
+	else
 	ret=$(rm -rf "$1/$RIAK_HOME")
 	if [[ $ret -ne 0 ]];then
 		echo " Fail!"
 		exit 1
 	else
 		echo " Done"
+	fi
 	fi
 	remove_from_crontab
 }
@@ -62,10 +66,11 @@ function prepare_environment()
 		echo " Done"
 	fi
 	copy_data $1/$RIAK_HOME
+	remove_from_crontab
 	add_to_crontab $1
-	(cd $1/$RIAK_HOME/ && bash riakm_start.sh create)
+	cd $1/$RIAK_HOME/ && bash riakm_start.sh create
+	cd - > /dev/null
 	echo "Monitis Riak monitor install path is:  $1/$RIAK_HOME"
-	cat Readme.md
 	
 }
 #

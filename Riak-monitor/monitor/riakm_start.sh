@@ -4,7 +4,7 @@
 #	Author: Arthur Tumanyan <arthurtumanyan@yahoo.com>                  #
 #	Company: Netangels <http://www.netangels.net>                       # 
 #############################################################################
-# 
+#
 # sources included
 source monitis_api.sh   || exit 2
 source monitis_constant.sh || exit 2
@@ -50,8 +50,13 @@ fi
 if [[ ($MONITOR_ID -le 0) ]]
 then 
 	echo MonitorId is still zero - try to obtain it from local cache
-	
-	MONITOR_ID=`cat .monitor.id`
+	if [[ ! -e .monitor.id ]];then
+		clear ;echo -e "\e[00;31mThis is because of file manipulations\e[00m"
+		echo -e "\e[00;31mDON'T PANIC: Just delete your custom monitor from Monitis.com dashboard and\e[00m"
+		echo -e "\e[00;31mrun 'riakm_start.sh create' again\e[00m"
+		exit 5
+	fi
+	MONITOR_ID=$(cat .monitor.id)
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
@@ -67,12 +72,12 @@ fi
 	if [[ ($ret -ne 0) ]]
 	then	# some problems while getting token...
 		error "$ret" "$MSG"
-		exit 1
+		exit 6
 	fi
 	ret="$1"
 	if [[ ($ret -ne 0) ]];then
 	    error "$ret" "$MSG"
-	    exit 1
+	    exit 7
 	fi
 
 	# Compose monitor data
@@ -84,7 +89,7 @@ fi
 	ret="$?"
 	if [[ ($ret -ne 0) ]];then
 		error "$ret" "$MSG"
-		exit 1
+		exit 8
 	else
 		echo $( date +"%D %T" ) - The Custom monitor data were successfully added
 	fi

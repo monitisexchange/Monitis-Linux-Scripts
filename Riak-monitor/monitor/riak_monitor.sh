@@ -15,7 +15,7 @@ UOM=''
 #
 if [[ "$UID" != 0 ]];then
 	echo "Must be root"
-	exit 1
+	exit 3 
 fi
 function get_data()
 {

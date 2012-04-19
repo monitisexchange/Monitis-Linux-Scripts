@@ -30,7 +30,7 @@ check into the Monitis dashboard to view your Riak Stats.
 DEPENDENCIES:
 -------------
 Bourne Again Shell
-
+An installed instance of Riak
 
 OTHER:
 ------
