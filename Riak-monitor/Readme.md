@@ -14,8 +14,8 @@ These scripts allow a user to easily get some monitoring around their Riak insta
 INSTALLATION:
 
 How to Install:
+	
 	Download the Riak-monitor from github
-
 	cd <riak-monitor-install-dir>
 	bash monitor_install.sh
 	Enjoy!
