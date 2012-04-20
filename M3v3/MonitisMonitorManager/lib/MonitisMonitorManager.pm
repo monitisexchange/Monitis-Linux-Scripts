@@ -39,7 +39,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '3.0';
+our $VERSION = '3.1';
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -593,37 +593,65 @@ __END__
 
 =head1 NAME
 
-MonitisMonitorManager - Perl extension for blah blah blah
+Monitis Monitor Manager => MMM => M3
+
+M3 is the shortened name for Monitis Monitor Manager.
+
+This Perl module helps you manage Custom Monitors on Monitis (www.monitis.com).
 
 =head1 SYNOPSIS
 
   use MonitisMonitorManager;
-  blah blah blah
+
+  # dry run dictates whether to upload data to Monitis - yes or no
+  my $dry_run = 0;
+
+  # configuration_xml is a file with the configuration XML, refer to some
+  # examples here: https://github.com/monitisexchange/Monitis-Linux-Scripts/tree/master/M3v3/monitis-m3/usr/local/share/monitis-m3/sample_config
+
+  # test_config dictates whether to just test the configuration or actually
+  # do a proper run
+
+  # initialize the M3 instance
+  my $M3 = MonitisMonitorManager->new(
+    configuration_xml => $xmlfile,
+    dry_run => $dry_run,
+    test_config => $test_config);
+
+  # handle a raw command in the form of:
+  # 'add_monitor memory memory free:free:Bytes:2;active:active:Bytes:2'
+  # 'update_data memory memory free:305594368;active:879394816'
+  $M3->handle_raw_command($raw);
+
+  # runs just one iteration of the agents defined in the XML
+  $M3->invoke_agents();
+
+  # invoke the agents in a loop (using the defined interval in the XML)
+  $M3->invoke_agents_loop();
 
 =head1 DESCRIPTION
 
-Stub documentation for MonitisMonitorManager, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+For full proper documentation please refer to:
+https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3v3/README.md
 
-Blah blah blah.
+M3 Perl module is incomplete on its own, you should also use the monitis-m3
+package which packages an init.d service. Find it here:
+https://github.com/monitisexchange/Monitis-Linux-Scripts/tree/master/M3v3
 
 =head2 EXPORT
 
-None by default.
-
-
+MonitisMonitorManager
 
 =head1 SEE ALSO
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
+See also Monitis' blog with entries about M3:
+http://blog.monitis.com/index.php/tag/m3/
 
-If you have a mailing list set up for your module, mention it here.
+Monitis main website:
+http://www.monitis.com
 
-If you have a web site set up for your module, mention it here.
+Github repository:
+https://github.com/monitisexchange/Monitis-Linux-Scripts/tree/master/M3v3
 
 =head1 AUTHOR
 
