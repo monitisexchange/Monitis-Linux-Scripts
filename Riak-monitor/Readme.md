@@ -1,7 +1,10 @@
+
 MONITORING RIAK WITH MONITIS
 
 Original Author: Arthur Tumanyan
+
 Company: Netangels
+
 Web Site: http://www.netangels.net
 
 OVERVIEW:
@@ -10,13 +13,14 @@ These scripts allow a user to easily get some monitoring around their Riak insta
 
 
 INSTALLATION:
--------------
+
 How to Install:
 	Download the Riak-monitor from github
 
 	cd <riak-monitor-install-dir>
 	bash monitor_install.sh
 	Enjoy!
+	
 How to uninstall:
 
 	cd <riak-monitor-install-dir>
@@ -29,12 +33,12 @@ check into the Monitis dashboard to view your Riak Stats.
 
 
 DEPENDENCIES:
--------------
+
 Bourne Again Shell
 An installed instance of Riak
 Curl
 
 OTHER:
-------
+
 Be sure you have right to run monitor_install.sh script
 Change APIKEY & SECRETKEY in monitis_constant.sh according to your settings
