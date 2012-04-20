@@ -14,11 +14,12 @@ INSTALLATION:
 How to Install:
 	Download the Riak-monitor from github
 
-	cd <riak-monitor-dir>
+	cd <riak-monitor-install-dir>
 	bash monitor_install.sh
 	Enjoy!
 How to uninstall:
-	...
+
+	cd <riak-monitor-install-dir>
 	bash monitor_install.sh destroy   
 
 
