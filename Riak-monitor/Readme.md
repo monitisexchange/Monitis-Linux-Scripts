@@ -31,6 +31,7 @@ DEPENDENCIES:
 -------------
 Bourne Again Shell
 An installed instance of Riak
+Curl
 
 OTHER:
 ------

@@ -7,6 +7,10 @@
 DIR='/opt'
 DIR2='/usr'
 RIAK_HOME='monitis-riak-monitor'
+NAME='monitis-riak-monitor'
+
+#
+#set -xv
 #
 function copy_data()
 {
@@ -22,13 +26,13 @@ function copy_data()
 #
 function add_to_crontab()
 {
-	crontab -l | { cat; echo "*/1 * * * * (cd $1/$RIAK_HOME/ && bash riakm_start.sh > /dev/null)"; } | crontab -
+	crontab -l | { cat; echo "*/1 * * * * cd $1/$RIAK_HOME/ && $1/$RIAK_HOME/$NAME > /dev/null"; } | crontab -
 	service cron restart
 }
 #
 function remove_from_crontab()
 {
-	crontab -l|grep -v 'riakm_start.sh' | { cat; } | crontab -
+	crontab -l|grep -v "$NAME" | { cat; } | crontab -
 	service cron restart
 }
 #
@@ -57,20 +61,24 @@ function fs_error_msg()
 #
 function prepare_environment()
 {
-	echo -n "Creating directory $1/$RIAK_HOME for script files"
-	ret=$(mkdir -p "$1/$RIAK_HOME")
+#
+ABSOLUTE_PATH="$1/$RIAK_HOME"
+
+	echo -n "Creating directory $ABSOLUTE_PATH for script files"
+	ret=$(mkdir -p "$ABSOLUTE_PATH")
 	if [[ $ret -ne 0 ]];then
 		echo " Fail!"
 		exit 1
 	else
 		echo " Done"
 	fi
-	copy_data $1/$RIAK_HOME
+	copy_data $ABSOLUTE_PATH
 	remove_from_crontab
 	add_to_crontab $1
-	cd $1/$RIAK_HOME/ && bash riakm_start.sh create
+	chmod +x $ABSOLUTE_PATH/$NAME
+	cd $ABSOLUTE_PATH/ && bash $NAME create
 	cd - > /dev/null
-	echo "Monitis Riak monitor install path is:  $1/$RIAK_HOME"
+	echo "Monitis Riak monitor install path is:  $ABSOLUTE_PATH"
 	
 }
 #
