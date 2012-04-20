@@ -1,4 +1,3 @@
-
 MONITORING RIAK WITH MONITIS
 
 Original Author: Arthur Tumanyan
@@ -34,11 +33,11 @@ check into the Monitis dashboard to view your Riak Stats.
 
 DEPENDENCIES:
 
-Bourne Again Shell
-An installed instance of Riak
-Curl
+	Bourne Again Shell
+	An installed instance of Riak
+	Curl
 
 OTHER:
 
-Be sure you have right to run monitor_install.sh script
-Change APIKEY & SECRETKEY in monitis_constant.sh according to your settings
+	Be sure you have right to run monitor_install.sh script
+	Change APIKEY & SECRETKEY in monitis_constant.sh according to your settings
