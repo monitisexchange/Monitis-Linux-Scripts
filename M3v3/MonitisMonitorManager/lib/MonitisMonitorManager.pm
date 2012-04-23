@@ -1,22 +1,23 @@
 package MonitisMonitorManager;
 
 use 5.008008;
+require XML::Simple;
+require Data::Dumper;
+require Monitis;
+require Carp;
+require File::Basename;
+require URI::Escape;
+require Thread qw(async);
+require Date::Manip;
+require File::Basename;
+
 use strict;
 # don't use strict "refs" as we are going to call templated functions
 # that depend on variable names
 no strict "refs";
 use warnings;
-use XML::Simple;
-use Data::Dumper;
-use Monitis;
-use Carp;
-use File::Basename;
-use URI::Escape;
-use Thread qw(async);
-use Date::Manip;
 use threads::shared;
 use MonitisMonitorManager::MonitisConnection;
-use File::Basename;
 
 require Exporter;
 
@@ -608,9 +609,11 @@ This Perl module helps you manage Custom Monitors on Monitis (www.monitis.com).
 
   # configuration_xml is a file with the configuration XML, refer to some
   # examples here: https://github.com/monitisexchange/Monitis-Linux-Scripts/tree/master/M3v3/monitis-m3/usr/local/share/monitis-m3/sample_config
+  my $configuration_xml = "/etc/m3.d/config.xml";
 
   # test_config dictates whether to just test the configuration or actually
   # do a proper run
+  my $test_config = 0;
 
   # initialize the M3 instance
   my $M3 = MonitisMonitorManager->new(

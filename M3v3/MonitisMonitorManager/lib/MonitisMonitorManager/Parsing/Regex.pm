@@ -1,7 +1,6 @@
 package Parsing::Regex;
 use strict;
-use Carp;
-use Data::Dumper;
+require Carp;
 
 sub new {
 	my ($class, $name) = @_;

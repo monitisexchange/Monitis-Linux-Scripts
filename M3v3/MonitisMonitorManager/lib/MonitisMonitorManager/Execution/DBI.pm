@@ -1,11 +1,9 @@
 package Execution::DBI;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
-use Data::Dumper;
-use Time::HiRes qw(clock_gettime);
-use XML::Simple;
-use DBI;
+require Carp;
+require Time::HiRes qw(clock_gettime);
+require DBI;
 
 # constants for HTTP statistics
 use constant {

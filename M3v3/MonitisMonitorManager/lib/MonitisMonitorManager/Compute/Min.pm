@@ -1,8 +1,7 @@
 package Compute::Min;
 use strict;
-use Carp;
-use Data::Dumper;
-use List::Util qw(min);
+require Carp;
+require List::Util qw(min);
 my %min_hash = ();
 
 sub new {

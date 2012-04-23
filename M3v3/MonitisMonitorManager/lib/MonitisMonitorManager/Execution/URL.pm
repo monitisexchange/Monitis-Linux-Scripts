@@ -1,11 +1,9 @@
 package Execution::URL;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
-use Data::Dumper;
-use LWP::UserAgent;
-use Time::HiRes qw(clock_gettime);
-use XML::Simple;
+require Carp;
+require LWP::UserAgent;
+require Time::HiRes qw(clock_gettime);
 
 # constants for HTTP statistics
 use constant {

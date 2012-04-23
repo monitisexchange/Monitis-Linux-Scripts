@@ -1,9 +1,8 @@
 package Execution::LinuxSysStatistics;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
-use Data::Dumper;
-use Sys::Statistics::Linux;
+require Carp;
+require Sys::Statistics::Linux;
 my $linux_sys_statistics = Sys::Statistics::Linux->new( cpustats => 1,memstats  => 1,diskusage => 1 , loadavg   => 1);
 
 sub new {

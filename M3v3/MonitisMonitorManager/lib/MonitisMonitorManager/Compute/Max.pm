@@ -1,8 +1,7 @@
 package Compute::Max;
 use strict;
-use Carp;
-use Data::Dumper;
-use List::Util qw(max);
+require Carp;
+require List::Util qw(max);
 my %max_hash = ();
 
 sub new {

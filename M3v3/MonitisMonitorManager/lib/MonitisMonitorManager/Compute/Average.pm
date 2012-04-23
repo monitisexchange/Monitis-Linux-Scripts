@@ -1,7 +1,6 @@
 package Compute::Average;
 use strict;
-use Carp;
-use Data::Dumper;
+require Carp;
 my %avg_hash = ();
 
 sub new {

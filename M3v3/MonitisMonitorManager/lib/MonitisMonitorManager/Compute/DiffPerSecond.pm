@@ -1,7 +1,6 @@
 package Compute::DiffPerSecond;
 use strict;
-use Carp;
-use Data::Dumper;
+require Carp;
 my %diff_hash = ();
 
 sub new {

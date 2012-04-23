@@ -1,8 +1,7 @@
 package Execution::Executable;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
-use Data::Dumper;
+require Carp;
 
 sub new {
 	my ($class, $name) = @_;

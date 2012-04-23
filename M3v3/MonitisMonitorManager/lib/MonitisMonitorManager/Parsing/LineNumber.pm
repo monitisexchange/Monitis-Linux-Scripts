@@ -1,7 +1,7 @@
 package Parsing::LineNumber;
 use strict;
-use Carp;
-use Data::Dumper;
+require Carp;
+require Data::Dumper;
 
 sub new {
 	my ($class, $name) = @_;
