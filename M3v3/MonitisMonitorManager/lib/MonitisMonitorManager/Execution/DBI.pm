@@ -38,7 +38,7 @@ sub get_config {
 	${$plugin_parameters}{username} =
 		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
 	${$plugin_parameters}{password} =
-		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "password");
+		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "password");
 	${$plugin_parameters}{statistics} =
 		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics");
 }
