@@ -1,6 +1,6 @@
-package Compute::Average;
+package MonitisMonitorManager::Compute::Average;
 use strict;
-require Carp;
+use Carp;
 my %avg_hash = ();
 
 sub new {

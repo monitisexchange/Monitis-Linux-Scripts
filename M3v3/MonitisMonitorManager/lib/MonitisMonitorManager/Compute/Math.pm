@@ -1,6 +1,6 @@
-package Compute::Math;
+package MonitisMonitorManager::Compute::Math;
 use strict;
-require Carp;
+use Carp;
 
 sub new {
 	my ($class, $name) = @_;

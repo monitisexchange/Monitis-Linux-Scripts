@@ -1,8 +1,9 @@
-package Execution::DBI;
+package MonitisMonitorManager::Execution::DBI;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-require Carp;
-require Time::HiRes qw(clock_gettime);
+use Carp;
+require Time::HiRes;
+use Time::HiRes qw(clock_gettime);
 require DBI;
 
 # constants for HTTP statistics

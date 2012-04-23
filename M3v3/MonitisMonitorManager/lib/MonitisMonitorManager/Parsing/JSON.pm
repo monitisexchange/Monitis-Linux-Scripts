@@ -1,7 +1,6 @@
-package Parsing::JSON;
+package MonitisMonitorManager::Parsing::JSON;
 use strict;
-require Carp;
-require Data::Dumper;
+use Carp;
 require JSON;
 
 sub new {

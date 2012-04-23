@@ -1,6 +1,6 @@
-package Parsing::XPath;
+package MonitisMonitorManager::Parsing::XPath;
 use strict;
-require Carp;
+use Carp;
 
 sub new {
 	my ($class, $name) = @_;

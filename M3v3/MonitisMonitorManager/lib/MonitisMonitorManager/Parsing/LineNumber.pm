@@ -1,7 +1,6 @@
-package Parsing::LineNumber;
+package MonitisMonitorManager::Parsing::LineNumber;
 use strict;
-require Carp;
-require Data::Dumper;
+use Carp;
 
 sub new {
 	my ($class, $name) = @_;

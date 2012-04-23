@@ -1,7 +1,7 @@
 package MonitisMonitorManager::M3PluginCommon;
 use strict;
 no strict "refs";
-require Carp;
+use Carp;
 
 # returns the parameter specified or croaks on an error
 sub get_mandatory_parameter {

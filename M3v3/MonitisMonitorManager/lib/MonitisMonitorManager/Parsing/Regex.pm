@@ -1,6 +1,6 @@
-package Parsing::Regex;
+package MonitisMonitorManager::Parsing::Regex;
 use strict;
-require Carp;
+use Carp;
 
 sub new {
 	my ($class, $name) = @_;

@@ -1,7 +1,7 @@
-package Execution::SNMP;
+package MonitisMonitorManager::Execution::SNMP;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-require Carp;
+use Carp;
 require Net::SNMP;
 
 sub new {

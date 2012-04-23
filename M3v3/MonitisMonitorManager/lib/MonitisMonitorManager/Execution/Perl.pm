@@ -1,8 +1,9 @@
-package Execution::Perl;
+package MonitisMonitorManager::Execution::Perl;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-require Carp;
-require File::Temp qw/tempfile tempdir/;
+use Carp;
+require File::Temp;
+use File::Temp qw/tempfile tempdir/;
 
 sub new {
 	my ($class, $name) = @_;

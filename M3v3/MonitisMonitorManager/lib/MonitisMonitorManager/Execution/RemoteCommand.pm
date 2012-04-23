@@ -1,8 +1,7 @@
-package Execution::RemoteCommand;
+package MonitisMonitorManager::Execution::RemoteCommand;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-require Carp;
-require Time::HiRes qw(clock_gettime);
+use Carp;
 require Net::Telnet;
 require Net::SSH::Perl;
 require Encode;

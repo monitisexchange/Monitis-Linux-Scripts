@@ -1,7 +1,8 @@
-package Compute::Min;
+package MonitisMonitorManager::Compute::Min;
 use strict;
-require Carp;
-require List::Util qw(min);
+use Carp;
+require List::Util;
+use List::Util qw(min);
 my %min_hash = ();
 
 sub new {

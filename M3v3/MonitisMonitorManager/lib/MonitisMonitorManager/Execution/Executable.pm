@@ -1,7 +1,7 @@
-package Execution::Executable;
+package MonitisMonitorManager::Execution::Executable;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-require Carp;
+use Carp;
 
 sub new {
 	my ($class, $name) = @_;

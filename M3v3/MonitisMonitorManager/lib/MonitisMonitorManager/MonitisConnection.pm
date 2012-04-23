@@ -1,12 +1,13 @@
 package MonitisMonitorManager::MonitisConnection;
 use MonitisMonitorManager;
 use strict;
-require Thread qw(async);
+require Thread;
+use Thread qw(async);
 require Thread::Queue;
 use threads::shared;
 require Monitis;
-require Carp;
 require Data::Dumper;
+use Carp;
 
 # how long to wait between reconnection attempts
 # default would be 60 seconds, alright?
