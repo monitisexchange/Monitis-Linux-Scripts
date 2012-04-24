@@ -9,12 +9,12 @@
 # $2 - package name
 rpm_build_perl_module() {
 	local prefix_path=$1; shift
-	local pkg_name=$1; shift
-	local pkg_version=`grep 'our $VERSION' $prefix_path/lib/*.pm | cut -d"'" -f2`
+	local package_name=$1; shift
+	local package_version=`grep 'our $VERSION' $prefix_path/lib/*.pm | cut -d"'" -f2`
 
-	tar -czf $RPM_SOURCE_DIR/$pkg_name-$pkg_version.tar.gz $prefix_path && \
-	cpanflute2 --buildall $RPM_SOURCE_DIR/$pkg_name-$pkg_version.tar.gz && \
-	rm -f $RPM_SOURCE_DIR/$pkg_name-$pkg_version.tar.gz
+	tar -czf $RPM_SOURCE_DIR/$package_name-$package_version.tar.gz $prefix_path && \
+	cpanflute2 --buildall $RPM_SOURCE_DIR/$package_name-$package_version.tar.gz && \
+	rm -f $RPM_SOURCE_DIR/$package_name-$package_version.tar.gz
 }
 
 # build monitis-m3 rpm
@@ -58,13 +58,13 @@ rpm_build_monitis_m3() {
 # $2 - package name
 deb_build_perl_module() {
 	local prefix_path=$1; shift
-	local pkg_name=$1; shift
-	local pkg_version=`grep 'our $VERSION' $prefix_path/lib/*.pm | cut -d"'" -f2`
+	local package_name=$1; shift
+	local package_version=`grep 'our $VERSION' $prefix_path/lib/*.pm | cut -d"'" -f2`
 
 	local tmp_module_dir=`mktemp -d`
 	cp -av $prefix_path/* $tmp_module_dir/
 	# TODO this does not build a proper package with dependencies
-	dh-make-perl --version $pkg_version $tmp_module_dir
+	dh-make-perl --version $package_version $tmp_module_dir
 	cd $tmp_module_dir; debuild
 	rm -rf --preserve-root $tmp_module_dir/
 }
@@ -118,6 +118,37 @@ detect_package_manager() {
 	fi
 }
 
+# build monitis API
+Monitis() {
+	# build the Perl-SDK module
+	${PACKAGE_MANAGER}_build_perl_module ../../Perl-SDK Monitis
+}
+
+# build MonitisMonitorManager
+MonitisMonitorManager() {
+	# build the perl module
+	${PACKAGE_MANAGER}_build_perl_module MonitisMonitorManager MonitisMonitorManager
+}
+
+# build monitis-m3
+monitis-m3() {
+	# build the m3 init.d service package
+	${PACKAGE_MANAGER}_build_monitis_m3 monitis-m3
+}
+
+# prepare a CPAN upload
+CPAN_MonitisMonitorManager() {
+	local package_name=MonitisMonitorManager
+	local package_dir=MonitisMonitorManager
+	local package_version=`grep 'our $VERSION' $package_dir/lib/*.pm | cut -d"'" -f2`
+	local tmp_dir=`mktemp -d`
+	cp -av $package_dir $tmp_dir/$package_name-$package_version
+
+	(cd $tmp_dir && tar -czf /tmp/$package_name-$package_version.tar.gz *)
+	rm --preserve-root -rf $tmp_dir
+	echo "Package is at /tmp/$package_name-$package_version.tar.gz"
+}
+
 # main
 main() {
 	# avoid running `detect_package_manager` as it will run inside a subshell
@@ -128,14 +159,11 @@ main() {
 		exit 1
 	fi
 
-	# build the Perl-SDK module
-	${PACKAGE_MANAGER}_build_perl_module ../../Perl-SDK Monitis
-
-	# build the perl module
-	${PACKAGE_MANAGER}_build_perl_module MonitisMonitorManager MonitisMonitorManager
-
-	# build the m3 init.d service package
-	${PACKAGE_MANAGER}_build_monitis_m3 monitis-m3
+	if [ x"$1" != x ] && [ "$1" == "ALL" ]; then
+		Monitis && MonitisMonitorManager && monitis-m3
+	else
+		$@
+	fi
 }
 
 main "$@"
