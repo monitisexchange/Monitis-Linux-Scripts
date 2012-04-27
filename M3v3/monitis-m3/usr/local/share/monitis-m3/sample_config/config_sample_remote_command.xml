@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Remote Command Test" interval="300">
+
+		<monitor name="Remote Command Test" type="Remote Command Test">
+			<!-- Remote command invoked via Telnet -->
+			<remote_command>
+				<command>hostname</command>
+				<protocol>ssh</protocol>
+				<hostname>192.168.1.137</hostname>
+				<username>test</username>
+				<password>password</password>
+			</remote_command>
+			<!-- Remote command invoked via SSH -->
+			<remote_command>
+				<command>hostname</command>
+				<protocol>ssh</protocol>
+				<hostname>192.168.1.137</hostname>
+				<username>test</username>
+				<password>password</password>
+			</remote_command>
+			<metric name="Hostname Via Telnet">
+				<type>string</type>
+				<uom>N/A</uom>
+				<line>1</line>
+			</metric>
+			<metric name="Hostname Via SSH">
+				<type>string</type>
+				<uom>N/A</uom>
+				<line>2</line>
+			</metric>
+		</monitor>
+
+	</agent>
+</config>
