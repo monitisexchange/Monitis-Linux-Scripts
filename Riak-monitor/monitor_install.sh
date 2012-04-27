@@ -8,7 +8,15 @@ DIR='/opt'
 DIR2='/usr'
 RIAK_HOME='monitis-riak-monitor'
 NAME='monitis-riak-monitor'
-
+if [[ ! -f /usr/sbin/riak-admin ]];then
+	echo "Can not find riak-admin"
+	exit 2
+fi
+#
+if [[ ! -f /usr/bin/curl ]];then
+	echo "Can not find curl";
+	exit 2;
+fi
 #
 #set -xv
 #
