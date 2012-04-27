@@ -4,8 +4,8 @@ use 5.008008;
 require XML::Simple;
 require Data::Dumper;
 require Monitis;
-require URI::Escape;
 require Thread;
+require URI;
 use Thread qw(async);
 
 use strict;
@@ -14,6 +14,7 @@ use strict;
 no strict "refs";
 use warnings;
 use threads::shared;
+use URI::Escape;
 use MonitisMonitorManager::MonitisConnection;
 use Carp;
 use Date::Manip;
@@ -40,7 +41,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '3.2';
+our $VERSION = '3.3';
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -458,7 +459,7 @@ sub update_data_for_monitor($$$$@) {
 	}
 
 	if ($self->dry_run()) {
-		carp "OK\n";
+		carp "OK";
 		carp "This is a dry run, data for monitor '$monitor_name' was not really updated.";
 		return;
 	}
