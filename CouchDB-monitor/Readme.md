@@ -44,3 +44,4 @@ OTHER:
 
 	Be sure you have right to run monitor_install.sh script
 	Change APIKEY & SECRETKEY in monitis_constant.sh according to your settings
+	Change TARGET_HOST & TARGET_PORT in monitis_constant.sh according to your settings
