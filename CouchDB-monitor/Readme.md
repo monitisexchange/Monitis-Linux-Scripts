@@ -8,7 +8,7 @@ Web Site: http://www.netangels.net
 
 OVERVIEW:
 ---------
-These scripts allow a user to easily get some monitoring around their Riak installs using Monitis.
+These scripts allow a user to easily get some monitoring around their CouchDB installs using Monitis.
 
 
 INSTALLATION:
