@@ -5,7 +5,7 @@
 declare	TARGET_HOST="127.0.0.1"
 declare TARGET_PORT=5984
 
-declare  SERVER="http://sandbox.monitis.com/"			# Monitis server
+declare  SERVER="http://www.monitis.com/"			# Monitis server
 declare  API_PATH="customMonitorApi"				# Custom API path
 
 declare  APIKEY="7A04S52D7FOOS5IC5CPMJEJ0N2"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
