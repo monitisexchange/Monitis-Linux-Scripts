@@ -72,32 +72,34 @@ deb_build_perl_module() {
 
 # build monitis-m3 deb
 # $1 - package name to use
-deb_build_monitis_m3() {
-	local package_name=$1; shift
-	local spec_file=$package_name.spec
-	local package_version=`grep "^Version:" monitis-m3.spec | awk '{print $2}'`
-	local package_release=`grep "^Release:" monitis-m3.spec | awk '{print $2}'`
+deb_build_MonitisMonitorManager() {
+	local perl_module_name=$1; shift
+	local package_name=libmonitismonitormanager-perl
 
 	local buildroot_dir=`mktemp -d /tmp/buildroot.XXXXX`
-	mkdir -p $buildroot_dir
-	cp -av $package_name/* $buildroot_dir/
+	local install_dir=`mktemp -d`
+	cp -av $perl_module_name/* $buildroot_dir/
+	(cd $buildroot_dir && dh-make-perl --build)
+	# great, that builds it all, but without the etc directory :(
+	# so this is ugly, but now we'll more or less "rebuild" it
+	# again...
+
+	# TODO VERY UGLY!!
+	cp -av $buildroot_dir/debian/$package_name/* $install_dir/
+	cp -av $buildroot_dir/etc $install_dir/
+	mv $buildroot_dir/etc/sysconfig $install_dir/etc/default
 
 	# remove the rhel init service and use the debian one
-	rm -f $buildroot_dir/etc/init.d/rpm.m3
-	mv $buildroot_dir/etc/init.d/deb.m3 $buildroot_dir/etc/init.d/m3
+	rm -f $install_dir/etc/init.d/rpm.m3
+	mv $install_dir/etc/init.d/deb.m3 $install_dir/etc/init.d/m3
 
-	# TODO a bit ugly!
-	mv $buildroot_dir/etc/sysconfig $buildroot_dir/etc/default
-
-	# export the debian control file
-	mkdir -p $buildroot_dir/DEBIAN
-	cp -av control $buildroot_dir/DEBIAN/
-
-	dpkg -b $buildroot_dir ${package_name}_${package_version}-${package_release}_all.deb
-	echo "Built in : $buildroot_dir"
+	# ok, build (or actually just package it now)!
+	local package_version_release=`grep '^Version' $install_dir/DEBIAN/control | cut -d' ' -f2`
+	dpkg -b $install_dir ${package_name}_${package_version_release}_all.deb
+	echo "Built in : $install_dir"
 
 	# clean it up
-	rm -rf --preserve-root $buildroot_dir
+	rm -rf --preserve-root $buildroot_dir $install_dir
 }
 
 ##############
