@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# munin/interface.sh - an integration of munin and monitis
+# munin_xml_generator - an integration of Monitis/M3 with Munin
 # Written by Dan Fruehauf <malkodan@gmail.com>
 
 # this will usually not change

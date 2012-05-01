@@ -47,7 +47,9 @@ WriteMakefile(
 		'Net::Telnet' >= 0,
 		'Net::SSH::Perl' >= 0,
 	},
+	EXE_FILES			=>
+		[ qw(scripts/monitis-m3) ],
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/MonitisMonitorManager.pm', # retrieve abstract from module
+      (ABSTRACT  => 'Monitis Monitor Manager (M3)', # retrieve abstract from module
        AUTHOR         => 'Dan Fruehauf <malkodan@gmail.com>') : ()),
 );

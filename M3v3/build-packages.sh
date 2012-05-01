@@ -17,22 +17,23 @@ rpm_build_perl_module() {
 	rm -f $RPM_SOURCE_DIR/$package_name-$package_version.tar.gz
 }
 
-# build monitis-m3 rpm
+# build perl-MonitisMonitorManager rpm
 # $1 - package name to use
-rpm_build_monitis_m3() {
-	local package_name=$1; shift
+rpm_build_MonitisMonitorManager() {
+	local perl_module_name=$1; shift
+	local package_name=perl-$perl_module_name; shift
 	local spec_file=$package_name.spec
-	local package_version=`grep "^Version:" monitis-m3.spec | awk '{print $2}'`
-	local package_release=`grep "^Release:" monitis-m3.spec | awk '{print $2}'`
+	local package_version=`grep "^Version:" $spec_file | awk '{print $2}'`
+	local package_release=`grep "^Release:" $spec_file | awk '{print $2}'`
 
 
 	local buildroot_dir=`mktemp -d /tmp/buildroot.XXXXX`
 	mkdir -p $buildroot_dir/$package_name-$package_version
-	cp -av $package_name/* $buildroot_dir/$package_name-$package_version
+	cp -av $perl_module_name/* $buildroot_dir/$package_name-$package_version
 
 	# remove the debian init service and use the rhel one
-	rm -f $buildroot_dir/$package_name-$package_version/etc/init.d/deb.m3
-	mv $buildroot_dir/$package_name-$package_version/etc/init.d/rpm.m3 $buildroot_dir/$package_name-$package_version/etc/init.d/m3
+	#(cd $buildroot_dir/$package_name-$package_version && ls && rm -f etc/init.d/deb.m3 && \
+	#	mv etc/init.d/rpm.m3 etc/init.d/m3)
 
 	(cd $buildroot_dir; tar -czf $package_name.tar.gz $package_name-$package_version)
 	echo $buildroot_dir
@@ -42,7 +43,7 @@ rpm_build_monitis_m3() {
 
 	# build src.rpm
 	local rpm_buildsrc_log=`mktemp /tmp/rpmsrc.log.XXXXX`
-	rpmbuild -bs monitis-m3.spec | tee $rpm_buildsrc_log
+	rpmbuild -bs $spec_file | tee $rpm_buildsrc_log
 	local rpmsrc=`cat $rpm_buildsrc_log | grep 'Wrote:' | cut -d' ' -f2`
 
 	# build binary rpm
@@ -127,13 +128,7 @@ Monitis() {
 # build MonitisMonitorManager
 MonitisMonitorManager() {
 	# build the perl module
-	${PACKAGE_MANAGER}_build_perl_module MonitisMonitorManager MonitisMonitorManager
-}
-
-# build monitis-m3
-monitis-m3() {
-	# build the m3 init.d service package
-	${PACKAGE_MANAGER}_build_monitis_m3 monitis-m3
+	${PACKAGE_MANAGER}_build_MonitisMonitorManager MonitisMonitorManager
 }
 
 # prepare a CPAN upload
@@ -142,11 +137,11 @@ CPAN_MonitisMonitorManager() {
 	local package_dir=MonitisMonitorManager
 	local package_version=`grep 'our $VERSION' $package_dir/lib/*.pm | cut -d"'" -f2`
 	local tmp_dir=`mktemp -d`
-	cp -av $package_dir $tmp_dir/$package_name-$package_version
+	cp -av $package_dir/* $tmp_dir
 
-	(cd $tmp_dir && tar -czf /tmp/$package_name-$package_version.tar.gz *)
-	rm --preserve-root -rf $tmp_dir
+	(cd $tmp_dir && perl Makefile.PL && make dist && mv $package_name*.tar.gz /tmp)
 	echo "Package is at /tmp/$package_name-$package_version.tar.gz"
+	rm --preserve-root -rf $tmp_dir
 }
 
 # main
@@ -160,7 +155,7 @@ main() {
 	fi
 
 	if [ x"$1" != x ] && [ "$1" == "ALL" ]; then
-		Monitis && MonitisMonitorManager && monitis-m3
+		Monitis && MonitisMonitorManager
 	else
 		$@
 	fi
