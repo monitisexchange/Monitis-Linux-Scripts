@@ -5,7 +5,7 @@ use Getopt::Long;
 use MonitisMonitorManager;
 use File::Temp qw/tempfile/;
 
-my $monitis_config_dir = "/etc/m3.d";
+my $monitis_config_dir = $ENV{HOME} . "/.m3";
 defined($ENV{M3_CONFIG_DIR}) and $monitis_config_dir = $ENV{M3_CONFIG_DIR};
 require "$monitis_config_dir/M3Templates.pm";
 
