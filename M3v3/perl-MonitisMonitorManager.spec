@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/sysconfig/m3
 
 %changelog
-* Tue Apr 31 2012 Dan Fruehauf <malkodan@gmail.com> - 3.4-1
+* Tue May 1 2012 Dan Fruehauf <malkodan@gmail.com> - 3.4-1
 - Initial release which actually works
 
 * Mon Apr 30 2012 Dan Fruehauf <malkodan@gmail.com> - 3.3-8
