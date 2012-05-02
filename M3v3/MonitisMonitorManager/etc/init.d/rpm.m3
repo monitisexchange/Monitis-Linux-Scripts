@@ -23,7 +23,7 @@
 
 [ -r /etc/sysconfig/m3 ] && . /etc/sysconfig/m3
 
-m3=/usr/local/bin/monitis-m3
+m3=/usr/bin/monitis-m3
 
 RETVAL=0
 
