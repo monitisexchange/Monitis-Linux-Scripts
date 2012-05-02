@@ -134,7 +134,7 @@ MonitisMonitorManager() {
 }
 
 # prepare a CPAN upload
-CPAN_MonitisMonitorManager() {
+CPAN() {
 	local package_name=MonitisMonitorManager
 	local package_dir=MonitisMonitorManager
 	local package_version=`grep 'our $VERSION' $package_dir/lib/*.pm | cut -d"'" -f2`
