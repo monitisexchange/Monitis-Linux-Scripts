@@ -19,17 +19,17 @@ Source: perl-MonitisMonitorManager.tar.gz
 %setup -q -n perl-MonitisMonitorManager-%{version}
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" %{__perl} Makefile.PL
+# force installation to go to /usr and not /usr/local as the init.d service
+# needs stuff in /usr/bin/monitis-m3
+CFLAGS="$RPM_OPT_FLAGS" %{__perl} Makefile.PL PREFIX=$RPM_BUILD_ROOT/usr
 make %{?_smp_mflags} OPTIMIZE="$RPM_OPT_FLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-# force installation to go to /usr and not /usr/local as the init.d service
-# needs stuff in /usr/bin/monitis-m3
-make pure_install PREFIX=$RPM_BUILD_ROOT/usr
-# this is the original line
+# this is the original line, but we've set the PREFIX previously
 #make pure_install PERL_INSTALL_ROOT=$RPM_BUILD_ROOT
+make pure_install
 
 find $RPM_BUILD_ROOT -type f -a \( -name perllocal.pod -o -name .packlist \
   -o \( -name '*.bs' -a -empty \) \) -exec rm -f {} ';'
