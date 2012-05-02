@@ -14,13 +14,13 @@ M3 depends on the Monitis API Perl module
 
 Installing via CPAN is generic and should work on most GNU/Linux systems.
 
-There isn''t much of a difference comparing to other perl modules:
+There isn't much of a difference comparing to other perl modules:
 
  # cpan install MonitisMonitorManager
 
-This would install the 2 relevant Perl modules, you should still however get
+This would install the two relevant Perl modules (Monitis Perl SDK and
 
-the init.d wrapper package (monitis-m3).
+MonitisMonitorManager) but without the init.d script.
 
 ### RHEL/CentOS 6.x or any other recent RPM based distribution
 
