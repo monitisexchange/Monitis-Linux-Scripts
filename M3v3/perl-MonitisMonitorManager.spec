@@ -16,8 +16,7 @@ Source: perl-MonitisMonitorManager.tar.gz
 %{summary}.
 
 %prep
-#%setup -q -n perl-MonitisMonitorManager-%{version}
-%setup -n perl-MonitisMonitorManager-%{version}
+%setup -q -n perl-MonitisMonitorManager-%{version}
 
 %build
 CFLAGS="$RPM_OPT_FLAGS" %{__perl} Makefile.PL
