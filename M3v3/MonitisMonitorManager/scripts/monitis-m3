@@ -9,6 +9,7 @@ use File::Temp qw/tempfile/;
 my @m3templates_file_locations = ();
 defined($ENV{HOME}) and push @m3templates_file_locations, $ENV{HOME} . "/.m3";
 defined($ENV{M3_CONFIG_DIR}) and push @m3templates_file_locations, $ENV{M3_CONFIG_DIR};
+push @m3templates_file_locations, "/etc/m3.d";
 
 my $m3templates_file = "";
 foreach my $directory (@m3templates_file_locations) {
