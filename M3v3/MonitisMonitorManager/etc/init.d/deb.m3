@@ -20,7 +20,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Monitis M3"
 NAME=m3
-EXEC_NAME=monitis-m3.pl
+EXEC_NAME=monitis-m3
 DAEMON=/usr/bin/$EXEC_NAME
 DAEMON_ARGS="/etc/m3.d/config.xml"
 PIDFILE=/var/run/$NAME.pid
