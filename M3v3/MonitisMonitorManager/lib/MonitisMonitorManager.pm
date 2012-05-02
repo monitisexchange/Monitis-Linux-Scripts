@@ -638,8 +638,10 @@ This Perl module helps you manage Custom Monitors on Monitis (www.monitis.com).
 For full proper documentation please refer to:
 https://github.com/monitisexchange/Monitis-Linux-Scripts/blob/master/M3v3/README.md
 
-M3 Perl module is incomplete on its own, you should also use the monitis-m3
-package which packages an init.d service. Find it here:
+M3 Perl module comes with an init.d service. If you're using a RPM or DEB
+package then you're good to do, however the CPAN installation will not take
+care of this...
+Find it here:
 https://github.com/monitisexchange/Monitis-Linux-Scripts/tree/master/M3v3
 
 =head2 EXPORT
