@@ -1,7 +1,6 @@
-package Parsing::Regex;
+package MonitisMonitorManager::Parsing::Regex;
 use strict;
 use Carp;
-use Data::Dumper;
 
 sub new {
 	my ($class, $name) = @_;

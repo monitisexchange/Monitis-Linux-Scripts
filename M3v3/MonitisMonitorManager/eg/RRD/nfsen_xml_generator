@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# nfsen_xml_generator - an integration of Monitis/M3 and nfsen
+# for more information about netflow, refer to here:
+# http://www.techienote.com/2010/12/netflow-to-monitor-traffic-at-cisco-router.html
+# Written by Dan Fruehauf <malkodan@gmail.com>
+
+# this will usually not change
+# TODO TODO
+declare -r NFSEN_DIR=/tmp/data/nfsen/profiles-stat/live
+
+# TODO some end in g.rrd, c.rrd and d.rrd - find out the meaning of it
+declare -r NFSEN_RRD_SUFFIX=".rrd"
+
+# this is the tag prefix in monitis
+declare -r MONITIS_TAG_PREFIX="nf"
+
+# prints XML header
+print_header() {
+	echo '<?xml version="1.0"?>'
+	echo '<config>'
+	echo '	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>'
+	echo '	<agent name="Netflow Agent" interval="60">'
+
+}
+
+# print XML footer
+print_footer() {
+	echo '	</agent>'
+	echo '</config>'
+}
+
+# prints a M3 XML for a nfsen host
+# $1 - hostname
+# $2 - monitor (optional)
+print_xml() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	print_header
+	print_xml_for_hostname $hostname
+	print_footer
+}
+
+# print a XML for a single host and all its counters
+# $1 - hostname
+print_xml_for_hostname() {
+	local hostname=$1; shift
+	# monitor header
+	echo "		<monitor name=\"$monitor\" tag=\"${MONITIS_TAG_PREFIX}_${hostname}\">"
+	echo "			<exectemplate>rrdtool lastupdate $NFSEN_DIR/$hostname$NFSEN_RRD_SUFFIX | tail -1 | tr -d : | tr \" \" \"\\n\"</exectemplate>"
+
+	# this will extract the time of the test
+	echo '			<metric name="MONITIS_CHECK_TIME">'
+	echo '				<type>integer</type>'
+	echo '				<uom>timestamp</uom>'
+	echo '				<line>1</line>'
+	echo '			</metric>'
+
+	local -i i=2
+	for counter in `list_counters_for_host $hostname`; do
+		echo "			<metric name=\"$counter\">"
+		echo "				<type>integer</type>"
+		echo "				<uom>$monitor_uom</uom>"
+		echo "				<line>$i</line>"
+		echo "			</metric>"
+		let i=$i+1
+	done
+	echo "		</monitor>"
+}
+
+# list all hosts
+list_hosts() {
+	cd $NFSEN_DIR && ls -1 *$NFSEN_RRD_SUFFIX | cut -d'.' -f1
+}
+
+# returns the counters a host supports
+# $1 - hostname
+list_counters_for_host() {
+	local hostname=$1; shift
+	(cd $NFSEN_DIR && rrdtool info $hostname$NFSEN_RRD_SUFFIX  | grep "^ds\[" | cut -d. -f1 | cut -d\[ -f2 | cut -d']' -f1 | sort | uniq | xargs)
+}
+
+# returns the UOM (unit of measurement) of a monitor
+# $1 - hostname
+# $2 - monitor name
+get_monitor_uom() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	grep "$hostname;$hostname:$monitor\.graph_vlabel" $NFSEN_DIR/datafile | cut -d' ' -f2-
+}
+
+# $1 - hostname
+# $2 - monitor
+main() {
+	local hostname=$1; shift
+	local monitor=$1; shift
+	if [ x"$hostname" != x ]; then
+		print_xml $hostname
+	else
+		echo "Usage: $0 hostname"
+		return 1
+	fi
+}
+
+main "$@"

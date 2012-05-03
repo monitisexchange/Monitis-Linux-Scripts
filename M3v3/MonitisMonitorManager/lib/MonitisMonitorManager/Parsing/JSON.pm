@@ -1,8 +1,7 @@
-package Parsing::JSON;
+package MonitisMonitorManager::Parsing::JSON;
 use strict;
 use Carp;
-use Data::Dumper;
-use JSON;
+require JSON;
 
 sub new {
 	my ($class, $name) = @_;

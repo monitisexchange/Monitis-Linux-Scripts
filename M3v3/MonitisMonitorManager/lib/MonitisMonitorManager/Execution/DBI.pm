@@ -1,11 +1,10 @@
-package Execution::DBI;
+package MonitisMonitorManager::Execution::DBI;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
 use Carp;
-use Data::Dumper;
+require Time::HiRes;
 use Time::HiRes qw(clock_gettime);
-use XML::Simple;
-use DBI;
+require DBI;
 
 # constants for HTTP statistics
 use constant {
@@ -39,7 +38,7 @@ sub get_config {
 	${$plugin_parameters}{username} =
 		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "username");
 	${$plugin_parameters}{password} =
-		MonitisMonitorManager::M3PluginCommon::get_mandatory_parameter($self, $plugin_xml_base, "password");
+		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "password");
 	${$plugin_parameters}{statistics} =
 		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics");
 }

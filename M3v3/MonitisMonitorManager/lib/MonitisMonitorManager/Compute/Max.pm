@@ -1,7 +1,7 @@
-package Compute::Max;
+package MonitisMonitorManager::Compute::Max;
 use strict;
 use Carp;
-use Data::Dumper;
+require List::Util;
 use List::Util qw(max);
 my %max_hash = ();
 

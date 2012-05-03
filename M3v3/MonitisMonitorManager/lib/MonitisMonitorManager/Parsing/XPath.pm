@@ -1,7 +1,6 @@
-package Parsing::XPath;
+package MonitisMonitorManager::Parsing::XPath;
 use strict;
 use Carp;
-use Data::Dumper;
 
 sub new {
 	my ($class, $name) = @_;

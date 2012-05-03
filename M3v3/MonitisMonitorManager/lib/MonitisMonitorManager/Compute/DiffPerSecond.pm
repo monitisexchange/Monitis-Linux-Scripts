@@ -1,7 +1,6 @@
-package Compute::DiffPerSecond;
+package MonitisMonitorManager::Compute::DiffPerSecond;
 use strict;
 use Carp;
-use Data::Dumper;
 my %diff_hash = ();
 
 sub new {

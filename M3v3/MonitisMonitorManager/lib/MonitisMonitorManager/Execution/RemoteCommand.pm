@@ -1,13 +1,10 @@
-package Execution::RemoteCommand;
+package MonitisMonitorManager::Execution::RemoteCommand;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
 use Carp;
-use Data::Dumper;
-use Time::HiRes qw(clock_gettime);
-use XML::Simple;
-use Net::Telnet;
-use Net::SSH::Perl;
-use Encode;
+require Net::Telnet;
+require Net::SSH::Perl;
+require Encode;
 
 sub new {
 	my ($class, $name) = @_;

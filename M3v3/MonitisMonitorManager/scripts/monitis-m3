@@ -5,9 +5,25 @@ use Getopt::Long;
 use MonitisMonitorManager;
 use File::Temp qw/tempfile/;
 
-my $monitis_config_dir = "/etc/m3.d";
-defined($ENV{M3_CONFIG_DIR}) and $monitis_config_dir = $ENV{M3_CONFIG_DIR};
-require "$monitis_config_dir/M3Templates.pm";
+# look for a M3Templates.pm file
+my @m3templates_file_locations = ();
+defined($ENV{HOME}) and push @m3templates_file_locations, $ENV{HOME} . "/.m3";
+defined($ENV{M3_CONFIG_DIR}) and push @m3templates_file_locations, $ENV{M3_CONFIG_DIR};
+push @m3templates_file_locations, "/etc/m3.d";
+
+my $m3templates_file = "";
+foreach my $directory (@m3templates_file_locations) {
+	my $potential_m3templates_file = "$directory/M3Templates.pm";
+	if ( -e $potential_m3templates_file ) {
+		print "Using $potential_m3templates_file as M3Templates.pm\n";
+		$m3templates_file = $potential_m3templates_file;
+		last;
+	}
+}
+if ( $m3templates_file eq "" ) {
+	die "Couldn't find a proper M3Templates.pm file";
+}
+require "$m3templates_file";
 
 # print usage
 sub usage() {

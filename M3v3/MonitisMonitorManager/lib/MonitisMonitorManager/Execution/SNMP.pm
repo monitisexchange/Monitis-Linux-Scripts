@@ -1,9 +1,8 @@
-package Execution::SNMP;
+package MonitisMonitorManager::Execution::SNMP;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
 use Carp;
-use Data::Dumper;
-use Net::SNMP;
+require Net::SNMP;
 
 sub new {
 	my ($class, $name) = @_;
