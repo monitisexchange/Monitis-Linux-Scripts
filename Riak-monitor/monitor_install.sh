@@ -5,7 +5,6 @@
 #	Company: Netangels <http://www.netangels.net>                       # 
 #############################################################################
 DIR='/opt'
-DIR2='/usr'
 RIAK_HOME='monitis-riak-monitor'
 NAME='monitis-riak-monitor'
 if [[ ! -f /usr/sbin/riak-admin ]];then
@@ -23,7 +22,8 @@ fi
 function copy_data()
 {
 	echo -n "Copying files to $1"
-	ret=$(cp -R monitor/* $1/)
+	cp -R monitor/* $1/
+	ret="$?"
 	if [[ $ret -ne 0 ]];then
 		echo " Fail!"
 		exit 1
@@ -50,13 +50,14 @@ function destroy_environment()
 	if [[ ! -d $1/$RIAK_HOME ]];then
 		echo "NOTHING TO REMOVE"
 	else
-	ret=$(rm -rf "$1/$RIAK_HOME")
-	if [[ $ret -ne 0 ]];then
-		echo " Fail!"
-		exit 1
-	else
-		echo " Done"
-	fi
+		rm -rf "$1/$RIAK_HOME"
+		ret="$?"
+		if [[ $ret -ne 0 ]];then
+			echo " Fail!"
+			exit 1
+		else
+			echo " Done"
+		fi
 	fi
 	remove_from_crontab
 }
@@ -73,7 +74,8 @@ function prepare_environment()
 ABSOLUTE_PATH="$1/$RIAK_HOME"
 
 	echo -n "Creating directory $ABSOLUTE_PATH for script files"
-	ret=$(mkdir -p "$ABSOLUTE_PATH")
+	mkdir -p "$ABSOLUTE_PATH"
+	ret="$?"
 	if [[ $ret -ne 0 ]];then
 		echo " Fail!"
 		exit 1
@@ -90,23 +92,31 @@ ABSOLUTE_PATH="$1/$RIAK_HOME"
 	
 }
 #
+echo -n "Enter the installation absolute path or Return for default value:"
+read user_path
+
+if [[ "x$user_path" == "x" ]];then
+        echo "Default path is: $DIR"
+else
+        if [[ ! -d $user_path ]];then
+                echo "No such directory...exiting "
+                echo
+		exit 1
+	else
+		DIR=$user_path
+        fi
+fi
+
 #
 if [[ "$1" == "destroy" ]];then
 	if [[ -d $DIR ]];then
 		destroy_environment $DIR
-		exit 0
-	elif [[ -d $DIR2 ]];then
-		destroy_environment $DIR2
-		exit 0
-	else
-		fs_error_msg
 	fi
-fi
-
-if [[ -d $DIR ]];then
+elif [[ -d $DIR ]];then
 	prepare_environment $DIR
-elif [[ -d $DIR2 ]];then
-	prepare_environment $DIR2
 else
 	fs_error_msg
 fi
+
+exit 0
+
