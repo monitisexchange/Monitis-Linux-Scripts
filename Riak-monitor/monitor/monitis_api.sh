@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Monitis Open API wrapper
 
 # include source folders
@@ -352,6 +353,7 @@ function add_custom_monitor_data() {
 	req="$SERVER""$API_PATH"
 	
 	response="$(curl -s $permdata $postdata	 $req)"
+	
 	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]] # Normally, the response text length shouldn't exceed 200 chars
 	then # Likely, we received correct answer
 		#parsing
