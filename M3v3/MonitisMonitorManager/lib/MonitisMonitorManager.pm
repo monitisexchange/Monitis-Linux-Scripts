@@ -206,27 +206,31 @@ sub get_id_of_monitor($$$) {
 sub handle_raw_command($$) {
 	my ($self, $raw) = @_;
 	print "Raw command is: '$raw'\n";
-	my ($command, $monitor_name, @raw_parameters) = split /\s+/, $raw;
+	my (@raw_parameters) = split /\s+/, $raw;
+	my $command = pop @raw_parameters;
 
 	# a quick debug message
-	carp "Handling raw command: '$command', monitor_name: '$monitor_name'" if DEBUG;
+	carp "Handling raw command: '$command'" if DEBUG;
 
 	for ($command) {
 		/add_monitor/ and do {
-			my ($monitor_tag, $result_params) = @raw_parameters;
+			my $monitor_name = pop @raw_parameters;
+			my $monitor_tag = pop @raw_parameters;
+			my $result_params = pop @raw_parameters;
 			$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params);
 		};
 		/update_data/ and do {
-			my ($monitor_tag, $result_params) = @raw_parameters;
+			my $monitor_name = pop @raw_parameters;
+			my $monitor_tag = pop @raw_parameters;
+			my $result_params = pop @raw_parameters;
 			$self->update_data_for_monitor_raw("", $monitor_name, $monitor_tag, time, $result_params);
 		};
 		/list_monitors/ and do {
-			my ($monitor_tag, $result_params) = @raw_parameters;
-			$self->list_monitors_raw($monitor_name, $monitor_tag, $result_params);
+			$self->list_monitors_raw();
 		};
 		/delete_monitor/ and do {
-			my ($monitor_tag, $result_params) = @raw_parameters;
-			$self->delete_monitor_raw($monitor_name, $monitor_tag, $result_params);
+			my $monitor_id = pop @raw_parameters;
+			$self->delete_monitor_raw($monitor_id);
 		};
 	}
 }
