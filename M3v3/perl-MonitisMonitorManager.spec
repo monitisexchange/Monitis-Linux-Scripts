@@ -1,6 +1,6 @@
 Summary: MonitisMonitorManager Perl module
 Name: perl-MonitisMonitorManager
-Version: 3.4
+Version: 3.6
 Release: 1
 License: GPL or Artistic
 Group: Development/Libraries
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/sysconfig/m3
 
 %changelog
+* Fri May 18 2012 Dan Fruehauf <malkodan@gmail.com> - 3.6-1
+- Added raw command for listing and deleting monitors
+
 * Tue May 1 2012 Dan Fruehauf <malkodan@gmail.com> - 3.4-1
 - Initial release which actually works
 
