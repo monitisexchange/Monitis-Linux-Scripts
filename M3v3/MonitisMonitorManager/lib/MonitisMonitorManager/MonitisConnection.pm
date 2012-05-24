@@ -168,7 +168,7 @@ sub stop($) {
 # simply queue a request
 sub queue($$$$$$) {
 	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results) = @_;
-	carp "Queueing item: '$agent_name' => '$monitor_name' => '$results' (TS: '$checktime') (TAG: '$monitor_tag')";
+	carp "Queuing item: '$agent_name' => '$monitor_name' => '$results' (TS: '$checktime') (TAG: '$monitor_tag')";
 
 	# queue the item
 	$self->{queue}->enqueue(
