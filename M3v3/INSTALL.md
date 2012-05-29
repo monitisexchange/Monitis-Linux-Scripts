@@ -31,30 +31,40 @@ via CPAN, or add the <a href="http://wiki.centos.org/AdditionalResources/Reposit
 These 2 repositories provide RPM versions of the required perl modules.
 
 Provided in the links below are links to RPMs of the 2 packages:
- * <a href="TODOTODO">perl-Monitis</a>
- * <a href="TODOTODO">perl-MonitisMonitorManager</a>
+ * <a href="http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm">perl-Monitis</a>
+ * <a href="http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.6-1.noarch.rpm">perl-MonitisMonitorManager</a>
 
 The following should take care of you:
 
  # cd /tmp
 
- # wget -c TODO.rpm TODO.rpm
+ # wget -c http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.6-1.noarch.rpm
 
- # yum localinstall TODO.rpm TODO.rpm
+ # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.6-1.noarch.rpm
 
-### Debian 6.x
+### Debian 6.x / Ubuntu 12.x
 
 Provided in the links below are links to DEBs of the 2 packages:
- * <a href="TODOTODO">libmonitis-perl</a>
- * <a href="TODOTODO">libmonitismonitormanager-perl</a>
+ * <a href="http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb">libmonitis-perl</a>
+ * <a href="http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.6-1_all.deb">libmonitismonitormanager-perl</a>
 
 The following should take care of you:
 
  # cd /tmp
 
- # wget -c TODO.deb TODO.deb
+ # wget -c http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.6-1_all.deb
 
- # gdebi TODO.deb TODO.deb
+ # gdebi libmonitis-perl_0.92_all.deb && gdebi libmonitismonitormanager-perl_3.6-1_all.deb
+
+Alternatively if you don't have gdebi installed for any reason, just use dpkg:
+
+ # dpkg -i libmonitis-perl_0.92_all.deb libmonitismonitormanager-perl_3.6-1_all.deb
+
+On Debian/Ubuntu for some reason building packages is not done with dependencies.
+
+Run this to fulfill most of them
+
+ # apt-get install libxml-simple-perl libjson-perl libdate-manip-perl libsys-statistics-linux-perl libnet-telnet-perl libnet-ssh-perl libsnmp-perl libnet-snmp-perl
 
 ### Standalone invocation
 
