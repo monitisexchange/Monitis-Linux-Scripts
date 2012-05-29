@@ -74,13 +74,19 @@ Run this to fulfill most of them
 
  # apt-get install libxml-simple-perl libjson-perl libdate-manip-perl libsys-statistics-linux-perl libnet-telnet-perl libnet-ssh-perl libsnmp-perl libnet-snmp-perl
 
+In addition to that, for some reason Net::SSH::Perl is not packaged by
+
+Debian/Ubuntu, so in order to install it via CPAN, run:
+
+ # cpan -i Net::SSH::Perl
+
 ### Standalone invocation
 
 /usr/local/bin/monitis-m3 is the main executable in the distribution.
 
-Its configuration resides at /etc/m3.d/M3Templates.pl.
+Its configuration resides at /etc/m3.d/M3Templates.pm.
 
-Please edit /etc/m3.d/M3Templates.pl and add your API and secret key.
+Please edit /etc/m3.d/M3Templates.pm and add your API and secret key.
 
 Once this is done, monitis-m3 can be run:
 
@@ -98,11 +104,11 @@ Tested on Debian 6.x and RHEL/CentOS 6.x.
 
 M3 service would use the configuration at /etc/m3.d/config.xml and
 
-/etc/m3.d/M3Templates.pl.
+/etc/m3.d/M3Templates.pm.
 
 M3 log file would reside in /var/log/m3.log.
 
-Please edit /etc/m3.d/M3Templates.pl and add your API and secret key.
+Please edit /etc/m3.d/M3Templates.pm and add your API and secret key.
 
 To start M3, run:
  
