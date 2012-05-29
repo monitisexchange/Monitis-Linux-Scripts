@@ -72,7 +72,7 @@ On Debian/Ubuntu for some reason building packages is not done with dependencies
 
 Run this to fulfill most of them
 
- # apt-get install libxml-simple-perl libjson-perl libdate-manip-perl libsys-statistics-linux-perl libnet-telnet-perl libnet-ssh-perl libsnmp-perl libnet-snmp-perl
+ # apt-get install libxml-simple-perl libjson-perl libdate-manip-perl libsys-statistics-linux-perl libnet-telnet-perl libnet-ssh-perl libsnmp-perl libnet-snmp-perl libdbi-perl
 
 In addition to that, for some reason Net::SSH::Perl is not packaged by
 
@@ -90,7 +90,11 @@ Please edit /etc/m3.d/M3Templates.pm and add your API and secret key.
 
 Once this is done, monitis-m3 can be run:
 
- # monitis-m3 --dry-run --once /usr/share/doc/perl-MonitisMonitorManager-3.4/eg/etc_file_monitor.xml
+ # monitis-m3 --dry-run --once /usr/share/doc/perl-MonitisMonitorManager-3.6/eg/etc_file_monitor.xml
+
+On Debian/Ubuntu the documentation directory differ slightly:
+
+ # monitis-m3 --dry-run --once /usr/share/doc/libmonitismonitormanager-perl/examples/etc_file_monitor.xml
 
 monitis-m3 takes a few parameters, to see them all, run:
 
