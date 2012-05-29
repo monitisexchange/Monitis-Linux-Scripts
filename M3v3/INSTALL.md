@@ -22,7 +22,7 @@ This would install the two relevant Perl modules (Monitis Perl SDK and
 
 MonitisMonitorManager) but without the init.d script.
 
-### RHEL/CentOS 6.x or any other recent RPM based distribution
+### RHEL 6.x / CentOS 6.x or any other recent RPM based distribution
 
 M3 uses a handful of differnt perl modules, you can either install them
 
@@ -42,7 +42,15 @@ The following should take care of you:
 
  # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.6-1.noarch.rpm
 
-### Debian 6.x / Ubuntu 12.x
+### Fedora Core 16
+
+Please refer to the RHEL/CentOS installation instructions, but use the
+
+following RPMs:
+ * <a href="http://dir.monitis.com/m3/FC16/perl-Monitis-0.92-8.noarch.rpm">perl-Monitis</a>
+ * <a href="http://dir.monitis.com/m3/FC16/perl-MonitisMonitorManager-3.6-1.noarch.rpm">perl-MonitisMonitorManager</a>
+
+### Debian 6.x / Ubuntu 11.x
 
 Provided in the links below are links to DEBs of the 2 packages:
  * <a href="http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb">libmonitis-perl</a>
