@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="riak monitor" interval="60">
+		
+		<monitor name="Riak metrics for sanctuary">
+			<exectemplate>curl -s http://127.0.0.1:8098/stats</exectemplate>
+			
+			<metric name="Number of PUTs">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'node_puts'}</json>
+			</metric>
+			
+			<metric name="Vnode index reads">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_index_reads'}</json>
+			</metric>
+			
+			<metric name="Vnode index writes">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_index_writes'}</json>
+			</metric>
+
+			<metric name="Vnode index writes total">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_index_writes_total'}</json>
+			</metric>
+
+			<metric name="Vnode index writes postings">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_index_writes_postings_total'}</json>
+			</metric>
+
+			<metric name="Vnode index deletes">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_index_deletes_total'}</json>
+			</metric>
+
+			<metric name="Vnode index deletes postings">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_index_deletes_postings_total'}</json>
+			</metric>
+
+			<metric name="Read repairs">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'read_repairs'}</json>
+			</metric>
+
+			<metric name="Vnode gets total">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_gets'}</json>	
+			</metric>
+
+			<metric name="Vnode puts total">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'vnode_puts'}</json>
+			</metric>
+
+			<metric name="Precommit fail">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'precommit_fail'}</json>
+			</metric>
+
+			<metric name="Postcommit fail">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'postcommit_fail'}</json>
+			</metric>
+
+			<metric name="PBC connects total">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'pbc_connects_total'}</json>
+			</metric>
+
+			<metric name="PBC connects">
+				<type>integer</type>
+				<uom>NA</uom>
+				<json>{'pbc_connects'}</json>
+			</metric>
+		</monitor>
+	</agent>
+</config>
