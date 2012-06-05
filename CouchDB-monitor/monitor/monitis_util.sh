@@ -43,6 +43,15 @@ function trim {
     echo $*
 }
 
+# Convert json array to set of json objects separated by "|"
+# @param $1 - array string to be transformed
+# returns result into "response" variable
+# sample:
+# [{id:1},{id:2}] -> {id:1} | {id:2}
+jsonArray2ss(){ 
+	echo -E "$@" | sed 's/\[{/{/g;s/}\]/}/g;s/},/} \| /g;s/{/ {/g;s/})/} )/g'
+}
+
 # Tests whether *entire string* is JSON string
 # @param $1 - string to be checked 
 function isJSON(){
@@ -102,7 +111,7 @@ function create_additional_param() {
 		if [[ (${#array[*]} -gt 0) ]]
 		then
 			param="["
-			for (( i=1; i < $array_length; i++ ))
+			for (( i=1; i < ${#array}; i++ ))
 			do
 				if [ "$i" -ne "1" ]
 				then
