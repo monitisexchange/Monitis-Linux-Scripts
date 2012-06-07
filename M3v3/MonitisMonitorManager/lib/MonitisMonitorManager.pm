@@ -41,7 +41,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '3.4';
+our $VERSION = '3.7';
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -205,20 +205,32 @@ sub get_id_of_monitor($$$) {
 # handles a raw command (add_monitor, update_data)
 sub handle_raw_command($$) {
 	my ($self, $raw) = @_;
-	print "$raw\n";
-	my ($command, $monitor_name, @raw_parameters) = split /\s+/, $raw;
+	print "Raw command is: '$raw'\n";
+	my (@raw_parameters) = split /\s+/, $raw;
+	my $command = pop @raw_parameters;
 
 	# a quick debug message
-	carp "Handling raw command: '$command', monitor_name: '$monitor_name'" if DEBUG;
+	carp "Handling raw command: '$command'" if DEBUG;
 
 	for ($command) {
 		/add_monitor/ and do {
-			my ($monitor_tag, $result_params) = @raw_parameters;
+			my $monitor_name = pop @raw_parameters;
+			my $monitor_tag = pop @raw_parameters;
+			my $result_params = pop @raw_parameters;
 			$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params);
 		};
 		/update_data/ and do {
-			my ($monitor_tag, $result_params) = @raw_parameters;
+			my $monitor_name = pop @raw_parameters;
+			my $monitor_tag = pop @raw_parameters;
+			my $result_params = pop @raw_parameters;
 			$self->update_data_for_monitor_raw("", $monitor_name, $monitor_tag, time, $result_params);
+		};
+		/list_monitors/ and do {
+			$self->list_monitors_raw();
+		};
+		/delete_monitor/ and do {
+			my $monitor_id = pop @raw_parameters;
+			$self->delete_monitor_raw($monitor_id);
 		};
 	}
 }
@@ -287,6 +299,30 @@ sub add_monitor_raw($$$$@) {
 	my ($self, $monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params) = @_;
 	$self->{monitis_connection}->add_monitor(
 		$monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
+}
+
+# list monitors
+sub list_monitors_raw($) {
+	my ($self) = @_;
+	my @monitors = $self->{monitis_connection}->list_monitors();
+	my $i = 0;
+
+	printf("ID   |Name           |Tag                      |Type           |\n");
+	printf("-----|---------------|-------------------------|---------------|\n");
+	while (defined($monitors[0][$i])) {
+		my ($monitor_name) = $monitors[0][$i]->{name};
+		my ($monitor_type) = $monitors[0][$i]->{type};
+		my ($monitor_tag) = $monitors[0][$i]->{tag};
+		my ($monitor_id) = $monitors[0][$i]->{id};
+		printf("%-5s|%-15s|%-25s|%-15s|\n", $monitor_id, $monitor_name, $monitor_tag, $monitor_type);
+		$i++;
+	}
+}
+
+# delete a monitor
+sub delete_monitor_raw($$) {
+	my ($self, $monitor_id) = @_;
+	my @monitors = $self->{monitis_connection}->delete_monitor($monitor_id);
 }
 
 # add all monitors for all agents

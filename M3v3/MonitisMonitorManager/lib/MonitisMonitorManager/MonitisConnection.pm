@@ -6,7 +6,7 @@ use Thread qw(async);
 require Thread::Queue;
 use threads::shared;
 require Monitis;
-require Data::Dumper;
+use Data::Dumper;
 use Carp;
 
 # how long to wait between reconnection attempts
@@ -66,6 +66,32 @@ sub add_monitor($$$$@) {
 		print "FAILED: '$response->{status}'\n";
 		carp Dumper($response) if DEBUG;
 		# if we can add a monitor - we don't muck around...
+		exit(1);
+	}
+}
+
+# list all monitors
+sub list_monitors($) {
+	my ($self) = @_;
+
+	print "Listing monitors...";
+	my @response = $self->{monitis_api_context}->custom_monitors->get();
+	print "OK\n";
+	return @response;
+}
+
+# delete the given monitor id
+sub delete_monitor($$) {
+	my ($self, $monitor_id) = @_;
+
+	print "Deleting monitor with ID '$monitor_id'...";
+	my $response = $self->{monitis_api_context}->custom_monitors->delete(monitorId => $monitor_id);
+	if ($response->{status} eq 'ok') {
+		print "OK\n";
+	} else {
+		print "FAILED: '$response->{status}'\n";
+		carp Dumper($response) if DEBUG;
+		# if we can't delete a monitor - we don't muck around...
 		exit(1);
 	}
 }
@@ -142,7 +168,7 @@ sub stop($) {
 # simply queue a request
 sub queue($$$$$$) {
 	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results) = @_;
-	carp "Queueing item: '$agent_name' => '$monitor_name' => '$results' (TS: '$checktime') (TAG: '$monitor_tag')";
+	carp "Queuing item: '$agent_name' => '$monitor_name' => '$results' (TS: '$checktime') (TAG: '$monitor_tag')";
 
 	# queue the item
 	$self->{queue}->enqueue(

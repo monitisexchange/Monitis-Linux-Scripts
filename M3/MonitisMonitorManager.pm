@@ -294,7 +294,7 @@ sub handle_output_chunk($$$$$$$) {
 		my %returned_results = ();
 
 		# run the parsing plugin one by one
-		foreach my $potential_parsing_plugin (keys $monitor_xml_path->{metric}->{$metric_name}) {
+		foreach my $potential_parsing_plugin (keys %{$monitor_xml_path->{metric}->{$metric_name}}) {
 			if (defined($self->{parsing_plugins}{$potential_parsing_plugin})) {
 				carp "Calling parsing plugin: '$potential_parsing_plugin'" if DEBUG;
 				$self->{parsing_plugins}{$potential_parsing_plugin}->parse($metric_name, $monitor_xml_path->{metric}->{$metric_name}, $output, $last_uri, \%returned_results);
@@ -303,7 +303,7 @@ sub handle_output_chunk($$$$$$$) {
 
 		# call the relevant compute plugins
 		# TODO computation might be out of order in some cases when chaining
-		foreach my $potential_compute_plugin (keys $monitor_xml_path->{metric}->{$metric_name}) {
+		foreach my $potential_compute_plugin (keys %{$monitor_xml_path->{metric}->{$metric_name}}) {
 			if (defined($self->{compute_plugins}{$potential_compute_plugin})) {
 				foreach my $code (@{$monitor_xml_path->{metric}->{$metric_name}->{$potential_compute_plugin}}) {
 					carp "Calling compute plugin: '$potential_compute_plugin'" if DEBUG;
