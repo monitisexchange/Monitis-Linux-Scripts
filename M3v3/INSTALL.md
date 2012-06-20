@@ -133,6 +133,3 @@ it and couldn't be bothered to install it, you can just delete it by running:
 
  # rm -f /usr/share/perl5/MonitisMonitorManager/Execution/RemoteCommand.pm 
 
-On debian based distributions:
-
- # rm -f /usr/share/perl5/MonitisMonitorManager/Execution/RemoteCommand.pm
