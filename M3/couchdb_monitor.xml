@@ -6,37 +6,37 @@
 		<monitor name="CouchDB metrics for sanctuary">
 			<exectemplate>curl -s http://127.0.0.1:5984/_stats</exectemplate>
 			
-			<metric name="Number of authentication cache misses">
+			<metric name="Authentication cache misses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'couchdb'}->{'auth_cache_misses'}->{'current'}</json>
 			</metric>
 			
-			<metric name="Number of open databases">
+			<metric name="Open databases">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'couchdb'}->{'open_databases'}->{'current'}</json>
 			</metric>
 			
-			<metric name="Number of authentication cache hits">
+			<metric name="Authentication cache hits">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'couchdb'}->{'auth_cache_hits'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of file descriptors CouchDB has open">
+			<metric name="File descriptors CouchDB has open">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'couchdb'}->{'open_os_files'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of times a database was changed">
+			<metric name="Database changes">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'couchdb'}->{'database_writes'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of times a document was read from a database">
+			<metric name="Document was read from a database">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'couchdb'}->{'database_reads'}->{'current'}</json>
@@ -48,151 +48,151 @@
 				<json>{'couchdb'}->{'request_time'}->{'current'}</json>
 			</metric>
                           
-			<metric name="Number of HTTP MOVE requests">
+			<metric name="MOVE requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'MOVE'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP PUT requests">
+			<metric name="PUT requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'PUT'}->{'current'}</json>	
 			</metric>
 
-			<metric name="Number of HTTP GET requests">
+			<metric name="GET requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'GET'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP POST requests">
+			<metric name="POST requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'POST'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP DELETE requests">
+			<metric name="DELETE requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'DELETE'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP HEAD requests">
+			<metric name="HEAD requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'HEAD'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP COPY requests">
+			<metric name="COPY requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'COPY'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 409 Conflict responses">
+			<metric name="409 Conflict responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'409'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 412 Precondition Failed responses">
+			<metric name="412 Precondition Failed responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'412'}->{'current'}</json>	
 			</metric>
 
-			<metric name="Number of HTTP 202 Accepted responses">
+			<metric name="202 Accepted responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'202'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 404 Not Found responses">
+			<metric name="404 Not Found responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'404'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 304 Not Modified responses">
+			<metric name="304 Not Modified responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'304'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 200 OK responses">
+			<metric name="200 OK responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'200'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 201 Created responses">
+			<metric name="201 Created responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'201'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 500 Internal Server Error responses">
+			<metric name="500 Internal Server Error responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'500'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 301 Moved Permanently responses">
+			<metric name="301 Moved Permanently responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'301'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 403 Forbidden responses">
+			<metric name="403 Forbidden responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'403'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 401 Unauthorized responses">
+			<metric name="401 Unauthorized responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'401'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 405 Method Not Allowed responses">
+			<metric name="405 Method Not Allowed responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'405'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP 400 Bad Request responses">
+			<metric name="400 Bad Request responses">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'400'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of clients for continuous _changes">
+			<metric name="Clients for continuous _changes">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd'}->{'clients_requesting_changes'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of HTTP requests">
+			<metric name="HTTP requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd'}->{'requests'}->{'current'}</json>
 			</metric>
 			
-			<metric name="Number of view reads">
+			<metric name="View reads">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd'}->{'view_reads'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of temporary view reads">
+			<metric name="Temporary view reads">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd'}->{'temporary_view_reads'}->{'current'}</json>
 			</metric>
 
-			<metric name="Number of bulk requests">
+			<metric name="Bulk requests">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd'}->{'bulk_requests'}->{'current'}</json>
