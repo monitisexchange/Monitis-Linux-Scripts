@@ -125,3 +125,14 @@ To stop M3, run:
 And to restart M3, run:
 
  # /etc/init.d/m3 restart
+
+### Net::SSH::Perl Issue
+
+Net::SSH::Perl seems to be a stubborn module. If you are not intending to use
+it and couldn't be bothered to install it, you can just delete it by running:
+
+ # rm -f /usr/share/perl5/MonitisMonitorManager/Execution/RemoteCommand.pm 
+
+On debian based distributions:
+
+ # rm -f /usr/share/perl5/MonitisMonitorManager/Execution/RemoteCommand.pm
