@@ -32,15 +32,15 @@ These 2 repositories provide RPM versions of the required perl modules.
 
 Provided in the links below are links to RPMs of the 2 packages:
  * <a href="http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm">perl-Monitis</a>
- * <a href="http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.6-1.noarch.rpm">perl-MonitisMonitorManager</a>
+ * <a href="http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.7-1.noarch.rpm">perl-MonitisMonitorManager</a>
 
 The following should take care of you:
 
  # cd /tmp
 
- # wget -c http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.6-1.noarch.rpm
+ # wget -c http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.7-1.noarch.rpm
 
- # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.6-1.noarch.rpm
+ # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.7-1.noarch.rpm
 
 ### Fedora Core 16
 
@@ -48,25 +48,25 @@ Please refer to the RHEL/CentOS installation instructions, but use the
 
 following RPMs:
  * <a href="http://dir.monitis.com/m3/FC16/perl-Monitis-0.92-8.noarch.rpm">perl-Monitis</a>
- * <a href="http://dir.monitis.com/m3/FC16/perl-MonitisMonitorManager-3.6-1.noarch.rpm">perl-MonitisMonitorManager</a>
+ * <a href="http://dir.monitis.com/m3/FC16/perl-MonitisMonitorManager-3.7-1.noarch.rpm">perl-MonitisMonitorManager</a>
 
 ### Debian 6.x / Ubuntu 11.x
 
 Provided in the links below are links to DEBs of the 2 packages:
  * <a href="http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb">libmonitis-perl</a>
- * <a href="http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.6-1_all.deb">libmonitismonitormanager-perl</a>
+ * <a href="http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.7-1_all.deb">libmonitismonitormanager-perl</a>
 
 The following should take care of you:
 
  # cd /tmp
 
- # wget -c http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.6-1_all.deb
+ # wget -c http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.7-1_all.deb
 
- # gdebi libmonitis-perl_0.92_all.deb && gdebi libmonitismonitormanager-perl_3.6-1_all.deb
+ # gdebi libmonitis-perl_0.92_all.deb && gdebi libmonitismonitormanager-perl_3.7-1_all.deb
 
 Alternatively if you don't have gdebi installed for any reason, just use dpkg:
 
- # dpkg -i libmonitis-perl_0.92_all.deb libmonitismonitormanager-perl_3.6-1_all.deb
+ # dpkg -i libmonitis-perl_0.92_all.deb libmonitismonitormanager-perl_3.7-1_all.deb
 
 On Debian/Ubuntu for some reason building packages is not done with dependencies.
 
@@ -90,7 +90,7 @@ Please edit /etc/m3.d/M3Templates.pm and add your API and secret key.
 
 Once this is done, monitis-m3 can be run:
 
- # monitis-m3 --dry-run --once /usr/share/doc/perl-MonitisMonitorManager-3.6/eg/etc_file_monitor.xml
+ # monitis-m3 --dry-run --once /usr/share/doc/perl-MonitisMonitorManager-3.7/eg/etc_file_monitor.xml
 
 On Debian/Ubuntu the documentation directory differ slightly:
 
@@ -125,3 +125,11 @@ To stop M3, run:
 And to restart M3, run:
 
  # /etc/init.d/m3 restart
+
+### Net::SSH::Perl Issue
+
+Net::SSH::Perl seems to be a stubborn module. If you are not intending to use
+it and couldn't be bothered to install it, you can just delete it by running:
+
+ # rm -f /usr/share/perl5/MonitisMonitorManager/Execution/RemoteCommand.pm 
+
