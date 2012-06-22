@@ -1,5 +1,7 @@
 ## Free Radius server monitor (FRMon)
 
+_Original Author: Arthur Sergeyan_
+
 This project presents the Linux Bash-script application which monitors [FreeRadius server](http://freeradius.org) health status.  
  It is implemeted as Monitis custom monitor and uses the Monitis Open API.  
 The project is based on Bash 4.x+ and requires Linux kernel 2.6.x or higher.
@@ -68,7 +70,7 @@ To use existing scripts you need to do some changes that will correspond your ac
 
        - replace SECRET with your Radius secret
 
-       - replace with the Radius carrier host IP
+       - replace HOST with the Radius carrier host IP
 
        - if you changed the Radius default port (1812), then replace PORT with the one you have set. Usually no need for change.
 		
