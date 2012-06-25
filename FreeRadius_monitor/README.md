@@ -29,7 +29,7 @@ The project is based on Bash 4.x+ and requires Linux kernel 2.6.x or higher.
 
 The current version of FRMon provide HTTP access to the Monitis main server so you have to have installed the __CURL__ library on Linux  machine where monitor will be run.  
 Besides, the monitor uses Linux calculator (named '__bc__') to provide floating points calculations. Thus, you have to have installed Linux calculator too.  
-And, indeed it is assumed that you have already installed and configured the FreeRadius server.
+Also note that the application uses the FreeRadius 'radtest' command to simulate Radius request, thus, you need to have installed the __FreeRadius client__ on the client’s host.
  
 #### Used approach
 
@@ -73,6 +73,7 @@ To use existing scripts you need to do some changes that will correspond your ac
        - replace HOST with the Radius carrier host IP
 
        - if you changed the Radius default port (1812), then replace PORT with the one you have set. Usually no need for change.
+
 		
 #### Measured metrics
 
