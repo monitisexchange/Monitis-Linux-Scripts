@@ -3,7 +3,6 @@
 # sorces included
 source monitor_constant.sh    || exit 2
 
-declare -i initialized=0	# indicator of master variables initializing
 #previous measurement data
 declare -i prev_Slave_read_binlog_num=0
 declare -i prev_Slave_read_binlog_pos=0
@@ -78,22 +77,36 @@ function extract_value() {
 }
 
 function get_measure() {
+	local details="details"
+
 	#echo "********** check Slave parameters **********"
 	access_remout_MySQL $SLAVE_HOST $SLAVE_PORT $SLAVE_USER $SLAVE_PASSWORD  "SHOW SLAVE STATUS\G" sstatus
 	local ret_s="$?"
+	if [[ (ret_s -gt 0) || ($(stat -c%s sstatus) -le 0) ]]
+	then
+		MSG="Unknown problems while access SLAVE mysql..."
+		problem="Problems in replication"+"$MSG"
+		details="$details+${problem}"
+		return_value="$RESP_DOWN | $details"
+		return 1
+	fi
+	
 	#echo "********** check Master parameters **********"
 	access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW MASTER STATUS\G" mstatus
 	local ret_m="$?"
-	if [[ (ret_s -gt 0) || (ret_m -gt 0) || ($(stat -c%s mstatus) -le 0) || ($(stat -c%s sstatus) -le 0) ]]
+	if [[ (ret_m -gt 0) || ($(stat -c%s mstatus) -le 0) ]]
 	then
-	  MSG="Unknown problems while access remote mysql..."
-	  return 1
+		MSG="Unknown problems while access MASTER mysql..."
+		problem="Problems in replication"+"$MSG"
+		details="$details+${problem}"
+		return_value="$RESP_DOWN | $details"
+		return 1
 	fi
 	#****Still OK****
-	if [ $initialized -eq 0 ]
+	if [ $INITIALIZED -eq 0 ]
 	then
 	  access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW VARIABLES" mvariables
-	  initialized=1
+	  INITIALIZED=1
 	fi
 	
 	
@@ -199,7 +212,6 @@ function get_measure() {
 	    errors=$(($errors+1))
 	fi
 	
-	local details="details"
 	if [ $errors -gt 0 ]
 	then
 	    problem="Problems in replication"

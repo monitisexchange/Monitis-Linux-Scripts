@@ -41,13 +41,14 @@ function get_token() {
 		fi
 	else
 		MSG="Needless to get token this time"
-		return 1
+		return 0
 	fi
 	
 	if [[ "$(isAlphaNum "$val")" == "$TRUE" ]]	# token should contain an alphanumeric symbols only
 	then	# correct token received - store it
 		TOKEN="$val"
 		TOKEN_OBTAIN_TIME=`get_timestamp`
+		INITIALIZED=0
 	else
 		MSG="received "$TOKEN" is WRONG"
 		return 3
