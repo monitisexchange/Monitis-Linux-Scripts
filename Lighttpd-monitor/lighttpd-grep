@@ -1,0 +1,16 @@
+#!/bin/bash -e
+:
+OUTPUT=$(links -dump  http://localhost/server-status)
+conns=$(echo "$OUTPUT"|grep 'connections' | awk '{print $1}')
+uptime=$(echo "$OUTPUT"|grep 'Uptime'| awk -F '   ' '{print $3}')
+absRequests=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $2,$3}'|head -1)
+absTraffic=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $2,$3}'|head -1)
+avgRequests=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $2,$3}'|tail -n 2|head -1)
+avgTraffic=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $2,$3}'|tail -n 2|head -1)
+#
+echo "Uptime: $uptime"
+echo "Connections: $conns"
+echo "Requests(absolote): $absRequests"
+echo "Traffic(absolote): $absTraffic"
+echo "Requests(average): $avgRequests"
+echo "Traffic(average): $avgTraffic"
