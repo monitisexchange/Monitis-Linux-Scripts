@@ -3,7 +3,7 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="lighttpd monitor" interval="60">
 		<monitor name="Lighttpd">
-			<exectemplate>lighttpd-grep|awk -F ':' '{print $2}'</exectemplate>
+			<exectemplate>/usr/bin/lighttpd-grep|awk -F ':' '{print $2}'</exectemplate>
 			
 			<metric name="Uptime">
 				<type>string</type>
