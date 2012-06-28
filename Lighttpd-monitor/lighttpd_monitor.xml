@@ -3,7 +3,7 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="lighttpd monitor" interval="60">
 		<monitor name="Lighttpd">
-			<exectemplate>/usr/bin/lighttpd-grep|awk -F ':' '{print $2}'</exectemplate>
+			<exectemplate>lighttpd-grep|awk -F ':' '{print $2}'</exectemplate>
 			
 			<metric name="Uptime">
 				<type>string</type>
@@ -18,25 +18,25 @@
 			</metric>
 
 			<metric name="Absolote Requests">
-				<type>string</type>
+				<type>integer</type>
 				<uom>NA</uom>
 				<line>3</line>
 			</metric>
 
 			<metric name="Absolote Traffic">
-				<type>string</type>
+				<type>integer</type>
 				<uom>NA</uom>
 				<line>4</line>	
 			</metric>
 
 			<metric name="Average Requests">
-				<type>string</type>
+				<type>integer</type>
 				<uom>NA</uom>
 				<line>5</line>
 			</metric>
 
 			<metric name="Average Traffic">
-				<type>string</type>
+				<type>integer</type>
 				<uom>NA</uom>
 				<line>6</line>
 			</metric>
