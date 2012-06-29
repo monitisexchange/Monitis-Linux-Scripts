@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use Getopt::Long;
 use MonitisMonitorManager;
@@ -94,7 +97,7 @@ sub main() {
 
 	# invoke all the agents
 	if ($raw ne "") {
-		$M3->handle_raw_command($raw);
+		$M3->handle_raw_command(raw_command => $raw);
 	} else {
 		if ($once == 1) {
 			$M3->invoke_agents();
