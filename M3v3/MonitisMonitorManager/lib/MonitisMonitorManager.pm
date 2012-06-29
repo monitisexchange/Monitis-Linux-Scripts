@@ -300,7 +300,7 @@ sub invoke_monitor {
 
 	my $retval = 1;
 	# if mass load is set, we'll handle the lines one by one
-	if ($self->is("mass_load") {
+	if ($self->is("mass_load")) {
 		foreach my $line (split /[\r\n]+/, $output) {
 			$retval = $self->handle_output_chunk(
 				agent_name => $agent_name,
