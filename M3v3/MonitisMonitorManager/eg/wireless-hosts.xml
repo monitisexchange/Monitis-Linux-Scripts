@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Wireless Monitor" interval="5">
+		<monitor name="Wireless Hosts Monitor Velocity 2012">
+			<exectemplate>nmap -sP `ip -f inet addr show dev wlan0 | grep inet | tr -s " " | cut -d' ' -f3` | grep 'Host is up' | wc -l</exectemplate>
+			<exectemplate>ip -f inet addr show dev wlan0</exectemplate>
+			<metric name="Total Wireless Hosts Velocity 2012">
+				<type>integer</type>
+				<uom>number</uom>
+				<line>1</line>
+			</metric>
+			<metric name="Wireless Address Velocity 2012" additional="true">
+				<type>string</type>
+				<uom>IP addr</uom>
+				<regex>\s+inet\s+(\S+)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
