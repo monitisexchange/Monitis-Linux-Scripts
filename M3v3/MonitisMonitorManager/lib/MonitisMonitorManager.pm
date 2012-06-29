@@ -19,6 +19,7 @@ use MonitisMonitorManager::MonitisConnection;
 use Carp;
 use Date::Manip;
 use File::Basename;
+use JSON;
 
 require Exporter;
 
@@ -41,7 +42,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '3.7';
+our $VERSION = '3.8';
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -207,29 +208,33 @@ sub handle_raw_command($$) {
 	my ($self, $raw) = @_;
 	print "Raw command is: '$raw'\n";
 	my (@raw_parameters) = split /\s+/, $raw;
-	my $command = pop @raw_parameters;
+	my $command = shift @raw_parameters;
 
 	# a quick debug message
 	carp "Handling raw command: '$command'" if DEBUG;
 
 	for ($command) {
 		/add_monitor/ and do {
-			my $monitor_name = pop @raw_parameters;
-			my $monitor_tag = pop @raw_parameters;
-			my $result_params = pop @raw_parameters;
-			$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params);
+			my $monitor_name = shift @raw_parameters;
+			my $monitor_tag = shift @raw_parameters;
+			my $result_params = shift @raw_parameters;
+			my $additional_result_params = shift @raw_parameters;
+			my @optional_parameters;
+			if($additional_result_params ne "") { push @optional_parameters, additionalResultParams => $additional_result_params; }
+			$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params, @optional_parameters);
 		};
 		/update_data/ and do {
-			my $monitor_name = pop @raw_parameters;
-			my $monitor_tag = pop @raw_parameters;
-			my $result_params = pop @raw_parameters;
-			$self->update_data_for_monitor_raw("", $monitor_name, $monitor_tag, time, $result_params);
+			my $monitor_name = shift @raw_parameters;
+			my $monitor_tag = shift @raw_parameters;
+			my $result_params = shift @raw_parameters;
+			my $additional_result_params = shift @raw_parameters;
+			$self->update_data_for_monitor_raw("", $monitor_name, $monitor_tag, time, $result_params, $additional_result_params);
 		};
 		/list_monitors/ and do {
 			$self->list_monitors_raw();
 		};
 		/delete_monitor/ and do {
-			my $monitor_id = pop @raw_parameters;
+			my $monitor_id = shift @raw_parameters;
 			$self->delete_monitor_raw($monitor_id);
 		};
 	}
@@ -244,12 +249,18 @@ sub add_monitor($$$) {
 	# get the monitor tag
 	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
 	my $result_params = "";
-	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
+	my $additional_result_params = "";
+	foreach my $metric_name (keys %{$monitor_xml_path->{metric}}) {
 		if ($self->metric_name_not_reserved($metric_name)) {
 			my $uom = $monitor_xml_path->{metric}->{$metric_name}->{uom}[0];
 			my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
 			my $data_type = ${ $self->{monitis_datatypes} }{$metric_type} or croak "Incorrect data type '$metric_type'";
-			$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+			if (defined($monitor_xml_path->{metric}->{$metric_name}->{additional})) {
+				# it's an additional parameter
+				$additional_result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+			} else {
+				$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+			}
 		}
 	}
 
@@ -290,6 +301,7 @@ sub add_monitor($$$) {
 	} else {
 		my @add_monitor_optional_params;
 		defined($monitor_type) && push @add_monitor_optional_params, type => $monitor_type;
+		if($additional_result_params ne "") { push @add_monitor_optional_params, additionalResultParams => $additional_result_params; }
 		$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
 	}
 }
@@ -359,6 +371,7 @@ sub invoke_monitor($$$) {
 
 	# result set hash
 	my %results = ();
+	my %additional_results = ();
 
 	# if just testing monitors - print a nice message
 	($self->test_config) and carp "Testing monitor '$monitor_name': ";
@@ -411,16 +424,17 @@ sub invoke_monitor($$$) {
 	# if mass load is set, we'll handle the lines one by one
 	if ($self->mass_load()) {
 		foreach my $line (split /[\r\n]+/, $output) {
-			$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, $line);
+			$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, \%additional_results, $line);
 		}
 	} else {
-		$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, $output);
+		$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, \%additional_results, $output);
 	}
 }
 
-sub handle_output_chunk($$$$$$$) {
-	my ($self, $agent_name, $monitor_xml_path, $monitor_name, $ref_results, $output) = @_;
+sub handle_output_chunk($$$$$$$$) {
+	my ($self, $agent_name, $monitor_xml_path, $monitor_name, $ref_results, $ref_additional_results, $output) = @_;
 	my %results = %$ref_results;
+	my %additional_results = %$ref_additional_results;
 
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
 		# call the relevant parsing plugin
@@ -447,7 +461,11 @@ sub handle_output_chunk($$$$$$$) {
 		}
 
 		# merge the returned results into the main %results hash
-		@results{keys %returned_results} = values %returned_results;
+		if (defined($monitor_xml_path->{metric}->{$metric_name}->{additional})) {
+			@additional_results{keys %returned_results} = values %returned_results;
+		} else {
+			@results{keys %returned_results} = values %returned_results;
+		}
 	}
 
 	# TODO 'MONITIS_CHECK_TIME' hardcoded
@@ -470,19 +488,20 @@ sub handle_output_chunk($$$$$$$) {
 
 	# format results
 	my $formatted_results = format_results(\%results);
+	my $additional_formatted_results = format_results_json(\%additional_results);
 
 	# update the data
 	if ($checktime ne "") {
 		# was the checktime specified and parsed?
-		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results, $checktime);
+		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results, $additional_formatted_results, $checktime);
 	} else {
-		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results);
+		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results, $additional_formatted_results);
 	}
 }
 
 # update data for a monitor, calling Monitis API
-sub update_data_for_monitor($$$$@) {
-	my ($self, $agent_name, $monitor_name, $results, @va_list) = @_;
+sub update_data_for_monitor($$$$$@) {
+	my ($self, $agent_name, $monitor_name, $results, $additional_results, @va_list) = @_;
 	# get the time now (time returns time in seconds, multiply by 1000
 	# for miliseconds)
 	my $checktime = $va_list[0] || time;
@@ -502,11 +521,17 @@ sub update_data_for_monitor($$$$@) {
 
 	# queue it on MonitisConnection which will handle the rest
 	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
-	$self->update_data_for_monitor_raw($agent_name, $monitor_name, $monitor_tag, $checktime, $results);
+	$self->update_data_for_monitor_raw($agent_name, $monitor_name, $monitor_tag, $checktime, $results, $additional_results);
 }
 
 # update data for a monitor, the internal function
-sub update_data_for_monitor_raw($$$$$@) {
+sub update_data_for_monitor_raw($$$$$$@) {
+	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results, $additional_results) = @_;
+	$self->{monitis_connection}->queue($agent_name, $monitor_name, $monitor_tag, $checktime, $results, $additional_results);
+}
+
+# update additional data for a monitor, the internal function
+sub update_additional_data_for_monitor_raw($$$$$@) {
 	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results) = @_;
 	$self->{monitis_connection}->queue($agent_name, $monitor_name, $monitor_tag, $checktime, $results);
 }
@@ -602,6 +627,12 @@ sub format_results(%) {
 	# remove redundant last ';'
 	$formatted_results =~ s/;$//;
 	return $formatted_results;
+}
+
+# formats the hash of results into a string
+sub format_results_json(%) {
+	my (%results) = %{$_[0]};
+	return "[" . encode_json(\%results) . "]";
 }
 
 # simply replaces the %SOMETHING% with the relevant

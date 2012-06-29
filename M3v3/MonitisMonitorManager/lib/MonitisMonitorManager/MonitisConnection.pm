@@ -51,7 +51,7 @@ sub new {
 }
 
 # add a monitor
-sub add_monitor($$$$@) {
+sub add_monitor($$$$$@) {
 	my ($self, $monitor_name, $monitor_tag, $result_params, @optional_params) = @_;
 
 	print "Adding monitor '$monitor_name'...";
@@ -144,6 +144,7 @@ sub handle_queued_items($) {
 			$queue_item->{monitor_name},
 			$queue_item->{monitor_tag},
 			$queue_item->{results},
+			$queue_item->{additional_results},
 			$queue_item->{checktime}
 		) and $self->{queue}->dequeue();
 	}
@@ -166,9 +167,9 @@ sub stop($) {
 }
 
 # simply queue a request
-sub queue($$$$$$) {
-	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results) = @_;
-	carp "Queuing item: '$agent_name' => '$monitor_name' => '$results' (TS: '$checktime') (TAG: '$monitor_tag')";
+sub queue($$$$$$$) {
+	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results, $additional_results) = @_;
+	carp "Queuing item: '$agent_name' => '$monitor_name' => '$results','$additional_results' (TS: '$checktime') (TAG: '$monitor_tag')";
 
 	# queue the item
 	$self->{queue}->enqueue(
@@ -177,7 +178,8 @@ sub queue($$$$$$) {
 			monitor_name => $monitor_name,
 			monitor_tag => $monitor_tag,
 			checktime => $checktime,
-			results => $results)
+			results => $results,
+			additional_results => $additional_results)
 	);
 	
 	lock($self->{queue_condition});
@@ -187,10 +189,10 @@ sub queue($$$$$$) {
 
 # update data for a monitor, calling Monitis API
 sub update_data_for_monitor($$$$$$) {
-	my ($self, $agent_name, $monitor_name, $monitor_tag, $results, $checktime) = @_;
+	my ($self, $agent_name, $monitor_name, $monitor_tag, $results, $additional_results, $checktime) = @_;
 
 	# sanity check of results...
-	if ($results eq "") {
+	if ($results eq "" and $additional_results eq "") {
 		carp "Result set is empty! did it parse well?"; 
 	}
 
@@ -208,6 +210,7 @@ sub update_data_for_monitor($$$$$$) {
 
 	print "Updating data for monitor '$monitor_name'...";
 
+	# adding results
 	my $retval = 0;
 	eval {
 		my $response = $self->{monitis_api_context}->custom_monitors->add_results(
@@ -226,6 +229,29 @@ sub update_data_for_monitor($$$$$$) {
 		carp "Error connecting to Monitis: $@";
 		$self->{monitis_connection} = 0;
 		return 0;
+	}
+
+	# adding additional results
+	if ($additional_results ne "") {
+		carp "Adding additional results, calling API with '$monitor_id' '$checktime' '$additional_results'" if DEBUG;
+		eval {
+			my $response = $self->{monitis_api_context}->custom_monitors->add_additional_results(
+				monitorId => $monitor_id, checktime => $checktime,
+				results => $additional_results);
+				if ($response->{status} eq 'ok') {
+				print "OK\n";
+				$retval = 1;
+			} else {
+				print "FAILED: '$response->{status}'\n";
+				carp Dumper($response) if DEBUG;
+			}
+		};
+		if ($@) {
+			# we assume a connection error...
+			carp "Error connecting to Monitis: $@";
+			$self->{monitis_connection} = 0;
+			return 0;
+		}
 	}
 
 	return $retval;
