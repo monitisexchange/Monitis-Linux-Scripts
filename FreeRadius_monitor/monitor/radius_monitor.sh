@@ -1,9 +1,39 @@
 #!/bin/bash
 
 # sorces included
-source monitis_api.sh        || exit 2
-source replicator_monitor.sh || error 2 replicator_monitor.sh
+source monitis_api.sh      || exit 2
+source monitor_constant.sh || error 2 monitor_constant.sh
 
+declare    return_value
+
+function get_measure() {
+
+start=$(( `date -u +%s%N`))
+resp=$(radtest "$TESTUSER" "$TESTPASSWORD" "$HOST" "$PORT" "$SECRET" >aaa.txt 2> temp.txt)
+end=$(( `date -u +%s%N`))
+diff=$(($end-$start))
+seconds=$(echo "scale=3;$diff/1000000000" | bc )
+
+status="";
+
+if grep -q Access-Accept <aaa.txt; then
+	status="$OK";
+	return_value="status:$status;reqTime:$seconds"
+        rm aaa.txt
+elif grep -q Access-Reject <aaa.txt; then
+	status="$NOK"
+	return_value="status:$status;reqTime:$seconds"
+        rm aaa.txt
+elif grep -q "radclient: no response" <temp.txt; then
+	status="$DEAD"
+	return_value="status:$status"
+        rm temp.txt
+fi
+
+}
+
+
+DURATION=$((60*$DURATION)) #convert to sec
 
 # obtaining TOKEN
 get_token
@@ -15,8 +45,6 @@ else
 	echo RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))`
 	echo "All is OK for now."
 fi
-
-DURATION=$((60*$DURATION)) #convert to sec
 
 # Adding custom monitor
 add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
@@ -30,9 +58,9 @@ else
 fi
 
 if [[ ($MONITOR_ID -le 0) ]]
-then 
+then
 	echo MonitorId is still zero - try to obtain it from Monitis
-	
+
 	MONITOR_ID=`get_monitorID $MONITOR_NAME $MONITOR_TAG $MONITOR_TYPE `
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
@@ -48,18 +76,18 @@ fi
 while $(sleep "$DURATION")
 do
 	get_token				# get new token in case of the existing one is too old
-	ret="$?"
+	ret="$1"
 	if [[ ($ret -ne 0) ]]
 	then	# some problems while getting token...
 		error "$ret" "$MSG"
 		continue
 	fi
 	get_measure				# call measure function
-	ret="$?"
+	ret="$1"
 	if [[ ($ret -ne 0) ]]
 	then
 	    error "$ret" "$MSG"
-#	    continue
+	    continue
 	fi
 
 	result=$return_value	# retrieve measure values
@@ -69,9 +97,6 @@ do
 	#echo DEBUG: Composed params is \"$param\" >&2
 	#echo
 	timestamp=`get_timestamp`
-	#echo
-	#echo DEBUG: Timestamp is \"$timestamp\" >&2
-	#echo
 	# Sending to Monitis
 	add_custom_monitor_data $param $timestamp
 	ret="$?"
@@ -108,11 +133,13 @@ do
 					error "$ret" "$MSG"
 				else
 					echo $( date +"%D %T" ) - The Custom monitor additional data were successfully added
-				fi				
+				fi
 			fi
 		else
 			echo "****No any detailed records yet ($array_length)"
-		fi			
+		fi
 	fi
+
+
 done
 
