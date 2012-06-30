@@ -8,6 +8,13 @@
 # source this for keys
 source monitis_config || exit 16
 
+# xpath on debian needs a '-e' to run properly
+if [ -f /etc/redhat-release ]; then
+	XPATH="xpath"
+else
+	XPATH="xpath -e"
+fi
+
 # some constants
 declare -r API_URL="http://monitis.com/customMonitorApi"
 declare -r API_ADD_MONITOR_ACTION="addMonitor"
@@ -69,7 +76,7 @@ monitis_update_custom_monitor_data() {
 
 	# retrieve the id for this monitor_tag
 	# TODO xpath handling is far from being perfect here
-	local -i monitor_id=$(curl -s "$API_URL?apikey=$api_key&output=$xml_output_type&version=$API_VERSION&action=getMonitors&tag=$monitor_tag" | xpath /monitors/monitor/id 2> /dev/null | sed -e 's#</\?id>##g')
+	local -i monitor_id=$(curl -s "$API_URL?apikey=$api_key&output=$xml_output_type&version=$API_VERSION&action=getMonitors&tag=$monitor_tag" | $XPATH /monitors/monitor/id 2> /dev/null | sed -e 's#</\?id>##g')
 
 	if [ $monitor_id -eq 0 ]; then
 		echo "Could not obtain monitor id for '$monitor_tag'" 1>&2
