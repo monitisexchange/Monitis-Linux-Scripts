@@ -14,6 +14,13 @@ if [ -f /etc/redhat-release ]; then
 else
 	XPATH="xpath -e"
 fi
+# make sure user has xpath
+if ! which xpath >& /dev/null; then
+	echo "Please install xpath"
+	echo "For redhat: yum install perl-XML-XPath"
+	echo "For debian: apt-get install libxml-xpath-perl"
+	exit 2
+fi
 
 # some constants
 declare -r API_URL="http://monitis.com/customMonitorApi"
