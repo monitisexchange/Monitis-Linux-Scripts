@@ -1,4 +1,5 @@
 #!/bin/bash
+# OBSOLETE - USE M3v3 INSTEAD!!
 
 # monitis_api.sh - monitis REST API implemented in bash
 # Written by Dan Fruehauf <malkodan@gmail.com>
