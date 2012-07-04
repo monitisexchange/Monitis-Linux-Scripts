@@ -51,8 +51,13 @@ sub new {
 }
 
 # add a monitor
-sub add_monitor($$$$@) {
-	my ($self, $monitor_name, $monitor_tag, $result_params, @optional_params) = @_;
+sub add_monitor {
+	my $self = shift;
+	my ($args) = {@_};
+	my $monitor_name = $args->{monitor_name};
+	my $monitor_tag = $args->{monitor_tag};
+	my $result_params = $args->{result_params};
+	my @optional_params = @{$args->{optional_params}};
 
 	print "Adding monitor '$monitor_name'...";
 	my $response = $self->{monitis_api_context}->custom_monitors->add(
@@ -71,8 +76,8 @@ sub add_monitor($$$$@) {
 }
 
 # list all monitors
-sub list_monitors($) {
-	my ($self) = @_;
+sub list_monitors {
+	my $self = shift;
 
 	print "Listing monitors...";
 	my @response = $self->{monitis_api_context}->custom_monitors->get();
@@ -81,8 +86,10 @@ sub list_monitors($) {
 }
 
 # delete the given monitor id
-sub delete_monitor($$) {
-	my ($self, $monitor_id) = @_;
+sub delete_monitor {
+	my $self = shift;
+	my ($args) = {@_};
+	my $monitor_id = $args->{monitor_id};
 
 	print "Deleting monitor with ID '$monitor_id'...";
 	my $response = $self->{monitis_api_context}->custom_monitors->delete(monitorId => $monitor_id);
@@ -97,8 +104,8 @@ sub delete_monitor($$) {
 }
 
 # main thread loop
-sub main_loop($) {
-	my ($self) = @_;
+sub main_loop {
+	my $self = shift;
 	do {
 		# assume we connected, although we might have not...
 		$self->{monitis_connection}  = 1;
@@ -127,8 +134,8 @@ sub main_loop($) {
 }
 
 # handles item in queue
-sub handle_queued_items($) {
-	my ($self) = @_;
+sub handle_queued_items {
+	my $self = shift;
 
 	while ($self->{queue}->pending() > 0) {
 		# are we connected?
@@ -140,18 +147,19 @@ sub handle_queued_items($) {
 		print "Reporting: '$queue_item->{results}'\n";
 		# handle item and pop it if we succeeded
 		$self->update_data_for_monitor(
-			$queue_item->{agent_name},
-			$queue_item->{monitor_name},
-			$queue_item->{monitor_tag},
-			$queue_item->{results},
-			$queue_item->{checktime}
+			agent_name => $queue_item->{agent_name},
+			monitor_name => $queue_item->{monitor_name},
+			monitor_tag => $queue_item->{monitor_tag},
+			results => $queue_item->{results},
+			additional_results => $queue_item->{additional_results},
+			checktime => $queue_item->{checktime}
 		) and $self->{queue}->dequeue();
 	}
 }
 
 # will signal the main loop to stop
-sub stop($) {
-	my ($self) = @_;
+sub stop {
+	my $self = shift;
 	carp "Stopping execution of MonitisConnection...";
 
 	# lock and signal in a different block
@@ -166,9 +174,18 @@ sub stop($) {
 }
 
 # simply queue a request
-sub queue($$$$$$) {
-	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results) = @_;
-	carp "Queuing item: '$agent_name' => '$monitor_name' => '$results' (TS: '$checktime') (TAG: '$monitor_tag')";
+sub queue {
+	my $self = shift;
+	my ($args) = {@_};
+	# agent_name does not have to be defined...
+	my $agent_name = $args->{agent_name} || "";
+	my $monitor_name = $args->{monitor_name};
+	my $monitor_tag = $args->{monitor_tag};
+	my $checktime = $args->{checktime};
+	my $results = $args->{results};
+	my $additional_results = $args->{additional_results};
+
+	carp "Queuing item: '$agent_name' => '$monitor_name' => '$results','$additional_results' (TS: '$checktime') (TAG: '$monitor_tag')";
 
 	# queue the item
 	$self->{queue}->enqueue(
@@ -177,7 +194,8 @@ sub queue($$$$$$) {
 			monitor_name => $monitor_name,
 			monitor_tag => $monitor_tag,
 			checktime => $checktime,
-			results => $results)
+			results => $results,
+			additional_results => $additional_results)
 	);
 	
 	lock($self->{queue_condition});
@@ -186,17 +204,27 @@ sub queue($$$$$$) {
 }
 
 # update data for a monitor, calling Monitis API
-sub update_data_for_monitor($$$$$$) {
-	my ($self, $agent_name, $monitor_name, $monitor_tag, $results, $checktime) = @_;
+sub update_data_for_monitor {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_name = $args->{monitor_name};
+	my $monitor_tag = $args->{monitor_tag};
+	my $checktime = $args->{checktime};
+	my $results = $args->{results};
+	my $additional_results = $args->{additional_results};
 
 	# sanity check of results...
-	if ($results eq "") {
+	if ($results eq "" and $additional_results eq "") {
 		carp "Result set is empty! did it parse well?"; 
 	}
 
 	# we have to obtain the monitor id in order to update results
 	# to do this we first need the monitor tag
-	my $monitor_id = $self->get_id_of_monitor($agent_name, $monitor_tag, $monitor_name);
+	my $monitor_id = $self->get_id_of_monitor(
+		agent_name => $agent_name,
+		monitor_tag => $monitor_tag,
+		monitor_name => $monitor_name);
 	if(0 == $monitor_id) {
 		return 0;
 	} else {
@@ -208,6 +236,7 @@ sub update_data_for_monitor($$$$$$) {
 
 	print "Updating data for monitor '$monitor_name'...";
 
+	# adding results
 	my $retval = 0;
 	eval {
 		my $response = $self->{monitis_api_context}->custom_monitors->add_results(
@@ -228,15 +257,45 @@ sub update_data_for_monitor($$$$$$) {
 		return 0;
 	}
 
+	# adding additional results
+	if ($additional_results ne "") {
+		carp "Adding additional results, calling API with '$monitor_id' '$checktime' '$additional_results'" if DEBUG;
+		eval {
+			my $response = $self->{monitis_api_context}->custom_monitors->add_additional_results(
+				monitorId => $monitor_id, checktime => $checktime,
+				results => $additional_results);
+				if ($response->{status} eq 'ok') {
+				print "OK\n";
+				$retval = 1;
+			} else {
+				print "FAILED: '$response->{status}'\n";
+				carp Dumper($response) if DEBUG;
+			}
+		};
+		if ($@) {
+			# we assume a connection error...
+			carp "Error connecting to Monitis: $@";
+			$self->{monitis_connection} = 0;
+			return 0;
+		}
+	}
+
 	return $retval;
 }
 
 # returns the monitor id with a given tag
-sub get_id_of_monitor($$$$) {
-	my ($self, $agent_name, $monitor_tag, $monitor_name) = @_;
+sub get_id_of_monitor {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_name = $args->{monitor_name};
+	my $monitor_tag = $args->{monitor_tag};
 
 	# go through caching mechanism
-	my $monitor_id = $self->{monitor_ids_cache}->retrieve($agent_name, $monitor_tag, $monitor_name);
+	my $monitor_id = $self->{monitor_ids_cache}->retrieve(
+		agent_name => $agent_name,
+		monitor_tag => $monitor_tag,
+		monitor_name => $monitor_name);
 	if(0 != $monitor_id) {
 		return $monitor_id;
 	} else {
@@ -270,7 +329,11 @@ sub get_id_of_monitor($$$$) {
 				carp "Monitor tag/name: '$monitor_tag/$monitor_name' -> ID: '$response->[$i]->{id}'" if DEBUG;
 				# cache it for next time!
 				$monitor_id = $response->[$i]->{id};
-				$self->{monitor_ids_cache}->store($agent_name, $monitor_tag, $monitor_name, $monitor_id);
+				$self->{monitor_ids_cache}->store(
+					agent_name => $agent_name,
+					monitor_tag =>  $monitor_tag,
+					monitor_name =>  $monitor_name,
+					monitor_id =>  $monitor_id);
 				return $monitor_id;
 			}
 			$i++;
@@ -281,7 +344,10 @@ sub get_id_of_monitor($$$$) {
 	}
 }
 
-# a simple class to represent a queue item
+########################
+### MONITOR ID CACHE ###
+########################
+# a simple class to represent a monitor id cache
 package MonitisConnection::MonitorIDCache;
 
 sub new {
@@ -295,13 +361,22 @@ sub new {
 	return $self;
 }
 
-sub store($$$$$) {
-	my ($self, $agent_name, $monitor_tag, $monitor_name, $monitor_id) = @_;
+sub store {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_tag = $args->{monitor_tag};
+	my $monitor_name = $args->{monitor_name};
+	my $monitor_id = $args->{monitor_id};
 	$self->{cache}{$agent_name . $monitor_tag . $monitor_name} = $monitor_id;
 }
 
-sub retrieve($$$$) {
-	my ($self, $agent_name, $monitor_tag, $monitor_name) = @_;
+sub retrieve {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_tag = $args->{monitor_tag};
+	my $monitor_name = $args->{monitor_name};
 	if(defined($self->{cache}{$agent_name . $monitor_tag . $monitor_name})) {
 		return $self->{cache}{$agent_name . $monitor_tag . $monitor_name};
 	} else {
@@ -309,6 +384,9 @@ sub retrieve($$$$) {
 	}
 }
 
+##################
+### QUEUE ITEM ###
+##################
 # a simple class to represent a queue item
 package MonitisConnection::QueueItem;
 

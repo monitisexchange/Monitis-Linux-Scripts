@@ -1,0 +1,109 @@
+#!/bin/bash -e
+:
+KB=$((1024*1024))
+MB=$((1024*1024*1024))
+GB=$((1024*1024*1024*1024))
+TB=$((1024*1024*1024*1024*1024))
+#
+K=1000
+M=1000000
+G=1000000000
+T=1000000000000
+#
+OUTPUT=$(links -dump  http://192.168.10.240/server-status)
+conns=$(echo "$OUTPUT"|grep 'connections' | awk '{print $1}')
+uptime=$(echo "$OUTPUT"|grep 'Uptime'| awk -F '   ' '{print $3}')
+#
+absRequests=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $2}'|head -1)
+absRequestsM=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $3}'|head -1)
+#
+absTraffic=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $2}'|head -1)
+absTraffic=$(printf %.0f $absTraffic)
+absTrafficM=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $3}'|head -1)
+#
+avgRequests=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $2}'|tail -n 2|head -1)
+avgRequestsM=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $3}'|tail -n 2|head -1)
+
+avgTraffic=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $2}'|tail -n 2|head -1)
+avgTraffic=$(printf %.0f $avgTraffic)
+avgTrafficM=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $3}'|tail -n 2|head -1)
+#converting absRequests
+if	[[ ${absRequestsM:0:1} == 'k' || ${absRequestsM:0:1} == 'K' ]]
+then
+	absRequests=$(($absRequests*$K))
+
+elif	[[ ${absRequestsM:0:1} == 'm' || ${absRequestsM:0:1} == 'M' ]]
+then
+	absRequests=$(($absRequests*$M))
+
+elif    [[ ${absRequestsM:0:1} == 'g' || ${absRequestsM:0:1} == 'G' ]]
+then
+        absRequests=$(($absRequests*$G))
+
+elif    [[ ${absRequestsM:0:1} == 't' || ${absRequestsM:0:1} == 'T' ]]
+then
+        absRequests=$(($absRequests*$T))
+fi
+#converting absTraffic
+if      [[ ${absTrafficM:0:1} == 'k' || ${absTrafficM:0:1} == 'K' ]]
+then
+        absTraffic=$(($absTraffic*$KB))
+
+elif    [[ ${absTrafficM:0:1} == 'm' || ${absTrafficM:0:1} == 'M' ]]
+then
+        absTraffic=$(($absTraffic*$MB))
+
+elif    [[ ${absTrafficM:0:1} == 'g' || ${absTrafficM:0:1} == 'G' ]]
+then
+        absTraffic=$(($absTraffic*$GB))
+
+elif    [[ ${absTrafficM:0:1} == 't' || ${absTrafficM:0:1} == 'T' ]]
+then
+        absTraffic=$(($absTraffic*$TB))
+fi
+#converting avgRequests
+if      [[ ${avgRequestsM:0:1} == 'k' || ${avgRequestsM:0:1} == 'K' ]]
+then
+        avgRequests=$(($avgRequests*$K))
+
+elif    [[ ${avgRequestsM:0:1} == 'm' || ${avgRequestsM:0:1} == 'M' ]]
+then
+        avgRequests=$(($avgRequests*$M))
+
+elif    [[ ${avgRequestsM:0:1} == 'g' || ${avgRequestsM:0:1} == 'G' ]]
+then
+        avgRequests=$(($avgRequests*$G))
+
+elif    [[ ${avgRequestsM:0:1} == 't' || ${avgRequestsM:0:1} == 'T' ]]
+then
+        avgRequests=$(($avgRequests*$T))
+fi
+#converting avgTraffic
+if      [[ ${avgTrafficM:0:1} == 'k' || ${avgTrafficM:0:1} == 'K' ]]
+then
+        avgTraffic=$(($avgTraffic*$KB))
+
+elif    [[ ${avgTrafficM:0:1} == 'm' || ${avgTrafficM:0:1} == 'M' ]]
+then
+        avgTraffic=$(($avgTraffic*$MB))
+
+elif    [[ ${avgTrafficM:0:1} == 'g' || ${avgTrafficM:0:1} == 'G' ]]
+then
+        avgTraffic=$(($avgTraffic*$GB))
+
+elif    [[ ${avgTrafficM:0:1} == 't' || ${avgTrafficM:0:1} == 'T' ]]
+then
+        avgTraffic=$(($avgTraffic*$TB))
+fi
+
+
+
+
+
+
+echo "Uptime: $uptime"
+echo "Connections: $conns"
+echo "Requests(absolote): $absRequests"
+echo "Traffic(absolote): $absTraffic"
+echo "Requests(average): $avgRequests"
+echo "Traffic(average): $avgTraffic"

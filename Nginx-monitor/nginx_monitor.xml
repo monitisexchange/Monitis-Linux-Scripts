@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="nginx monitor" interval="60">
+		<monitor name="Nginx">
+			<exectemplate>nginx-grep|awk '{print $2}'</exectemplate>
+			
+			<metric name="Active Connections">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>1</line>
+			</metric>
+			
+			<metric name="Accepts">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>2</line>
+			</metric>
+
+			<metric name="Handled">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>3</line>
+			</metric>
+
+			<metric name="Requests">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>4</line>	
+			</metric>
+
+			<metric name="Reading">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>5</line>
+			</metric>
+
+			<metric name="Writing">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>6</line>
+			</metric>
+
+			<metric name="Waiting">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>7</line>
+			</metric>
+						
+		</monitor>
+	</agent>
+</config>

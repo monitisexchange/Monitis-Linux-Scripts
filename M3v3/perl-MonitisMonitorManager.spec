@@ -1,6 +1,6 @@
 Summary: MonitisMonitorManager Perl module
 Name: perl-MonitisMonitorManager
-Version: 3.7
+Version: 3.9
 Release: 1
 License: GPL or Artistic
 Group: Development/Libraries

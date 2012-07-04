@@ -1,3 +1,11 @@
+OBSOLETE WARNING
+----------------
+This API is OBSOLETE and UNMAINTAINED!
+
+Please use M3v3 instead.
+
+File contents
+-------------
  * monitis_api.sh - implements Bash functions for the Monitis REST API
  * monitis_config - A configuration file for monitis_api.sh
 

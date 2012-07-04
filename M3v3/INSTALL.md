@@ -42,6 +42,22 @@ The following should take care of you:
 
  # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.7-1.noarch.rpm
 
+### RHEL 5.x / CentOS 5.x
+
+For the 5.x version, please install the EPEL repository by issuing:
+
+ # rpm -Uvh http://mirror.cogentco.com/pub/linux/epel/5/x86_64/epel-release-5-4.noarch.rpm
+
+The EPEL repository will include most of the plugins you need for running M3 properly.
+
+The rest is like on the 6.x version:
+
+ # cd /tmp
+
+ # wget -c http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.7-1.noarch.rpm
+
+ # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.7-1.noarch.rpm
+
 ### Fedora Core 16
 
 Please refer to the RHEL/CentOS installation instructions, but use the

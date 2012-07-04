@@ -1,0 +1,17 @@
+#!/bin/bash
+:
+OUTPUT=$(curl -s http://127.0.0.1:5984/nginx_status)
+active=$(echo $OUTPUT|cut -d' ' -f3)
+echo "Active: $active"
+accepts=$(echo $OUTPUT|cut -d' ' -f8)
+echo "Accepts: $accepts"
+handled=$(echo $OUTPUT|cut -d' ' -f9)
+echo "Handled: $handled" 
+requests=$(echo $OUTPUT|cut -d' ' -f10)
+echo "Requests: $requests"
+reading=$(echo $OUTPUT|cut -d' ' -f12)
+echo "Reading: $reading"
+writing=$(echo $OUTPUT|cut -d' ' -f14)
+echo "Writing: $writing"
+waiting=$(echo $OUTPUT|cut -d' ' -f16)
+echo "Waiting: $waiting"

@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="squid monitor" interval="60">
+		
+		<monitor name="Squid">
+			<exectemplate>squidclient -h localhost cache_object://localhost/counters |tail -n +12|awk '{print $3}'</exectemplate>
+			
+			<metric name="ClientRequests">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>1</line>
+			</metric>
+			
+			<metric name="ClientErrors">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>3</line>
+			</metric>
+
+			<metric name="ClientKbIn">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>4</line>
+			</metric>
+
+			<metric name="ClientKbOut">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>5</line>	
+			</metric>
+
+			<metric name="ServerRequests">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>7</line>
+			</metric>
+
+			<metric name="ServerErrors">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>8</line>
+			</metric>
+
+			<metric name="ServerKbIn">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>9</line>
+			</metric>
+
+			<metric name="ServerKbOut">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>10</line>
+			</metric>
+
+			<metric name="Page Faults">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>46</line>
+			</metric>
+			<metric name="Aborted Requests">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>53</line>
+			</metric>
+						
+		</monitor>
+	</agent>
+</config>

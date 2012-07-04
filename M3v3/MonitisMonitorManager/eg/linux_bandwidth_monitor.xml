@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Linux Bandwidth Monitor" interval="60">
+		<monitor name="Total MBytes eth0 for %HOSTNAME%">
+			<exectemplate>grep eth0 /proc/net/dev</exectemplate>
+			<metric name="RX Total MBytes">
+				<type>integer</type>
+				<uom>MBytes</uom>
+				<regex>\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<math>/ 1024 / 1024</math>
+			</metric>
+			<metric name="TX Total MBytes">
+				<type>integer</type>
+				<uom>MBytes</uom>
+				<regex>\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<math>/ 1024 / 1024</math>
+			</metric>
+		</monitor>
+		<monitor name="KBytes/sec eth0 for %HOSTNAME%">
+			<exectemplate>grep eth0 /proc/net/dev</exectemplate>
+			<metric name="RX KBytes/sec">
+				<type>integer</type>
+				<uom>KBytes/sec</uom>
+				<regex>\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<diffpersec>1</diffpersec>
+				<math>/ 1024</math>
+			</metric>
+			<metric name="TX KBytes/sec">
+				<type>integer</type>
+				<uom>KBytes/sec</uom>
+				<regex>\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<diffpersec>1</diffpersec>
+				<math>/ 1024</math>
+			</metric>
+		</monitor>
+	</agent>
+</config>

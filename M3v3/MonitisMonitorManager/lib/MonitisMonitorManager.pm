@@ -2,7 +2,6 @@ package MonitisMonitorManager;
 
 use 5.008008;
 require XML::Simple;
-require Data::Dumper;
 require Monitis;
 require Thread;
 require URI;
@@ -19,6 +18,12 @@ use MonitisMonitorManager::MonitisConnection;
 use Carp;
 use Date::Manip;
 use File::Basename;
+use JSON;
+use Data::Dumper;
+
+#################
+### CONSTANTS ###
+#################
 
 require Exporter;
 
@@ -41,7 +46,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '3.7';
+our $VERSION = '3.9';
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -57,6 +62,10 @@ our %monitis_datatypes = ( 'boolean', 1, 'integer', 2, 'string', 3, 'float', 4 )
 
 # a helper variable to signal threads to quit on time
 my $condition_loop_stop :shared = 0;
+
+#####################
+### CTOR AND DTOR ###
+#####################
 
 # constructor
 sub new {
@@ -76,13 +85,19 @@ sub new {
 	run_macros($templated_xml);
 
 	# load execution plugins
-	$self->load_plugins_in_directory("execution_plugins", EXECUTION_PLUGIN_DIR);
+	$self->load_plugins_in_directory(
+		plugin_table_name => "execution_plugins",
+		plugin_directory => EXECUTION_PLUGIN_DIR);
 
 	# load parsing plugins
-	$self->load_plugins_in_directory("parsing_plugins", PARSING_PLUGIN_DIR);
+	$self->load_plugins_in_directory(
+		plugin_table_name => "parsing_plugins",
+		plugin_directory => PARSING_PLUGIN_DIR);
 
 	# load compute plugins
-	$self->load_plugins_in_directory("compute_plugins", COMPUTE_PLUGIN_DIR);
+	$self->load_plugins_in_directory(
+		plugin_table_name => "compute_plugins",
+		plugin_directory => COMPUTE_PLUGIN_DIR);
 
 	my $xml_parser = XML::Simple->new(ForceArray => 1);
 	$self->{config_xml} = $xml_parser->XMLin($templated_xml);
@@ -114,142 +129,36 @@ sub DESTROY {
 	defined($self->{monitis_connection}) and $self->{monitis_connection}->stop();
 }
 
-# a simple function to dynamically load all perl packages in a given
-# directory
-sub load_plugins_in_directory($$$) {
-	my ($self, $plugin_table_name, $plugin_directory) = @_;
-	# initialize a new plugin table
-	$self->{$plugin_table_name} = ();
-
-	# TODO a little ugly - but this is how we're going to discover where M3
-	# was installed...
-	my $m3_perl_module_directory = dirname($INC{"MonitisMonitorManager.pm"}) . "/MonitisMonitorManager";
-	my $full_plugin_directory = $m3_perl_module_directory . "/" . $plugin_directory;
-	# iterate on all plugins in directory and load them
-	foreach my $plugin_file (<$full_plugin_directory/*.pm>) {
-		my $plugin_name = "MonitisMonitorManager::" . $plugin_directory . "::" . basename($plugin_file);
-		$plugin_name =~ s/\.pm$//g;
-		# load the plugin
-		eval {
-			require "$plugin_file";
-			$plugin_name->name();
-		};
-		if ($@) {
-			croak "error: $@";
-		} else {
-			carp "Loading plugin '" . $plugin_name . "'->'" . $plugin_name->name() . "'" if DEBUG;
-			$self->{$plugin_table_name}{$plugin_name->name()} = "$plugin_name";
-		}
-	}
-}
-
-# does the user want a dry run?
-sub dry_run($) {
-	my ($self) = @_;
-	if (defined($self->{dry_run}) and $self->{dry_run} == 1) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-# does the user just want to test configuration?
-sub test_config($) {
-	my ($self) = @_;
-	if (defined($self->{test_config}) and $self->{test_config} == 1) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-# does the user want a mass load?
-# mass_load decides how to handle output
-# if it's set, we'll handle it line by one, allowing duplicate parameters
-sub mass_load($) {
-	my ($self) = @_;
-	if (defined($self->{mass_load}) and $self->{mass_load} == 1) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-# print the XML after it was templated
-sub templated_xml($) {
-	my ($self) = @_;
-	my $xmlout = XML::Simple->new(RootName => 'config');
-	return $xmlout->XMLout($self->{config_xml});
-}
-
-# returns the monitor id with a given tag
-sub get_id_of_monitor($$$) {
-	my ($self, $monitor_tag, $monitor_name) = @_;
-
-	# call Monitis using the api context provided
-	my $response = $self->{monitis_api_context}->custom_monitors->get(
-		tag => $monitor_tag);
-
-	# iterate on all of them and compare the name
-	my $i = 0;
-	while (defined($response->[$i]->{id})) {
-		if ($response->[$i]->{name} eq $monitor_name) {
-			carp "Monitor tag/name: '$monitor_tag/$monitor_name' -> ID: '$response->[$i]->{id}'" if DEBUG;
-			return $response->[$i]->{id};
-		}
-		$i++;
-	}
-	croak "Could not obtain ID for monitor '$monitor_tag'";
-}
-
-# handles a raw command (add_monitor, update_data)
-sub handle_raw_command($$) {
-	my ($self, $raw) = @_;
-	print "Raw command is: '$raw'\n";
-	my (@raw_parameters) = split /\s+/, $raw;
-	my $command = pop @raw_parameters;
-
-	# a quick debug message
-	carp "Handling raw command: '$command'" if DEBUG;
-
-	for ($command) {
-		/add_monitor/ and do {
-			my $monitor_name = pop @raw_parameters;
-			my $monitor_tag = pop @raw_parameters;
-			my $result_params = pop @raw_parameters;
-			$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params);
-		};
-		/update_data/ and do {
-			my $monitor_name = pop @raw_parameters;
-			my $monitor_tag = pop @raw_parameters;
-			my $result_params = pop @raw_parameters;
-			$self->update_data_for_monitor_raw("", $monitor_name, $monitor_tag, time, $result_params);
-		};
-		/list_monitors/ and do {
-			$self->list_monitors_raw();
-		};
-		/delete_monitor/ and do {
-			my $monitor_id = pop @raw_parameters;
-			$self->delete_monitor_raw($monitor_id);
-		};
-	}
-}
+##########################
+### CORE FUNCTIONALITY ###
+##########################
 
 # add a single monitor
-sub add_monitor($$$) {
-	my ($self, $agent_name, $monitor_name) = @_;
+sub add_monitor {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_name = $args->{monitor_name};
 
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
 
 	# get the monitor tag
-	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
+	my $monitor_tag = $self->get_monitor_tag(
+		agent_name => $agent_name,
+		monitor_name => $monitor_name);
 	my $result_params = "";
-	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
+	my $additional_result_params = "";
+	foreach my $metric_name (keys %{$monitor_xml_path->{metric}}) {
 		if ($self->metric_name_not_reserved($metric_name)) {
 			my $uom = $monitor_xml_path->{metric}->{$metric_name}->{uom}[0];
 			my $metric_type = $monitor_xml_path->{metric}->{$metric_name}->{type}[0];
 			my $data_type = ${ $self->{monitis_datatypes} }{$metric_type} or croak "Incorrect data type '$metric_type'";
-			$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+			if (defined($monitor_xml_path->{metric}->{$metric_name}->{additional})) {
+				# it's an additional parameter
+				$additional_result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+			} else {
+				$result_params .= "$metric_name:$metric_name:$uom:$data_type;";
+			}
 		}
 	}
 
@@ -284,72 +193,53 @@ sub add_monitor($$$) {
 	carp "Adding monitor '$monitor_name' with metrics '$result_params'" if DEBUG;
 
 	# call Monitis using the api context provided
-	if ($self->dry_run()) {
+	if ($self->is("dry_run")) {
 		# don't output this line if just testing configuration
-		not $self->test_config and carp "This is a dry run, the monitor '$monitor_name' was not really added.";
+		not $self->is("test_config") and carp "This is a dry run, the monitor '$monitor_name' was not really added.";
 	} else {
 		my @add_monitor_optional_params;
 		defined($monitor_type) && push @add_monitor_optional_params, type => $monitor_type;
-		$self->add_monitor_raw($monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
+		if($additional_result_params ne "") { push @add_monitor_optional_params, additionalResultParams => $additional_result_params; }
+		$self->add_monitor_raw(
+			monitor_name => $monitor_name,
+			monitor_tag =>  $monitor_tag,
+			result_params =>  $result_params,
+			optional_params =>  \@add_monitor_optional_params);
 	}
-}
-
-# updated raw data for monitor
-sub add_monitor_raw($$$$@) {
-	my ($self, $monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params) = @_;
-	$self->{monitis_connection}->add_monitor(
-		$monitor_name, $monitor_tag, $result_params, @add_monitor_optional_params);
-}
-
-# list monitors
-sub list_monitors_raw($) {
-	my ($self) = @_;
-	my @monitors = $self->{monitis_connection}->list_monitors();
-	my $i = 0;
-
-	printf("ID   |Name           |Tag                      |Type           |\n");
-	printf("-----|---------------|-------------------------|---------------|\n");
-	while (defined($monitors[0][$i])) {
-		my ($monitor_name) = $monitors[0][$i]->{name};
-		my ($monitor_type) = $monitors[0][$i]->{type};
-		my ($monitor_tag) = $monitors[0][$i]->{tag};
-		my ($monitor_id) = $monitors[0][$i]->{id};
-		printf("%-5s|%-15s|%-25s|%-15s|\n", $monitor_id, $monitor_name, $monitor_tag, $monitor_type);
-		$i++;
-	}
-}
-
-# delete a monitor
-sub delete_monitor_raw($$) {
-	my ($self, $monitor_id) = @_;
-	my @monitors = $self->{monitis_connection}->delete_monitor($monitor_id);
 }
 
 # add all monitors for all agents
-sub add_agents($) {
-	my ($self) = @_;
+sub add_agents {
+	my $self = shift;
 
 	# iterate on agents and add them one by one
 	foreach my $agent_name (keys %{$self->{agents}}) {
 		carp "Adding agent '$agent_name'" if DEBUG;
-		$self->add_agent_monitors($agent_name);
+		$self->add_agent_monitors(agent_name => $agent_name);
 	}
 }
 
 # add one agent
-sub add_agent_monitors($$) {
-	my ($self, $agent_name) = @_;
+sub add_agent_monitors {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
 	
 	# iterate on all monitors and add them
 	foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}} ) {
 		carp "Adding monitor '$monitor_name' for agent '$agent_name'" if DEBUG;
-		$self->add_monitor($agent_name, $monitor_name);
+		$self->add_monitor(
+			agent_name => $agent_name,
+			monitor_name =>  $monitor_name);
 	}
 }
 
 # invoke a single monitor
-sub invoke_monitor($$$) {
-	my ($self, $agent_name, $monitor_name) = @_;
+sub invoke_monitor {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_name = $args->{monitor_name};
 
 	# get the xml path for that monitor
 	my $monitor_xml_path = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name};
@@ -359,9 +249,10 @@ sub invoke_monitor($$$) {
 
 	# result set hash
 	my %results = ();
+	my %additional_results = ();
 
 	# if just testing monitors - print a nice message
-	($self->test_config) and carp "Testing monitor '$monitor_name': ";
+	($self->is("test_config")) and carp "Testing monitor '$monitor_name': ";
 	my $config_ok = 1;
 
 	# find the relevant execution plugin and execute it
@@ -373,7 +264,7 @@ sub invoke_monitor($$$) {
 				# executable, URL, SQL command...
 				carp "Calling execution plugin: '$execution_plugin', execution_xml_base->'$execution_xml_base', monitor_name->'$monitor_name'" if DEBUG;
 				my %returned_results = ();
-				if ($self->test_config()) {
+				if ($self->is("test_config")) {
 					my %tmp_hash = ();
 					eval {
 						$self->{execution_plugins}{$execution_plugin}->get_config($execution_xml_base, \%tmp_hash);
@@ -397,7 +288,7 @@ sub invoke_monitor($$$) {
 	}
 
 	# just testing configuration? - alright, quit!
-	if ($self->test_config) {
+	if ($self->is("test_config")) {
 		($config_ok == 1) and carp "Monitor '$monitor_name' -> Configuration is OK";
 		return;
 	}
@@ -409,18 +300,38 @@ sub invoke_monitor($$$) {
 
 	my $retval = 1;
 	# if mass load is set, we'll handle the lines one by one
-	if ($self->mass_load()) {
+	if ($self->is("mass_load")) {
 		foreach my $line (split /[\r\n]+/, $output) {
-			$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, $line);
+			$retval = $self->handle_output_chunk(
+				agent_name => $agent_name,
+				monitor_xml_path => $monitor_xml_path,
+				monitor_name => $monitor_name,
+				ref_results => \%results,
+				ref_additional_results => \%additional_results,
+				output => $line);
 		}
 	} else {
-		$retval = $self->handle_output_chunk($agent_name, $monitor_xml_path, $monitor_name, \%results, $output);
+		$retval = $self->handle_output_chunk(
+			agent_name => $agent_name,
+			monitor_xml_path => $monitor_xml_path,
+			monitor_name => $monitor_name,
+			ref_results => \%results,
+			ref_additional_results => \%additional_results,
+			output => $output);
 	}
 }
 
-sub handle_output_chunk($$$$$$$) {
-	my ($self, $agent_name, $monitor_xml_path, $monitor_name, $ref_results, $output) = @_;
-	my %results = %$ref_results;
+# handle a chunk of output after executing plugins
+# basically we parse stuff here...
+sub handle_output_chunk {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_name = $args->{monitor_name};
+	my $monitor_xml_path = $args->{monitor_xml_path};
+	my $output = $args->{output};
+	my %results = %{$args->{ref_results}};
+	my %additional_results = %{$args->{ref_additional_results}};
 
 	foreach my $metric_name (keys %{$monitor_xml_path->{metric}} ) {
 		# call the relevant parsing plugin
@@ -447,22 +358,27 @@ sub handle_output_chunk($$$$$$$) {
 		}
 
 		# merge the returned results into the main %results hash
-		@results{keys %returned_results} = values %returned_results;
+		if (defined($monitor_xml_path->{metric}->{$metric_name}->{additional})) {
+			@additional_results{keys %returned_results} = values %returned_results;
+		} else {
+			@results{keys %returned_results} = values %returned_results;
+		}
 	}
 
 	# TODO 'MONITIS_CHECK_TIME' hardcoded
 	# if MONITIS_CHECK_TIME is defined, use it as the timestamp for updating data
-	my $checktime = 0;
+	# note: @checktime can be empty, then we'll calculate the current timestamp
+	my @checktime;
 	if (defined($results{MONITIS_CHECK_TIME})) {
 		if (int($results{MONITIS_CHECK_TIME}) == $results{MONITIS_CHECK_TIME}) {
 			# no need for date manipulation
-			$checktime = $results{MONITIS_CHECK_TIME};
+			push @checktime, "checktime" => $results{MONITIS_CHECK_TIME};
 		} else {
 			my $date = new Date::Manip::Date;
 			$date->parse($results{MONITIS_CHECK_TIME});
 			# checktime here is seconds, update_data_for_monitor will multiply by
 			# 1000 to make it milliseconds
-			$checktime = $date->secs_since_1970_GMT();
+			push @checktime, "checktime" => $date->secs_since_1970_GMT();
 		}
 		# and remove it from the hash
 		delete $results{MONITIS_CHECK_TIME};
@@ -470,65 +386,82 @@ sub handle_output_chunk($$$$$$$) {
 
 	# format results
 	my $formatted_results = format_results(\%results);
+	my $formatted_additional_results = format_results_json(\%additional_results);
 
-	# update the data
-	if ($checktime ne "") {
-		# was the checktime specified and parsed?
-		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results, $checktime);
-	} else {
-		return $self->update_data_for_monitor($agent_name, $monitor_name, $formatted_results);
-	}
+	return $self->update_data_for_monitor(
+		agent_name => $agent_name,
+		monitor_name => $monitor_name,
+		results => $formatted_results,
+		additional_results => $formatted_additional_results,
+		@checktime);
 }
 
 # update data for a monitor, calling Monitis API
-sub update_data_for_monitor($$$$@) {
-	my ($self, $agent_name, $monitor_name, $results, @va_list) = @_;
-	# get the time now (time returns time in seconds, multiply by 1000
-	# for miliseconds)
-	my $checktime = $va_list[0] || time;
-	$checktime *= 1000;
+sub update_data_for_monitor {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_name = $args->{monitor_name};
+	my $results = $args->{results};
+	my $additional_results = $args->{additional_results};
+
+	# did the user specify a checktime?
+	my $checktime;
+	if (defined($args->{checktime})) {
+		$checktime = $args->{checktime} * 1000;
+	} else {
+		# get the time now (time returns time in seconds, multiply by 1000
+		# for miliseconds)
+		$checktime = time * 1000;
+	}
 
 	# sanity check of results...
-	if ($results eq "") {
+	if ($additional_results eq "") {
 		carp "Result set is empty! did it parse well? - Will not update any data!"; 
 		return;
 	}
 
-	if ($self->dry_run()) {
+	if ($self->is("dry_run")) {
 		carp "OK";
 		carp "This is a dry run, data for monitor '$monitor_name' was not really updated.";
 		return;
 	}
 
 	# queue it on MonitisConnection which will handle the rest
-	my $monitor_tag = $self->get_monitor_tag($agent_name, $monitor_name);
-	$self->update_data_for_monitor_raw($agent_name, $monitor_name, $monitor_tag, $checktime, $results);
-}
-
-# update data for a monitor, the internal function
-sub update_data_for_monitor_raw($$$$$@) {
-	my ($self, $agent_name, $monitor_name, $monitor_tag, $checktime, $results) = @_;
-	$self->{monitis_connection}->queue($agent_name, $monitor_name, $monitor_tag, $checktime, $results);
+	my $monitor_tag = $self->get_monitor_tag(
+		agent_name => $agent_name,
+		monitor_name => $monitor_name);
+	$self->update_data_for_monitor_raw(
+		agent_name => $agent_name,
+		monitor_name => $monitor_name,
+		monitor_tag => $monitor_tag,
+		checktime => $checktime,
+		results => $results,
+		additional_results => $additional_results);
 }
 
 # invoke all agents, one by one
-sub invoke_agents($) {
-	my ($self) = @_;
+sub invoke_agents {
+	my $self = shift;
 	foreach my $agent_name (keys %{$self->{agents}} ) {
-		$self->invoke_agent_monitors($agent_name);
+		$self->invoke_agent_monitors(agent_name => $agent_name);
 	}
 }
 
 # invoke all monitors, one by one
-sub invoke_agent_monitors($$) {
-	my ($self, $agent_name) = @_;
+sub invoke_agent_monitors {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
 	foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}}) {
-		$self->invoke_monitor($agent_name, $monitor_name);
+		$self->invoke_monitor(
+			agent_name => $agent_name,
+			monitor_name => $monitor_name);
 	}
 }
 
 # signals threads to stop execution
-sub agents_loop_stop() {
+sub agents_loop_stop {
 	carp "Stopping execution...";
 	lock($condition_loop_stop);
 	$condition_loop_stop = 1;
@@ -536,13 +469,13 @@ sub agents_loop_stop() {
 }
 
 # invoke all agents in a loop with timers enabled
-sub invoke_agents_loop($) {
-	my ($self) = @_;
+sub invoke_agents_loop {
+	my $self = shift;
 	# initialize all the agents
 	my @threads = ();
 
 	foreach my $agent_name (keys %{$self->{agents}} ) {
-		push @threads, threads->create(\&invoke_agent_monitors_loop, $self, $agent_name);
+		push @threads, threads->create(\&invoke_agent_monitors_loop, $self, agent_name => $agent_name);
 	}
 	my $running_threads = @threads;
 
@@ -563,24 +496,179 @@ sub invoke_agents_loop($) {
 
 # invoke all monitors of an agent in a loop, taking care to sleep between
 # executions
-sub invoke_agent_monitors_loop($$) {
-	my ($self, $agent_name) = @_;
+sub invoke_agent_monitors_loop {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
 	my $agent_interval = $self->{agents}->{$agent_name}->{interval};
 	carp "Agent '$agent_name' will be invoked every '$agent_interval' seconds'" if DEBUG;
 
 	# this loop will break when the user will hit ^C (SIGINT)
 	do {
 		foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}}) {
-			$self->invoke_monitor($agent_name, $monitor_name);
+			$self->invoke_monitor(
+				agent_name => $agent_name,
+				monitor_name => $monitor_name);
 		}
 		lock($condition_loop_stop);
 		cond_timedwait($condition_loop_stop, time() + $agent_interval);
 	} while(not $condition_loop_stop);
 }
 
+#####################
+### RAW FUNCTIONS ###
+#####################
+
+# handles a raw command (add_monitor, update_data)
+sub handle_raw_command {
+	my $self = shift;
+	my ($args) = {@_};
+	my $raw_command = $args->{raw_command};
+
+	print "Raw command is: '$raw_command'\n";
+	my (@raw_parameters) = split /\s+/, $raw_command;
+	my $command = shift @raw_parameters;
+
+	# a quick debug message
+	carp "Handling raw command: '$command'" if DEBUG;
+
+	for ($command) {
+		/add_monitor/ and do {
+			my $monitor_name = shift @raw_parameters;
+			my $monitor_tag = shift @raw_parameters;
+			my $result_params = shift @raw_parameters;
+			my $additional_result_params = shift @raw_parameters;
+			my @optional_parameters;
+			if($additional_result_params ne "") { push @optional_parameters, additionalResultParams => $additional_result_params; }
+			$self->add_monitor_raw(
+				monitor_name => $monitor_name,
+				monitor_tag => $monitor_tag,
+				result_params =>  $result_params,
+				optional_params =>  \@optional_parameters);
+		};
+		/update_data/ and do {
+			my $monitor_name = shift @raw_parameters;
+			my $monitor_tag = shift @raw_parameters;
+			my $results = shift @raw_parameters;
+			my $additional_results = shift @raw_parameters;
+			$self->update_data_for_monitor_raw(
+				monitor_name => $monitor_name,
+				monitor_tag => $monitor_tag,
+				checktime => time * 1000,
+				results => $results,
+				additional_results => $additional_results);
+		};
+		/list_monitors/ and do {
+			$self->list_monitors_raw();
+		};
+		/delete_monitor/ and do {
+			my $monitor_id = shift @raw_parameters;
+			$self->delete_monitor_raw(monitor_id => $monitor_id);
+		};
+	}
+}
+
+# updated raw data for monitor
+sub add_monitor_raw {
+	my $self = shift;
+
+	# simply forward the parameters!
+	$self->{monitis_connection}->add_monitor(@_);
+}
+
+# list monitors
+sub list_monitors_raw {
+	my $self = shift;
+	my @monitors = $self->{monitis_connection}->list_monitors();
+	my $i = 0;
+
+	printf("ID   |Name           |Tag                      |Type           |\n");
+	printf("-----|---------------|-------------------------|---------------|\n");
+	while (defined($monitors[0][$i])) {
+		my ($monitor_name) = $monitors[0][$i]->{name};
+		my ($monitor_type) = $monitors[0][$i]->{type};
+		my ($monitor_tag) = $monitors[0][$i]->{tag};
+		my ($monitor_id) = $monitors[0][$i]->{id};
+		printf("%-5s|%-15s|%-25s|%-15s|\n", $monitor_id, $monitor_name, $monitor_tag, $monitor_type);
+		$i++;
+	}
+}
+
+# delete a monitor
+sub delete_monitor_raw {
+	my $self = shift;
+	$self->{monitis_connection}->delete_monitor(@_);
+}
+
+# update data for a monitor, the internal function
+sub update_data_for_monitor_raw {
+	my $self = shift;
+	$self->{monitis_connection}->queue(@_);
+}
+
+
+###############################
+### SMALL UTILITY FUNCTIONS ###
+###############################
+
+# a simple function to dynamically load all perl packages in a given
+# directory
+sub load_plugins_in_directory {
+	my $self = shift;
+	my ($args) = {@_};	
+	my $plugin_table_name = $args->{plugin_table_name};
+	my $plugin_directory = $args->{plugin_directory};
+
+	# initialize a new plugin table
+	$self->{$plugin_table_name} = ();
+
+	# TODO a little ugly - but this is how we're going to discover where M3
+	# was installed...
+	my $m3_perl_module_directory = dirname($INC{"MonitisMonitorManager.pm"}) . "/MonitisMonitorManager";
+	my $full_plugin_directory = $m3_perl_module_directory . "/" . $plugin_directory;
+	# iterate on all plugins in directory and load them
+	foreach my $plugin_file (<$full_plugin_directory/*.pm>) {
+		my $plugin_name = "MonitisMonitorManager::" . $plugin_directory . "::" . basename($plugin_file);
+		$plugin_name =~ s/\.pm$//g;
+		# load the plugin
+		eval {
+			require "$plugin_file";
+			$plugin_name->name();
+		};
+		if ($@) {
+			croak "error: $@";
+		} else {
+			carp "Loading plugin '" . $plugin_name . "'->'" . $plugin_name->name() . "'" if DEBUG;
+			$self->{$plugin_table_name}{$plugin_name->name()} = "$plugin_name";
+		}
+	}
+}
+
+
+# tests an attribute, such as 'dry_run', 'mass_load', 'test_config' etc.
+sub is {
+	my ($self, $attribute) = @_;
+	if (defined($self->{$attribute}) and $self->{$attribute} == 1) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+# print the XML after it was templated
+sub templated_xml {
+	my $self = shift;
+	my $xmlout = XML::Simple->new(RootName => 'config');
+	return $xmlout->XMLout($self->{config_xml});
+}
+
 # formats a monitor tag from a name
-sub get_monitor_tag($$$) {
-	my ($self, $agent_name, $monitor_name) = @_;
+sub get_monitor_tag {
+	my $self = shift;
+	my ($args) = {@_};
+	my $agent_name = $args->{agent_name};
+	my $monitor_name = $args->{monitor_name};
+
 	# if monitor tag is defined, use it!
 	if (defined ($self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{tag}) ) {
 		my $monitor_tag = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{tag};
@@ -604,6 +692,12 @@ sub format_results(%) {
 	return $formatted_results;
 }
 
+# formats the hash of results into a string
+sub format_results_json(%) {
+	my (%results) = %{$_[0]};
+	return "[" . encode_json(\%results) . "]";
+}
+
 # simply replaces the %SOMETHING% with the relevant
 # return of a defined function
 sub run_macros() {
@@ -618,7 +712,8 @@ sub replace_template($) {
 }
 
 sub metric_name_not_reserved($$) {
-	my ($self, $metric_name) = @_;
+	my $self = shift;
+	my ($metric_name) = @_;
 	return $metric_name ne "MONITIS_CHECK_TIME";
 }
 
