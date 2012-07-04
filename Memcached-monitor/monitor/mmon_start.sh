@@ -71,7 +71,7 @@ if [[ ($MONITOR_ID -le 0) ]]
 then 
 	echo MonitorId is still zero - try to obtain it from Monitis
 	
-	MONITOR_ID=`get_monitorID $MONITOR_NAME $MONITOR_TAG $MONITOR_TYPE `
+	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then

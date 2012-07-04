@@ -92,7 +92,7 @@ function jsonval() {
     local prop=${2:-""}
     if [[ (-n $json) && (-n $prop) ]]
     then
-	    temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop`
+	    temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w -m1 $prop`
     	echo ${temp#*:}
     	return 0
     fi

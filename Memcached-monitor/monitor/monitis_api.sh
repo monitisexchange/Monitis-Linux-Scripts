@@ -285,18 +285,18 @@ function get_monitorID {
 	
     if [[ (-n $name) && (-n $tag) && (-n $type) ]]
     then
-		get_monitors_list $tag $type
+		get_monitors_list "$tag" "$type"
 		ret="$?"
 		if [[ ($ret -ne 0) ]]
 		then
 			return $ret
 		else
-			isJSONarray $response
+			isJSONarray "$response"
 			ret="$?"
 			if [[ ($ret -ne 0) ]]
 			then # not array
 				MSG="get_monitorID - Not an array"
-				isJSON $response
+				isJSON "$response"
 				ret="$?"
 				if [[ ($ret -ne 0) ]]
 				then
@@ -310,14 +310,14 @@ function get_monitorID {
 					IFS="|"
 					declare -a Array=($*) 
 					IFS=$OIFS			
-				for (( i=0 ; i< ${#Array[@]} ; i++ ))
+				for (( i=0 ; i< "${#Array[@]}" ; i++ ))
 				do
-					value=`jsonval "${Array[i]}" "name" `
+					value=`jsonval "${Array[$i]}" "name" `
 					if [[ ("$?" -eq 0) ]]
 					then # Found name
 						if [[ (${value#"name:"} == $name) ]]
 						then
-							value=`jsonval "${Array[i]}" "id" `
+							value=`jsonval "${Array[$i]}" "id" `
 							ret="$?"
 							echo $value
 							return $ret
