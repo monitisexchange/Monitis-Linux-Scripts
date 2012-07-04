@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Apache mod_status Agent" interval="60">
+		<monitor name="Apache mod_status Monitor" tag="apacheMonitor">
+			<url>
+				<url>http://localhost/server-status?auto</url>
+			</url>
+			<metric name="Accesses">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>Total Accesses: (\d+)</regex>
+			</metric>
+			<metric name="KBytes">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>Total kBytes: (\d+)</regex>
+			</metric>
+			<metric name="Uptime">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>Uptime: (\d+)</regex>
+			</metric>
+			<metric name="ReqPerSec">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>ReqPerSec: (\S+)</regex>
+			</metric>
+			<metric name="BytesPerSec">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>BytesPerSec: (\S+)</regex>
+			</metric>
+			<metric name="BytesPerReq">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>BytesPerReq: (\S+)</regex>
+			</metric>
+			<metric name="BusyWorkers">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>BusyWorkers: (\d+)</regex>
+			</metric>
+			<metric name="IdleWorkers">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>IdleWorkers: (\d+)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
