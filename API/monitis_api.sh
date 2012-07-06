@@ -1,4 +1,5 @@
 #!/bin/bash
+# OBSOLETE - USE M3v3 INSTEAD!!
 
 # monitis_api.sh - monitis REST API implemented in bash
 # Written by Dan Fruehauf <malkodan@gmail.com>
@@ -13,6 +14,13 @@ if [ -f /etc/redhat-release ]; then
 	XPATH="xpath"
 else
 	XPATH="xpath -e"
+fi
+# make sure user has xpath
+if ! which xpath >& /dev/null; then
+	echo "Please install xpath"
+	echo "For redhat: yum install perl-XML-XPath"
+	echo "For debian: apt-get install libxml-xpath-perl"
+	exit 2
 fi
 
 # some constants
@@ -35,6 +43,12 @@ _calc_checksum_for_api_call() {
 	echo -en $checksum_string | openssl dgst -sha1 -hmac $secret_key -binary | openssl enc -base64
 }
 
+# url encodes
+# $* - data to encode
+_url_encode() {
+	perl -MURI::Escape -e "print uri_escape('$*')"
+}
+
 # adds a custom monitis monitor
 # $1 - monitor name
 # $2 - monitor tag
@@ -55,7 +69,11 @@ monitis_add_custom_monitor() {
 	local checksum=`_calc_checksum_for_api_call $secret_key "$checksum_string"`
 
 	# format data for posting
-	local postdata="--data-urlencode \"action="$API_ADD_MONITOR_ACTION"\" --data-urlencode \"apikey="$api_key"\" --data-urlencode \"name="$monitor_name"\" --data-urlencode \"resultParams="$result_params"\" --data-urlencode \"tag="$monitor_tag"\" --data-urlencode \"timestamp=$timestamp\" --data-urlencode \"version="$API_VERSION"\" --data-urlencode \"checksum="$checksum"\""
+	# with a newer version of curl, you can just run this:
+	#local postdata="--data-urlencode \"action="$API_ADD_MONITOR_ACTION"\" --data-urlencode \"apikey="$api_key"\" --data-urlencode \"name="$monitor_name"\" --data-urlencode \"resultParams="$result_params"\" --data-urlencode \"tag="$monitor_tag"\" --data-urlencode \"timestamp=$timestamp\" --data-urlencode \"version="$API_VERSION"\" --data-urlencode \"checksum="$checksum"\""
+	# in the old version there's no --data-urlencode, so we'll encode it
+	# with the _url_encode function that uses perl
+	local postdata="--data \"action="`_url_encode $API_ADD_MONITOR_ACTION`"\" --data \"apikey="`_url_encode $api_key`"\" --data \"name="`_url_encode $monitor_name`"\" --data \"resultParams="`_url_encode $result_params`"\" --data \"tag="`_url_encode $monitor_tag`"\" --data \"timestamp="`_url_encode $timestamp`"\" --data \"version="`_url_encode $API_VERSION`"\" --data \"checksum="`_url_encode $checksum`"\""
 
 	# invoke curl
 	eval "curl ${postdata} $API_URL"
@@ -91,7 +109,11 @@ monitis_update_custom_monitor_data() {
 	local checksum=`_calc_checksum_for_api_call $secret_key "$checksum_string"`
 
 	# invoke curl
-	local postdata="--data-urlencode \"action="$API_ADD_RESULT_ACTION"\" --data-urlencode \"apikey="$api_key"\" --data-urlencode \"checktime="$check_time"\" --data-urlencode \"monitorId="$monitor_id"\" --data-urlencode \"results="$results"\" --data-urlencode \"timestamp=$timestamp\" --data-urlencode \"version="$API_VERSION"\" --data-urlencode \"checksum="$checksum"\""
+	# with a newer version of curl, you can just run this:
+	#local postdata="--data-urlencode \"action="$API_ADD_RESULT_ACTION"\" --data-urlencode \"apikey="$api_key"\" --data-urlencode \"checktime="$check_time"\" --data-urlencode \"monitorId="$monitor_id"\" --data-urlencode \"results="$results"\" --data-urlencode \"timestamp=$timestamp\" --data-urlencode \"version="$API_VERSION"\" --data-urlencode \"checksum="$checksum"\""
+	# in the old version there's no --data-urlencode, so we'll encode it
+	# with the _url_encode function that uses perl
+	local postdata="--data \"action="`_url_encode $API_ADD_RESULT_ACTION`"\" --data \"apikey="`_url_encode $api_key`"\" --data \"checktime="`_url_encode $check_time`"\" --data \"monitorId="`_url_encode $monitor_id`"\" --data \"results="`_url_encode $results`"\" --data \"timestamp="`_url_encode $timestamp`"\" --data \"version="`_url_encode $API_VERSION`"\" --data \"checksum="`_url_encode $checksum`"\""
 	eval "curl ${postdata} $API_URL"
 	echo
 }

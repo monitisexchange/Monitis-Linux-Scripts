@@ -1,48 +1,48 @@
 #!/bin/bash
 
 # sorces included
-source monitis_api.sh        || exit 2
-source memcached_monitor.sh  || error 2 memcached_monitor.sh
+source monitis_api.sh   || exit 2
+source mon_measure.sh   || error 2 memcached_monitor.sh
 
-#usage: mmon_start.sh -h <host_addres> -m <memcached access IP> -p <memcached access port> -d <duration in min>
-# default values
-# m = 127.0.0.1
-# p = 11211
-# d = 1
 
-while getopts "h:m:p:d:" opt;
+# Use the Twitter API to get extended information of a given user, specified by ID or screen name
+# usage: mon_start.sh -i <user ID> -s <user screen name> -d <duration in min>
+# "User screen name" is used even in case of "user id" is specified also.
+# default values (http://api.twitter.com/1/users/show.json?screen_name=monitis)
+# s = monitis
+# i = 17421289
+# d = 5
+
+while getopts "i:s:d:" opt;
 do
 	case $opt in
-	h) HOST_IP=$OPTARG ; echo Set host address to $HOST_IP ;;
-	m) MEMCACHED_IP=$OPTARG ; echo Set memcached ip to $MEMCACHED_IP ;;
-	p) MEMCACHED_PORT=$OPTARG ; echo Set memcached port to $MEMCACHED_PORT ;;
+	i) id=$OPTARG ; echo Set user id to $USER_ID ;;
+	s) name=$OPTARG ; echo Set user screen name to $USER_NAME ;;
 	d) DURATION=$OPTARG ; echo Set duration to $DURATION min ;;
-	*) echo "Usage: $0 -h <host_addres> -m <memcached access aIP> -p <memcached access port> -d <duration in min>" 
+	*) echo "Usage: $0 -i <user ID> -s <user screen name> -d <duration in min>" 
 	   error 4 "invalid parameter(s) while start"
 	   ;;
 	esac
 done
 
-#check memcached accessible
-access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "get 0"
-if [[ ("$?" -gt 0) ]]
-then
-	echo The specified memcached \( $MEMCACHED_IP:$MEMCACHED_PORT \) is not accessible!!!
-	exit 1
+if [[ ("x$name" != "x") ]] ; then
+	USER_NAME="$name"
+	USER_ID=""
+elif [[ ("x$id" != "x") ]] ; then
+	USER_ID="id"
+	USER_NAME=""
+else
+	echo "ERROR: at least one of USER_NAME or USER_ID should be defined"
+	error 4 "invalid parameter(s) while start"
 fi
 
 DURATION=$((60*$DURATION)) #convert to sec
 
-MONITOR_NAME="Memcached_$HOST_IP-$MEMCACHED_IP:$MEMCACHED_PORT"
-FILE_SETTING="$FILE_SETTING$MEMCACHED_PORT"
-FILE_STATUS="$FILE_STATUS$MEMCACHED_PORT"
-FILE_STATUS_PREV="$FILE_STATUS_PREV$MEMCACHED_PORT"
+MONITOR_NAME="Twitter:_User_"$USER_NAME"_"$USER_ID
 
-echo "***Memcached Monitor start with following parameters***"
+echo "***Twitter Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
-echo "Setting file = $FILE_SETTING"
-echo "Status file = $FILE_STATUS"
-echo "Previous status file = $FILE_STATUS_PREV"
+echo "User = $USER_NAME $USER_ID"
 echo "Duration for sending info = $DURATION sec"
 
 # obtaining TOKEN
@@ -83,9 +83,6 @@ then
 fi
 
 # Periodically adding new data
-file=$ERR_FILE # errors record file 
-file_=$file"_" # temporary file
-
 while $(sleep "$DURATION")
 do
 	get_token				# get new token in case of the existing one is too old
