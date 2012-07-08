@@ -44,27 +44,9 @@ The following should take care of you:
 
 ### RHEL 5.x / CentOS 5.x
 
-For the 5.x version, please install the EPEL repository by issuing:
+RHEL 5.x / CentOS 5.x is currently unsupported.
 
- # rpm -Uvh http://mirror.cogentco.com/pub/linux/epel/5/x86_64/epel-release-5-4.noarch.rpm
-
-The EPEL repository will include most of the plugins you need for running M3 properly.
-
-The rest is like on the 6.x version:
-
- # cd /tmp
-
- # wget -c http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.7-1.noarch.rpm
-
- # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.7-1.noarch.rpm
-
-NOTE: The RemoteCommand.pm (SSH/Telnet) and LinuxSysStatistics.pm will not
-
-be available on RHEL/CentOS 5.x
-
-NOTE: The Perl module of Date::Manip::Date is not present on RHEL 5, parsing 
-
-of dates (using MONITIS_CHECKTIME) will not be available!
+We are working to resolve this issue, please stay tuned.
 
 ### Fedora Core 16
 
