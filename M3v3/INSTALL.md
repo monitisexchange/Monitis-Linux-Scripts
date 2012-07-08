@@ -58,6 +58,14 @@ The rest is like on the 6.x version:
 
  # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.7-1.noarch.rpm
 
+NOTE: The RemoteCommand.pm (SSH/Telnet) and LinuxSysStatistics.pm will not
+
+be available on RHEL/CentOS 5.x
+
+NOTE: The Perl module of Date::Manip::Date is not present on RHEL 5, parsing 
+
+of dates (using MONITIS_CHECKTIME) will not be available!
+
 ### Fedora Core 16
 
 Please refer to the RHEL/CentOS installation instructions, but use the
