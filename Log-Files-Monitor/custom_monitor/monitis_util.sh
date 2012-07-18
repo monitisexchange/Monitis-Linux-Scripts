@@ -25,6 +25,12 @@ function get_date_time() {
 	date -u +"%F%%20%T"
 }
 
+# returns the formated UTC date string
+# sample: 2011-08-09
+function get_date() {
+	date -u +"%F"
+}
+
 # returns current UTC Unix timestamp 
 # (milliseconds since 00:00:00, Jan 1, 1970)
 function get_timestamp() {
@@ -37,24 +43,66 @@ function trim {
     echo $*
 }
 
-#Parsing JSON string and return the $prop value
-# @param json - json input string
-# @param prop - interesting key
+# Convert json array to set of json objects separated by "|"
+# @param $1 - array string to be transformed
+# returns result into "response" variable
+# sample:
+# [{id:1},{id:2}] -> {id:1} | {id:2}
+jsonArray2ss(){ 
+	echo -E "$@" | sed 's/\[{/{/g;s/}\]/}/g;s/},/} \| /g;s/{/ {/g;s/})/} )/g'
+}
+
+# Tests whether *entire string* is JSON string
+# @param $1 - string to be checked 
+function isJSON(){
+	if [[ ( "x$1" != "x" ) && ( $1 == {*} ) ]]
+	then 
+		return 0
+	fi
+	
+	return 1
+}
+
+# Tests whether *entire string* is JSON array string
+# @param $1 - string to be checked 
+function isJSONarray(){
+	local str=${1:-""}
+	if [[ ( "x$str" != "x" ) && ( ${str:0:1} == "[" ) && ( ${str: -1} == "]" ) ]]
+	then 
+		return 0
+	fi
+	
+	return 1
+}
+
+# Parsing JSON string and return the $prop value
+# @param $1 - json input string*
+# @param $2 - interesting key*
 # @return picurl - interesting key value
+# exit codes:
+#	0 - success
+#	1 - invalide input parameters
 # example 
 #	json=`curl -s -X GET http://twitter.com/users/show/$1.json`
 #	prop='profile_image_url'
-#	picurl=`jsonval`
-function jsonval {
-    #temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/\"\:\"/\|/g' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop`
-    #echo ${temp##*|}
-    temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w $prop`
-    echo ${temp##*:}
+#	picurl=`jsonval $json $prop`
+#
+function jsonval() {
+    local json=${1:-""}
+    local prop=${2:-""}
+    if [[ (-n $json) && (-n $prop) ]]
+    then
+	    temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w -m1 $prop`
+    	echo ${temp#*:}
+    	return 0
+    fi
+    return 1
 }
 
 # compose additional data (JSON array) for 
 #
 # @param $1 - string array that contains the data to be sent
+#			array[0] should contains the keyword name
 # @return JSON array
 function create_additional_param() {
 	if [[ (-n $1) ]]
@@ -63,13 +111,13 @@ function create_additional_param() {
 		if [[ (${#array[*]} -gt 0) ]]
 		then
 			param="["
-			for (( i=0; i < $array_length; i++ ))
+			for (( i=1; i < $array_length; i++ ))
 			do
-				if [ "$i" -ne "0" ]
+				if [ "$i" -ne "1" ]
 				then
 					param=$param","
 				fi
-				param=$param"{\"`uri_escape "details"`\":\"`uri_escape ${array[i]}`\"}"
+				param=$param"{\"`uri_escape ${array[0]}`\":\"`uri_escape ${array[i]}`\"}"
 			done
 			param=$param"]"	
 			echo "$param"

@@ -16,6 +16,6 @@ LINE[9]="Assuming that you have GNU tail"
 
 while [ 1 ]; do
 	echo ${LINE[$RANDOM % 10]} >> "$LOG_FILE"
-	sleep 10 
+	sleep 5 
 done
 
