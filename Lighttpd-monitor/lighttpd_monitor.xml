@@ -40,6 +40,17 @@
 				<uom>NA</uom>
 				<line>6</line>
 			</metric>
+			<metric name="Total Requests (average 5s slide)">
+                                <type>integer</type>
+                                <uom>NA</uom>
+                                <line>7</line>
+                        </metric>
+
+                        <metric name="Total Traffic (average 5s slide)">
+                                <type>integer</type>
+                                <uom>NA</uom>
+                                <line>8</line>
+                        </metric>
 						
 		</monitor>
 	</agent>
