@@ -102,7 +102,26 @@ then
 elif    [[ ${avgTrafficM:0:1} == 't' || ${avgTrafficM:0:1} == 'T' ]]
 then
         avgTraffic=$(($avgTraffic*$TB))
-fi	
+fi
+#
+#converting avgTraffic5s
+if      [[ ${avgTrafficM5s:0:1} == 'k' || ${avgTrafficM5s:0:1} == 'K' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$KB))
+
+elif    [[ ${avgTrafficM5s:0:1} == 'm' || ${avgTrafficM5s:0:1} == 'M' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$MB))
+
+elif    [[ ${avgTrafficM5s:0:1} == 'g' || ${avgTrafficM5s:0:1} == 'G' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$GB))
+
+elif    [[ ${avgTrafficM5s:0:1} == 't' || ${avgTrafficM5s:0:1} == 'T' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$TB))
+fi
+	
 #converting avgRequest5s
 if      [[ ${avgRequestsM5s:0:1} == 'k' || ${avgRequestsM5s:0:1} == 'K' ]]
 then
