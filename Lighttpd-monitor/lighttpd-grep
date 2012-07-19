@@ -103,7 +103,7 @@ fi
 
 echo "Uptime: $uptime"
 echo "Connections: $conns"
-echo "Requests(absolote): $absRequests"
-echo "Traffic(absolote): $absTraffic"
+echo "Requests(absolute): $absRequests"
+echo "Traffic(absolute): $absTraffic"
 echo "Requests(average): $avgRequests"
 echo "Traffic(average): $avgTraffic"
