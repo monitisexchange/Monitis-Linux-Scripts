@@ -29,13 +29,13 @@
 				<line>4</line>	
 			</metric>
 
-			<metric name="Total Requests">
+			<metric name="Total Requests (average)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>5</line>
 			</metric>
 
-			<metric name="Total Traffic">
+			<metric name="Total Traffic (average)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>6</line>
