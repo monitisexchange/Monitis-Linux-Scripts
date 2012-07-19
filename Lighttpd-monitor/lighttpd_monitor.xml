@@ -17,25 +17,25 @@
 				<line>2</line>
 			</metric>
 
-			<metric name="Total Requests">
+			<metric name="Total Requests (since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>3</line>
 			</metric>
 
-			<metric name="Total Traffic">
+			<metric name="Total Traffic (since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>4</line>	
 			</metric>
 
-			<metric name="Total Requests (average)">
+			<metric name="Total Requests (average since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>5</line>
 			</metric>
 
-			<metric name="Total Traffic (average)">
+			<metric name="Total Traffic (average since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>6</line>
