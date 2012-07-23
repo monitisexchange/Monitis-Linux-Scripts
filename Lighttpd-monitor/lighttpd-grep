@@ -147,6 +147,6 @@ echo "Requests(absolote): $absRequests"
 echo "Traffic(absolote): $absTraffic"
 echo "Requests(average): $avgRequests"
 echo "Traffic(average): $avgTraffic"
-echo "Requests(average 5s slide): $avgRequests5s"
-echo "Traffic(average 5s slide): $avgTraffic5s"
+echo "Requests(average5s): $avgRequests5s"
+echo "Traffic(average5s): $avgTraffic5s"
 #
