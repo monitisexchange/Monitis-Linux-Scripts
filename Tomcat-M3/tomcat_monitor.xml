@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Tomcat monitor for %HOSTNAME%" interval="60">
+		
+		<monitor name="Tomcat">
+<exectemplate>curl -s http://127.0.0.1/manager/status/all?XML=true -u tomcat:tomcat</exectemplate>	
+			<metric name="JVMFreeMemory">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{jvm}[0]->{memory}[0]->{free}</xpath>
+			</metric>
+			
+			<metric name="JVMTotalMemory">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{jvm}[0]->{memory}[0]->{total}</xpath>
+			</metric>
+
+			<metric name="JVMMaxMemory">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{jvm}[0]->{memory}[0]->{max}</xpath>
+			</metric>
+
+			<metric name="MaxThreads">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{threadInfo}[0]->{maxThreads}</xpath>
+			</metric>
+
+			<metric name="CurrentThreads">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{threadInfo}[0]->{currentThreadCount}</xpath>
+			</metric>
+
+			<metric name="BusyThreads">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{threadInfo}[0]->{currentThreadsBusy}</xpath>
+			</metric>
+
+			<metric name="ReqMaxTime">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{requestInfo}[0]->{maxTime}</xpath>
+			</metric>
+
+			<metric name="ReqProcessingTime">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{requestInfo}[0]->{processingTime}</xpath>
+			</metric>
+
+			<metric name="RequestCount">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{requestInfo}[0]->{requestCount}</xpath>
+			</metric>
+			<metric name="ErrorCount">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{requestInfo}[0]->{errorCount}</xpath>
+			</metric>
+			<metric name="BytesRecv">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{requestInfo}[0]->{bytesReceived}</xpath>
+			</metric>
+			<metric name="BytesSent">
+				<type>integer</type>
+				<uom>NA</uom>
+				<xpath>{connector}->{'"http-bio-8080"'}->{requestInfo}[0]->{bytesSent}</xpath>
+			</metric>
+									
+		</monitor>
+	</agent>
+</config>

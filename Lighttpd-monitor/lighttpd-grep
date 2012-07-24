@@ -27,6 +27,14 @@ avgRequestsM=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $3}'|tail -n 2|head -1
 avgTraffic=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $2}'|tail -n 2|head -1)
 avgTraffic=$(printf %.0f $avgTraffic)
 avgTrafficM=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $3}'|tail -n 2|head -1)
+#
+avgTraffic5s=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $2}'|tail -n 1)
+avgTraffic5s=$(printf %.0f $avgTraffic5s)
+avgTrafficM5s=$(echo "$OUTPUT"|grep 'Traffic'|awk '{print $3}'|tail -n 1)
+#
+avgRequests5s=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $2}'|tail -n 1)
+avgRequestsM5s=$(echo "$OUTPUT"|grep 'Requests'|awk '{print $3}'|tail -n 1)
+
 #converting absRequests
 if	[[ ${absRequestsM:0:1} == 'k' || ${absRequestsM:0:1} == 'K' ]]
 then
@@ -95,15 +103,50 @@ elif    [[ ${avgTrafficM:0:1} == 't' || ${avgTrafficM:0:1} == 'T' ]]
 then
         avgTraffic=$(($avgTraffic*$TB))
 fi
+#
+#converting avgTraffic5s
+if      [[ ${avgTrafficM5s:0:1} == 'k' || ${avgTrafficM5s:0:1} == 'K' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$KB))
 
+elif    [[ ${avgTrafficM5s:0:1} == 'm' || ${avgTrafficM5s:0:1} == 'M' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$MB))
 
+elif    [[ ${avgTrafficM5s:0:1} == 'g' || ${avgTrafficM5s:0:1} == 'G' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$GB))
 
+elif    [[ ${avgTrafficM5s:0:1} == 't' || ${avgTrafficM5s:0:1} == 'T' ]]
+then
+        avgTraffic5s=$(($avgTraffic5s*$TB))
+fi
+	
+#converting avgRequest5s
+if      [[ ${avgRequestsM5s:0:1} == 'k' || ${avgRequestsM5s:0:1} == 'K' ]]
+then
+        avgRequests5s=$(($avgRequests5s*$K))
 
+elif    [[ ${avgRequestsM5s:0:1} == 'm' || ${avgRequestsM5s:0:1} == 'M' ]]
+then
+        avgRequests5s=$(($avgRequests5s*$M))
 
+elif    [[ ${avgRequestsM5s:0:1} == 'g' || ${avgRequestsM5s:0:1} == 'G' ]]
+then
+        avgRequests5s=$(($avgRequests5s*$G))
 
+elif    [[ ${avgRequestsM5s:0:1} == 't' || ${avgRequestsM5s:0:1} == 'T' ]]
+then
+        avgRequests5s=$(($avgRequests5s*$T))
+fi
+
+#
 echo "Uptime: $uptime"
 echo "Connections: $conns"
 echo "Requests(absolote): $absRequests"
 echo "Traffic(absolote): $absTraffic"
 echo "Requests(average): $avgRequests"
 echo "Traffic(average): $avgTraffic"
+echo "Requests(average5s): $avgRequests5s"
+echo "Traffic(average5s): $avgTraffic5s"
+#
