@@ -46,13 +46,14 @@ fi
 # Periodically adding new data
 file=$ERR_FILE # errors record file 
 file_=$file"_" # temporary file
+rep_count=3	   # the count of repetitions	
 
 while $(sleep "$DURATION")
 do
 	get_token				# get new token in case of the existing one is too old
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
-	then	# some problems while getting token...
+	then
 		error "$ret" "$MSG"
 		continue
 	fi
@@ -60,9 +61,18 @@ do
 	then
 		echo 'RENAMING...(for processing)'
 		mv -f "$file" "$file_"
-		if [ "$?" -eq "0" ]
+		if [ "$?" -ne "0" ]
 		then
+			if [[ ($rep_count -gt 0) ]] ; then
+				error 1 "Couldn't rename... "
+				rep_count=$(( rep_count--))
+				continue
+			else
+				error 3 "Couldn't rename after few tries ... "
+			fi
+		else
 			echo -n "" >> $ERR_FILE	#recreate empty temporary file (if not exit yet)
+			rep_count=3
 			#read into array
 			unset array
 			while read line ; do
@@ -127,8 +137,6 @@ do
 					error "$ret" "$MSG"
 				fi
 			fi
-		else
-			error 3 "Couldn't rename... "
 		fi
 	else
 		echo ****No any new records yet contain log file \(or not exist\) 

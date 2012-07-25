@@ -151,24 +151,24 @@ function error {
 		;;
 	1) 
 	#warning during processing
-		echo WARNING: "$2" >&2
+		echo $( date +"%D %T" ) - WARNING: "$2" >&2
 		return $1
 		;;
 	2)
 	# errors while import sources
-		echo ERROR: The source file "$2" couldn\'t find >&2
+		echo $( date +"%D %T" ) - ERROR: The source file "$2" couldn\'t find >&2
 	   ;;
 	3)
 	# errors in responces
-		echo ERROR: The response failed..."$2" >&2
+		echo $( date +"%D %T" ) - ERROR: The response failed..."$2" >&2
 		;;
 	4)
 	# errors...
-		echo ERROR: "$2" >&2
+		echo $( date +"%D %T" ) - ERROR: "$2" >&2
 		;;
 	*)
 	# unknown error
-		echo "UNKNOWN ERROR..." >&2
+		echo $( date +"%D %T" ) - "UNKNOWN ERROR..." >&2
 		;;
 	esac
 	exit $1
