@@ -1,6 +1,6 @@
 #!/bin/bash
 :
-OUTPUT=$(curl -s http://127.0.0.1:5984/nginx_status)
+OUTPUT=$(curl -s http://127.0.0.1:80/nginx_status)
 active=$(echo $OUTPUT|cut -d' ' -f3)
 echo "Active: $active"
 accepts=$(echo $OUTPUT|cut -d' ' -f8)
