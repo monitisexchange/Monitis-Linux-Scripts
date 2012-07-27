@@ -17,36 +17,36 @@
 				<line>2</line>
 			</metric>
 
-			<metric name="Total Requests (since start)">
+			<metric name="Requests (since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>3</line>
 			</metric>
 
-			<metric name="Total Traffic (since start)">
+			<metric name="Traffic (since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>4</line>	
 			</metric>
 
-			<metric name="Total Requests (average since start)">
+			<metric name="Requests (average since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>5</line>
 			</metric>
 
-			<metric name="Total Traffic (average since start)">
+			<metric name="Traffic (average since start)">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>6</line>
 			</metric>
-			<metric name="Total Requests (average 5s slide)">
+			<metric name="Requests (average 5s slide)">
                                 <type>integer</type>
                                 <uom>NA</uom>
                                 <line>7</line>
                         </metric>
 
-                        <metric name="Total Traffic (average 5s slide)">
+                        <metric name="Traffic (average 5s slide)">
                                 <type>integer</type>
                                 <uom>NA</uom>
                                 <line>8</line>
