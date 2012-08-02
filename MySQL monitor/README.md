@@ -114,3 +114,9 @@ The double-clicking on problematic measure (line with status SLOW_QUERY) switche
 
 Please remember that the additional result will be shown top 5 slow queries for locally located MySQL server only.
 
+Also the graphical view can be shown on desktop
+
+<a href="http://i.imgur.com/xomee"><img src="http://i.imgur.com/xomee.png" title="MySQL monitor test" /></a>
+
+
+
