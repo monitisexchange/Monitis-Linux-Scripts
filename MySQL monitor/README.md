@@ -108,7 +108,7 @@ To check the correctness of monitor workability, some tests was done on remote M
 
 <a href="http://i.imgur.com/ZigHJ"><img src="http://i.imgur.com/ZigHJ.png" title="MySQL monitor test" /></a>
 
-The double-click on problematic measure (line with status SLOW_QUERY) will switch to show additional result
+The double-clicking on problematic measure (line with status SLOW_QUERY) switches desktop to show additional result
 
 <a href="http://i.imgur.com/wRoeR"><img src="http://i.imgur.com/wRoeR.png" title="MySQL monitor test" /></a>
 
