@@ -9,16 +9,18 @@ declare    return_value
 
 #Access to the MySQL, execute command and keep the result in the file
 #
+#@param HOST {STRING} - Host where located MySQL server
 #@param USER {STRING} - MySQL user name
 #@param PSWD {STRING} - MySQL user password
 #@param CMD {STRING} - executed command on remote MySQL
 #@param FILE {STRING} - file that receive the results
 function access_MySQL {
+	local HST=$1 ; shift
 	local USR=$1 ; shift
 	local PSWD=$1 ; shift
 	local CMD=$1 ; shift
 	local FILE=$1
-	mysql -u "$USR" -p"$PSWD" -e "$CMD" | tee "$FILE" > /dev/null
+	mysql -h "$HST" -u "$USR" -p"$PSWD" -e "$CMD" | tee "$FILE" > /dev/null
 	local ret="$?"
 	if [[ ($ret -gt 0) ]]
 	then
@@ -77,7 +79,7 @@ function get_measure() {
 	local details="details"
 
 	#echo "********** check MySQL parameters **********"
-	access_MySQL $USER $PASSWORD  "SHOW GLOBAL STATUS" status
+	access_MySQL $HOST $USER $PASSWORD  "SHOW GLOBAL STATUS" status
 	local ret_s="$?"
 	if [[ (ret_s -gt 0) || ($(stat -c%s status) -le 0) ]]
 	then
@@ -88,7 +90,7 @@ function get_measure() {
 		return 1
 	fi
 	
-	access_MySQL $USER $PASSWORD  "SHOW GLOBAL VARIABLES" variables
+	access_MySQL $HOST $USER $PASSWORD  "SHOW GLOBAL VARIABLES" variables
 	
 	
 	#echo "*********** Retriving status data ***********"
@@ -177,7 +179,7 @@ function get_measure() {
 	if [[ $Slow_queries_dif -gt 0 ]]
 	then
 	    MSG[$errors]="Warning - the slow queries detected \(processing longer than $long_query_time sec\)"
-	    if [[ ("$slow_query_log" != "OFF") ]]
+	    if [[ ("$slow_query_log" != "OFF") && ( ("$HOST" == "localhost") || ("$HOST" == "127.0.0.1") ) ]]
 	    then
 	    	local slow=$(get_slow_queries)
 	    	`>$slow_query_log_file`
@@ -198,7 +200,7 @@ function get_measure() {
 	    done
 	    details="$details+${problem}"
 	else
-	    details="$details + ""MySQL is OK"
+	    #details="$details + ""MySQL is OK"
 	    #details="$details + Master writes to $Master_binlog_file ($Master_binlog_pos) with rate $Master_load pos/sec"
 	    #details="$details + Slave reads from $Slave_read_binlog_file ($Slave_read_binlog_pos) with rate $Slave_load pos/sec"	
 	fi

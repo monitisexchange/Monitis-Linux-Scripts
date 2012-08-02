@@ -63,10 +63,12 @@ do
 
 	result=$return_value	# retrieve measure values
 	# Compose monitor data
-	param=$(echo ${result} | awk -F "|" '{print $1}' )
-	echo
-	echo DEBUG: Composed params is \"$param\" >&2
-	echo
+	param=$(echo ${result} | awk -F "|" '{print $1}')
+	param=` trim $param `
+	param=` uri_escape $param `
+	#echo
+	#echo DEBUG: Composed params is \"$param\" >&2
+	#echo
 	timestamp=`get_timestamp`
 	#echo
 	#echo DEBUG: Timestamp is \"$timestamp\" >&2
@@ -96,9 +98,9 @@ do
 			then
 				error "$ret" "$param"
 			else
-				echo
-				echo DEBUG: Composed additional params is \"$param\" >&2
-				echo
+				#echo
+				#echo DEBUG: Composed additional params is \"$param\" >&2
+				#echo
 				# Sending to Monitis
 				add_custom_monitor_additional_data $param $timestamp
 				ret="$?"
