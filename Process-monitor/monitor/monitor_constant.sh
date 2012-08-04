@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Declaration of monitor constants
-declare    PROC_CMD=memcached
-declare -i PROC_ID=929
+declare    PROC_CMD=memcached					# replace by your process command
+declare -i PROC_ID=929						# replace by your process PID (optional)
 
 declare    MONITOR_NAME="Process_$PROC_CMD"			# name of custom monitor
 declare -r MONITOR_TAG="Process"					# tag for custom monitor
@@ -16,4 +16,4 @@ declare -r RESP_DOWN="status:DOWN"
 # format of additional params - name:displayName:uom:String
 declare -r ADDITIONAL_PARAMS="details:Details::3"	
 	
-declare    DURATION=1	 							# information sending duration [min] (REPLACE by any desired value)
+declare    DURATION=5	 					# information sending duration [min] (REPLACE by any desired value)

@@ -3,8 +3,6 @@
 # sorces included
 source monitor_constant.sh    || exit 2
 
-#previous measurement data
-declare -i prev_time=0
 declare    return_value
 
 #Validate Process parameters
@@ -73,7 +71,7 @@ function formatTimestamp(){
 	local str=$(echo `printf "%u.%02u.%02u" $hr $min $sec`)
 	if [[ ($da -gt 0) ]]
 	then
-		str="$da day $str" 
+		str="$da-$str" 
 	fi
 	echo $str
 }
@@ -98,20 +96,6 @@ function extract_value() {
     fi
 }
 
-function get_slow_queries(){
-	slow=$(mysqldumpslow -s c -t 5 )
-	local pattern="Count:"
-	local replaser=' + '${pattern}
-	slow=${slow//$pattern/$replaser}
-	echo $slow
-}
-
-#@return 0 - success
-#@return 1 - PROC_ID is changed (m.b. restarted)
-#@return 2 - process down
-#@return 4 - No execution command for PROC_ID
-#@return 8 - Nor PROC_CMD or PROC_ID is defined
-
 function get_measure() {
 	local details="details"
 
@@ -131,97 +115,12 @@ function get_measure() {
 		return 16
 	fi
 	
-#	local ofd=$( ls /proc/$PROC_ID/fd | wc -l )	#requer ROOT permission
-#	local ofd=$( lsof -p$PROC_ID | wc -l )	
 	local lsof=$( lsof -p$PROC_ID )
 	ofd=$( echo "$lsof" | wc -l )
 	osd=$( echo "$lsof" | grep -iE "tcp | udp | ipv" | wc -l )
 	local ofdm=$( ulimit -n )
 	local ofd_pr=$(echo "scale=1; 100 * $ofd / $ofdm" | bc )
 	
-	local stats=$( cat /proc/$PROC_ID/stat )
-	local array=( $stats )
-			  #0	pid %d      The process ID.
-              #1	comm %s     The filename of the executable, in parentheses.  This is visible whether or not the executable is swapped out.
-              #2	state %c    One character from the string "RSDZTW" where R is running, S is sleeping in an interruptible wait, D is waiting in uninterruptible disk sleep, Z is zombie, T is traced or stopped (on a signal), and W is paging.
-              #3	ppid %d     The PID of the parent.
-              #4	pgrp %d     The process group ID of the process.
-              #5	session %d  The session ID of the process.
-              #6	tty_nr %d   The controlling terminal of the process.  (The minor device number is contained in the combination of bits 31 to 20 and 7 to 0; the major device number is in bits 15 to 8.)
-              #7	tpgid %d    The ID of the foreground process group of the controlling terminal of the process.
-              #8	flags %u (%lu before Linux 2.6.22) The kernel flags word of the process.  For bit meanings, see the PF_* defines in <linux/sched.h>.  Details depend on the kernel version.
-              #9	minflt %lu  The number of minor faults the process has made which have not required loading a memory page from disk.
-              #10	cminflt %lu The number of minor faults that the process's waited-for children have made.
-              #11	majflt %lu  The number of major faults the process has made which have required loading a memory page from disk.
-              #12	cmajflt %lu The number of major faults that the process's waited-for children have made.
-              #13	utime %lu   Amount of time that this process has been scheduled in user mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK).  This includes guest time, guest_time
-                          #(time spent running a virtual CPU, see below), so that applications that are not aware of the guest time field do not lose that time from their calculations.
-              #14	stime %lu   Amount of time that this process has been scheduled in kernel mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK).
-              #15	cutime %ld  Amount of time that this process's waited-for children have been scheduled in user mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK).  (See also times(2).)
-                          #This includes guest time, cguest_time (time spent running a virtual CPU, see below).
-              #16	cstime %ld  Amount of time that this process's waited-for children have been scheduled in kernel mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK).
-              #17	priority %ld (Explanation for Linux 2.6) For processes running a real- time scheduling policy (policy below; see sched_setscheduler(2)), this is the negated scheduling
-                          #priority, minus one; that is, a number in the range -2 to -100, corresponding to real-time priorities 1 to 99.  For processes running under a non-real-time scheduling policy,
-                          #this is the raw nice value (setpriority(2)) as represented in the kernel.  The kernel stores nice values as numbers in the range 0 (high) to 39 (low), corresponding to the user- visible nice range of -20 to 19.
-                          #Before Linux 2.6, this was a scaled value based on the scheduler weighting given to this process.
-              #18	nice %ld    The nice value (see setpriority(2)), a value in the range 19 (low priority) to -20 (high priority).
-              #19	num_threads %ld Number of threads in this process (since Linux 2.6). Before kernel 2.6, this field was hard coded to 0 as a placeholder for an earlier removed field.
-              #20	itrealvalue %ld The time in jiffies before the next SIGALRM is sent to the process due to an interval timer.  Since kernel 2.6.17, this field is no longer maintained, and is hard coded as 0.
-              #21	starttime %llu (was %lu before Linux 2.6) The time in jiffies the process started after system boot.
-              #22	vsize %lu   Virtual memory size in bytes.
-              #23	rss %ld     Resident Set Size: number of pages the process has in real memory.This is just the pages which count toward text, data, or stack space.  This does not include pages which have not been demand-loaded in, or which are swapped out.
-              #24	rsslim %lu  Current soft limit in bytes on the rss of the process; see the description of RLIMIT_RSS in getpriority(2).
-              #25	startcode %lu The address above which program text can run.
-              #26	endcode %lu The address below which program text can run.
-              #27	startstack %lu The address of the start (i.e., bottom) of the stack.
-              #28	kstkesp %lu The current value of ESP (stack pointer), as found in the kernel stack page for the process.
-              #29	kstkeip %lu The current EIP (instruction pointer).
-              #30	signal %lu  The bitmap of pending signals, displayed as a decimal number.  Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-              #31	blocked %lu The bitmap of blocked signals, displayed as a decimal number.  Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-              #32	sigignore %lu The bitmap of ignored signals, displayed as a decimal number.  Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-              #33	sigcatch %lu The bitmap of caught signals, displayed as a decimal number.  Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-              #34	wchan %lu   This is the "channel" in which the process is waiting.  It is the address of a system call, and can be looked up in a namelist if you need a textual name.  (If you have an up-
-                          #to-date /etc/psdatabase, then try ps -l to see the WCHAN field in action.)
-              #35	nswap %lu   Number of pages swapped (not maintained).
-              #36	cnswap %lu  Cumulative nswap for child processes (not maintained).
-              #37	exit_signal %d (since Linux 2.1.22) Signal to be sent to parent when we die.
-              #38	processor %d (since Linux 2.2.8) CPU number last executed on.
-              #39	rt_priority %u (since Linux 2.5.19; was %lu before Linux 2.6.22) Real-time scheduling priority, a number in the range 1 to 99 for processes scheduled under a real-time policy, or 0, for non-real-time processes (see sched_setscheduler(2)).
-              #40	policy %u (since Linux 2.5.19; was %lu before Linux 2.6.22) scheduling policy (see sched_setscheduler(2)).  Decode using the SCHED_* constants in linux/sched.h.
-              #41	delayacct_blkio_ticks %llu (since Linux 2.6.18) Aggregated block I/O delays, measured in clock ticks (centiseconds).
-              #42	guest_time %lu (since Linux 2.6.24) Guest time of the process (time spent running a virtual CPU for a guest operating system), measured in clock ticks (divide by sysconf(_SC_CLK_TCK).
-              #43	cguest_time %ld (since Linux 2.6.24) Guest time of the process's children, measured in clock ticks (divide by sysconf(_SC_CLK_TCK).
-	local utime=${array[13]}
-	local stime=${array[14]}
-	
-#/proc/[pid]/status	
-              #* Name: Command run by this process.
-              #* State: Current state of the process.  One of "R (running)", "S (sleeping)", "D (disk sleep)", "T (stopped)", "T (tracing stop)", "Z (zombie)", or "X (dead)".
-              #* Tgid: Thread group ID (i.e., Process ID).
-              #* Pid: Thread ID (see gettid(2)).
-              #* TracerPid: PID of process tracing this process (0 if not being traced).
-              #* Uid, Gid: Real, effective, saved set, and file system UIDs (GIDs).
-              #* FDSize: Number of file descriptor slots currently allocated.
-              #* Groups: Supplementary group list.
-              #* VmPeak: Peak virtual memory size.
-              #* VmSize: Virtual memory size.
-              #* VmLck: Locked memory size (see mlock(3)).
-              #* VmHWM: Peak resident set size ("high water mark").
-              #* VmRSS: Resident set size.
-              #* VmData, VmStk, VmExe: Size of data, stack, and text segments.
-              #* VmLib: Shared library code size.
-              #* VmPTE: Page table entries size (since Linux 2.6.10).
-              #* Threads: Number of threads in process containing this thread.
-              #* SigPnd, ShdPnd: Number of signals pending for thread and for process as a whole (see pthreads(7) and signal(7)).
-              #* SigBlk, SigIgn, SigCgt: Masks indicating signals being blocked, ignored, and caught (see signal(7)).
-              #* CapInh, CapPrm, CapEff: Masks of capabilities enabled in inheritable, permitted, and effective sets (see capabilities(7)).
-              #* CapBnd: Capability Bounding set (since kernel 2.6.26, see capabilities(7)).
-              #* Cpus_allowed: Mask of CPUs on which this process may run (since Linux 2.6.24, see cpuset(7)).
-              #* Cpus_allowed_list: Same as previous, but in "list format" (since Linux 2.6.26, see cpuset(7)).
-              #* Mems_allowed: Mask of memory nodes allowed to this process (since Linux 2.6.24, see cpuset(7)).
-              #* Mems_allowed_list: Same as previous, but in "list format" (since Linux 2.6.26, see cpuset(7)).
-              #* voluntary_context_switches, nonvoluntary_context_switches: Number of voluntary and involuntary context switches (since Linux 2.6.23).
-#
 	local FDSize=$(extract_value /proc/$PROC_ID/status FDSize :)
 	FDSize=` trim "$FDSize" `
 	local VmPeak=$(extract_value /proc/$PROC_ID/status VmPeak :)
@@ -253,7 +152,7 @@ function get_measure() {
 	
 	errors=0
 	local tmp=$(( 100 * $ofd / $ofdm ))
-	if [[ $tmp -gt 90 ]]
+	if [[ $tmp -gt 95 ]]
 	then
 	    MSG[$errors]="WARNING - too much open file descriptors"
 	    errors=$(($errors+1))
