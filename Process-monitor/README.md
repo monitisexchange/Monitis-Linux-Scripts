@@ -1,6 +1,6 @@
 ## The Process Custom Monitor ##
 
-The current project represents the Bash script implementation of Monitis custom monitor approach that evaluate the health state of anyprocess in Unix-like systems.  
+The current project represents the Bash script implementation of Monitis custom monitor approach that evaluate the health state of any process in Unix-like systems.  
 It measures few important parameters of process and sends evaluation of health status into Monitis via the Monitis open API.  
 The main purpose of current project is to show the possible way of using Monitis Open API for monitoring any process behavior.  
 Naturally, a different variations of the presented code can be made in accordance user needs.  
@@ -66,9 +66,9 @@ Please NOTE that current monitor prints out few parameters as an additional resu
 To use existing scripts you need to do some changes that will correspond your account and data  
 
   - in monitis_constant.sh  
-     - replace _ApiKey_ and _SecretKey_ by your keys values (can be obtained from your Monitis account)
+     - replace _ApiKey_ and _SecretKey_ by your keys values (can be obtained from your [Monitis](http://www.monitis.com) account)
   - in monitor_constant.sh   
-     - replace PROC_CMD and/or PROC_ID by your monitored process parameters (command name, process ID)  
+     - replace *PROC_CMD* and/or *PROC_ID* by your monitored process parameters (command name, process ID)  
        _Notice that you may provide one of COMMAND or PID or both together. The monitor will try to define an omitted parameter._
      - replace MONITOR_NAME, MONITOR_TAG and MONITOR_TYPE by your desired names (optional)  
 
