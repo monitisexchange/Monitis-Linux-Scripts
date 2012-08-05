@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
-	<agent name="CouchDB monitor" interval="60">
+	<agent name="CouchDB monitor" interval="10">
 		
-		<monitor name="CouchDB metrics for sanctuary">
-			<exectemplate>curl -s http://127.0.0.1:5984/_stats</exectemplate>
-			
+		<monitor name="CouchDB metrics for %HOSTNAME%">
+		<url>		
+			<url>http://127.0.0.1:5984/_stats</url>
+		</url>	
 			<metric name="Authentication cache misses">
 				<type>integer</type>
 				<uom>NA</uom>
@@ -48,127 +49,127 @@
 				<json>{'couchdb'}->{'request_time'}->{'current'}</json>
 			</metric>
                           
-			<metric name="MOVE requests">
+			<metric name="MOVE requests" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'MOVE'}->{'current'}</json>
 			</metric>
 
-			<metric name="PUT requests">
+			<metric name="PUT requests" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'PUT'}->{'current'}</json>	
 			</metric>
 
-			<metric name="GET requests">
+			<metric name="GET requests" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'GET'}->{'current'}</json>
 			</metric>
 
-			<metric name="POST requests">
+			<metric name="POST requests" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'POST'}->{'current'}</json>
 			</metric>
 
-			<metric name="DELETE requests">
+			<metric name="DELETE requests" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'DELETE'}->{'current'}</json>
 			</metric>
 
-			<metric name="HEAD requests">
+			<metric name="HEAD requests" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'HEAD'}->{'current'}</json>
 			</metric>
 
-			<metric name="COPY requests">
+			<metric name="COPY requests" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_request_methods'}->{'COPY'}->{'current'}</json>
 			</metric>
 
-			<metric name="409 Conflict responses">
+			<metric name="409 Conflict responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'409'}->{'current'}</json>
 			</metric>
 
-			<metric name="412 Precondition Failed responses">
+			<metric name="412 Precondition Failed responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'412'}->{'current'}</json>	
 			</metric>
 
-			<metric name="202 Accepted responses">
+			<metric name="202 Accepted responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'202'}->{'current'}</json>
 			</metric>
 
-			<metric name="404 Not Found responses">
+			<metric name="404 Not Found responses" additional="true"> 
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'404'}->{'current'}</json>
 			</metric>
 
-			<metric name="304 Not Modified responses">
+			<metric name="304 Not Modified responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'304'}->{'current'}</json>
 			</metric>
 
-			<metric name="200 OK responses">
+			<metric name="200 OK responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'200'}->{'current'}</json>
 			</metric>
 
-			<metric name="201 Created responses">
+			<metric name="201 Created responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'201'}->{'current'}</json>
 			</metric>
 
-			<metric name="500 Internal Server Error responses">
+			<metric name="500 Internal Server Error responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'500'}->{'current'}</json>
 			</metric>
 
-			<metric name="301 Moved Permanently responses">
+			<metric name="301 Moved Permanently responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'301'}->{'current'}</json>
 			</metric>
 
-			<metric name="403 Forbidden responses">
+			<metric name="403 Forbidden responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'403'}->{'current'}</json>
 			</metric>
 
-			<metric name="401 Unauthorized responses">
+			<metric name="401 Unauthorized responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'401'}->{'current'}</json>
 			</metric>
 
-			<metric name="405 Method Not Allowed responses">
+			<metric name="405 Method Not Allowed responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'405'}->{'current'}</json>
 			</metric>
 
-			<metric name="400 Bad Request responses">
+			<metric name="400 Bad Request responses" additional="true">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd_status_codes'}->{'400'}->{'current'}</json>
 			</metric>
 
-			<metric name="Clients for continuous _changes">
+			<metric name="Clients for continuous changes">
 				<type>integer</type>
 				<uom>NA</uom>
 				<json>{'httpd'}->{'clients_requesting_changes'}->{'current'}</json>

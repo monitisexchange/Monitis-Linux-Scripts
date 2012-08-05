@@ -18,6 +18,6 @@ cd $tmp
 ./stop.sh
 
 echo ---------starting test loop--------------
-./monitor.sh 1> /dev/null &
-./monitor_test.sh 1> /dev/null &
-
+./log_simulation.sh &
+xterm -hold -sb -e ./monitor.sh &
+xterm -hold -sb -e ./monitor_test.sh

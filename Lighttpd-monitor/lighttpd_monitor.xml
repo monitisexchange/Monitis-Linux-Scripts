@@ -17,29 +17,40 @@
 				<line>2</line>
 			</metric>
 
-			<metric name="Absolote Requests">
+			<metric name="Requests since start">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>3</line>
 			</metric>
 
-			<metric name="Absolote Traffic">
+			<metric name="Traffic since start">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>4</line>	
 			</metric>
 
-			<metric name="Average Requests">
+			<metric name="Average requests since start">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>5</line>
 			</metric>
 
-			<metric name="Average Traffic">
+			<metric name="Average traffic since start">
 				<type>integer</type>
 				<uom>NA</uom>
 				<line>6</line>
 			</metric>
+			<metric name="Average requests with 5s slide">
+                                <type>integer</type>
+                                <uom>NA</uom>
+                                <line>7</line>
+                        </metric>
+
+                        <metric name="Average traffic with 5s slide">
+                                <type>integer</type>
+                                <uom>NA</uom>
+                                <line>8</line>
+                        </metric>
 						
 		</monitor>
 	</agent>

@@ -132,18 +132,18 @@ fi
 while $(sleep "$DURATION")
 do
 	get_token				# get new token in case of the existing one is too old
-	ret="$1"
+	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then	# some problems while getting token...
 		error "$ret" "$MSG"
 		continue
 	fi
 	get_measure				# call measure function
-	ret="$1"
+	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
 	    error "$ret" "$MSG"
-	    continue
+#	    continue
 	fi
 
 	result=$return_value	# retrieve measure values
@@ -153,6 +153,9 @@ do
 	#echo DEBUG: Composed params is \"$param\" >&2
 	#echo
 	timestamp=`get_timestamp`
+	#echo
+	#echo DEBUG: Timestamp is \"$timestamp\" >&2
+	#echo
 	# Sending to Monitis
 	add_custom_monitor_data $param $timestamp
 	ret="$?"

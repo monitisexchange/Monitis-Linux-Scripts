@@ -17,10 +17,12 @@ Content
           monitor.sh		custom monitor main part  
           monitor_constant.sh	custom monitor constants (and configuration)  
           monitor_test.sh		custom monitor main executor  
-          log_simulation.sh		log simulator (for testing purpose)  
+          log_simulation.sh		log simulator (for testing purpose only)  
+
   Processing part
-      start.sh			runs conveyor that contains log-simulator, monitor and executor (uses xterminal)
-      stop.sh			stops conveyor all parts
+        start_test.sh			runs conveyor that contains log-simulator, monitor and executor (uses xterminal)
+        start.sh                runs both monitor and executor parts (deamon processes - for production use)
+        stop.sh			stops conveyor all parts
 
 #### Customizing and Usage 
 
@@ -29,11 +31,18 @@ To use existing scripts you need to do some changes that will correspond your ac
 	- in monitor_constant.sh   
 
 		o - replace MONITOR_NAME, MONITOR_TAG and MONITOR_TYPE by your desired names  
-		o - replace RESULT_PARAMS and ADDITIONAL_PARAMS strings by data formats definition of your monitor  
 		o - replace LOG_FILE by any other desired textual log file path(must exist)  
 		o - replace ERR_FILE by any temporary file path (it will be created by script)  
 		o - define your desired pattern (replace PATTERN value that is currently defined as "error|warning|serious"). 
 		    It is used to dynamic filtering of log file records. (patterns should be defined in conform to format of "Linux grep tool")  
 
 That's all. Now you can click on start.sh to run your custom log-file monitor.  
+
+#### Retrieving data from Monitis
+
+You can also get the monitored data from Monitis by using the following command
+
+        lmon_getdata.sh -d <number of days to get data for> -p <directory path to storing data-files> -f <file name prefix> -m <monitorID>
+
+Whole parameters set is optional. So, if no any parameters are defined, it will get data for current day only and put them into file with prefix of monitor-name.
 

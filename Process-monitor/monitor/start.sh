@@ -17,7 +17,6 @@ cd $tmp
 
 ./stop.sh
 
-echo ---------starting test loop--------------
-./monitor.sh 1> /dev/null &
-./monitor_test.sh 1> /dev/null &
+echo ---------starting monitor--------------
+./monitor_start.sh 1> /dev/null &
 
