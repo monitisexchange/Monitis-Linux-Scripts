@@ -8,9 +8,6 @@ require URI;
 use Thread qw(async);
 
 use strict;
-# don't use strict "refs" as we are going to call templated functions
-# that depend on variable names
-no strict "refs";
 use warnings;
 use threads::shared;
 use URI::Escape;
@@ -707,8 +704,8 @@ sub run_macros() {
 # macro functions
 sub replace_template($) {
 	my ($template) = @_;
-	my $callback = "_get_$template";
-	return &$callback();
+	my $callback = \{"_get_$template"};
+	return &$callback;
 }
 
 sub metric_name_not_reserved($$) {

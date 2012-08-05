@@ -1,6 +1,5 @@
 package MonitisMonitorManager::M3PluginCommon;
 use strict;
-no strict "refs";
 use Carp;
 
 # returns the parameter specified or croaks on an error
