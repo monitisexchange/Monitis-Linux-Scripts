@@ -15,8 +15,7 @@ currentscriptpath()
 tmp=`currentscriptpath`
 cd $tmp
 
-./stop.sh
+echo ---------starting monitor \( "$*" \)--------------
+./monitor_start.sh "$@" 1> /dev/null &
 
-echo ---------starting monitor--------------
-./monitor_start.sh 1> /dev/null &
 

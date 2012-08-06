@@ -76,12 +76,21 @@ That's all.
 
 Now you can run your custom process-monitor by using e.g. the following command.  
 
-        start.sh
+        start.sh -d <duration in min> -p <pid of process> -c <command of process>
 
 It will run monitor as a daemon process and prints only error messages.  
+Note
+ 
+  - all parameters are optional. 
+  - the duration has the minimum value limit (5 min) that is defined in the "monitor_constant.sh"
+  - the "command of process" should be unique otherwise the first found command with given parameter will be monitored
+  - usage of command line parameters allow to run few process-monitors to monitor various processes.
+ 
 The stop of process-monitor can be done by the following command
 
-        stop.sh
+        stop.sh <command of process>
+
+The command line parameter is optional. The command will stop all process-monitors if the "command for process" isn't given.
 
 #### Testing 
 

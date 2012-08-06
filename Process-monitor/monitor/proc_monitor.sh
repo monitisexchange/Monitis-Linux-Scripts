@@ -16,7 +16,7 @@ function validate() {
 	local ret=0
 	if [[ ( "x$PROC_CMD" != "x" ) ]] #PROC_CMD is defined
 	then
-		pid=`ps -efw | grep -i "$PROC_CMD" | grep -v grep | awk '{print $2} ' `
+		pid=`ps -efw | grep -i "$PROC_CMD" | grep -v grep | grep -v "monitor_start" | awk '{print $2} ' `
 		if test "$pid" ;  then
 			array=( $pid )
 			if [[ ( "x$PROC_ID" != "x" ) ]] #PROC_ID is defined also
