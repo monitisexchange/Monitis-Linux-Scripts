@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Nginx StubStatus Agent" interval="60">
+		<monitor name="Nginx Active Connections Monitor" tag="nginxMonitor">
+			<url>
+				<url>http://localhost/nginx_status</url>
+			</url>
+			<metric name="Active Connections">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>^Active connections: (\d+)</regex>
+			</metric>
+		</monitor>
+		<monitor name="Nginx Queue Status Monitor" tag="nginxMonitor">
+			<url>
+				<url>http://localhost/nginx_status</url>
+			</url>
+			<metric name="Reading">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>^Reading: (\d+) Writing: \d+ Waiting: \d+</regex>
+			</metric>
+			<metric name="Writing">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>^Reading: \d+ Writing: (\d+) Waiting: \d+</regex>
+			</metric>
+			<metric name="Waiting">
+				<type>integer</type>
+				<uom>number</uom>
+				<regex>^Reading: \d+ Writing: \d+ Waiting: (\d+)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
