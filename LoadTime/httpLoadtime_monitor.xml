@@ -3,7 +3,7 @@
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="http load monitor" interval="10">
 		<monitor name="Http LoadTime">
-			<exectemplate>http-loadtime http://bubuntu/index.php</exectemplate>
+			<exectemplate>http-loadtime http://servername/index.php</exectemplate>
 			<metric name="Time connect">
 				<type>float</type>
 				<uom>NA</uom>
