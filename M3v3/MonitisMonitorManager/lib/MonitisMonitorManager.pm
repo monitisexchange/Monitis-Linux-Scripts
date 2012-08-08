@@ -413,7 +413,7 @@ sub update_data_for_monitor {
 	}
 
 	# sanity check of results...
-	if ($additional_results eq "") {
+	if ($results eq "") {
 		carp "Result set is empty! did it parse well? - Will not update any data!"; 
 		return;
 	}
