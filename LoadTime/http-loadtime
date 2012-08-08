@@ -1,0 +1,10 @@
+#!/bin/bash
+
+
+URL="$1"
+
+result=`curl -o /dev/null -s -w %{time_connect}:%{time_starttransfer}:%{time_total} $URL`
+
+#echo " Time_Connect Time_startTransfer Time_total "
+
+echo $result|awk -F ':' '{print $1"\n"$2"\n"$3}' 
