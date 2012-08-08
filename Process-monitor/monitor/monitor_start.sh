@@ -29,7 +29,7 @@ fi
 
 echo "*** Monitoring for \"$PROC_CMD\" process will be executed every $DURATION min ***"
 
-DURATION=$((60*$DURATION)) #convert to sec
+#DURATION=$((60*$DURATION)) #convert to sec
 
 # obtaining TOKEN
 get_token

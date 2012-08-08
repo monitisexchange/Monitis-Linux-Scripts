@@ -2,12 +2,12 @@
 
 # Declaration of constants used by Monitis API
 
-declare -r SERVER="http://www.monitis.com/"
+declare -r SERVER="http://sandbox.monitis.com/"
 #declare -r SERVER="http://www.monitor.us/"			# Monitis server
 declare -r API_PATH="customMonitorApi"				# Custom API path
 
-declare -r APIKEY="T5BAQQ46JPTGR6EBLFE28OSSQ"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
-declare -r SECRETKEY="248VUB2FA3DST8J31A9U6D9OHT"	# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
+declare -r APIKEY="7A04S52D7FOOS5IC5CPMJEJ0N2"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
+declare -r SECRETKEY="7RLFT91MQIBVH024UT6ELH611T"	# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
 
 declare -r APIVERSION="2"							# Version of existing Monitis Open API
 declare -r OUTPUT_TYPE="JSON"						# Output type that is used in the current project implementation
