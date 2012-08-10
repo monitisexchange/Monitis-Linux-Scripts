@@ -85,13 +85,7 @@ Note
   - the duration has the minimum value limit (5 min) that is defined in the "monitor_constant.sh"
   - the "command of process" should be unique otherwise the first found command with given parameter will be monitored
   - usage of command line parameters allow to run few process-monitors to monitor various processes.
-  - the name of monitor is composed as the following
-   
-<pre markdown="1">
-
-         Process_<host of process | 127.0.0.1>_<command of process | memcached>"
-
-</pre>
+  - the name of monitor is composed as the following:  "Process\_\<host of process | 127.0.0.1\>\_\<command of process | memcached\>"
  
 The stop of process-monitor can be done by the following command
 
