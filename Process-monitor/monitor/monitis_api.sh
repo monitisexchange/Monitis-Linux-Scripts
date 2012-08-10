@@ -156,7 +156,7 @@ function add_custom_monitor {
 			else
 				if [[ (-n `echo "$status" | grep -asio -m1 "exists"`) ]]
 				then
-					MSG="monitor with specified parameters already exists"
+					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
 				else
 					MSG='add_custom_monitor: Response - '$response

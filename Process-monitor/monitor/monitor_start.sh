@@ -5,12 +5,13 @@ source monitis_api.sh   || exit 2
 source proc_monitor.sh || error 2 proc_monitor.sh
 
 #read argument; in this case the monitoring folders paths
-while getopts "d:p:c:h" opt;
+while getopts "d:p:c:s:h" opt;
 do
         case $opt in
         d) dur=$OPTARG ;;
         p) PROC_ID=$OPTARG ;;
         c) proc="$OPTARG" ;;
+        s) host="$OPTARG" ;;
         h) echo "Usage: $0 -d <duration in min> -p <pid of process> -c <command of process>" ; exit 0 ;;
         *) error 4 "Wrong parameter received" ;;
         esac
@@ -21,10 +22,15 @@ then
 	DURATION=$dur
 fi
 
+if [[ ("x$host" != "x") ]]
+then
+      HOST="$host"
+fi
+
 if [[ ("x$proc" != "x") ]]
 then
 	PROC_CMD="$proc"
-	MONITOR_NAME=Process_"$PROC_CMD"
+	MONITOR_NAME=Process_"$HOST"_"$PROC_CMD"
 fi
 
 echo "*** Monitoring for \"$PROC_CMD\" process will be executed every $DURATION min ***"
