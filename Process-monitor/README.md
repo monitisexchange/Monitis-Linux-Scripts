@@ -88,7 +88,9 @@ Note
   - the name of monitor is composed as the following
    
 <pre markdown="1">
+
          Process_<host of process | 127.0.0.1>_<command of process | memcached>"
+
 </pre>
  
 The stop of process-monitor can be done by the following command
