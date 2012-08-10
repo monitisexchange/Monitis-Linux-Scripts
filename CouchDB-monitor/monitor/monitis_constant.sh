@@ -20,8 +20,8 @@ declare STATLINK="$PROTO://$TARGET_HOST:$TARGET_PORT/_stats"
 declare  SERVER="http://sandbox.monitis.com/"			# Monitis server
 declare  API_PATH="customMonitorApi"				# Custom API path
 
-declare  APIKEY="7A04S52D7FOOS5IC5CPMJEJ0N2"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
-declare  SECRETKEY="7RLFT91MQIBVH024UT6ELH611T"		# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
+declare  APIKEY="7A04S52D7FOOS5IC5CPMJEJ0J2"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
+declare  SECRETKEY="7RLFT91MQIBVH024UT6E5H611T"		# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
 declare additionalData
 declare additionalPData
 declare additionalResult
