@@ -104,6 +104,7 @@ do
 	#echo
 	#echo DEBUG: Timestamp is \"$timestamp\" >&2
 	#echo
+
 	# Sending to Monitis
 	add_custom_monitor_data $param $timestamp
 	ret="$?"
@@ -113,7 +114,12 @@ do
 		continue
 	else
 		echo $( date +"%D %T" ) - The Custom monitor data were successfully added
+
 		# Now create additional data
+		if [[ -z "${ADDITIONAL_PARAMS}" ]] ; then # ADDITIONAL_PARAMS is not set
+			continue
+		fi
+
 		param=$(echo ${result} | awk -F "|" '{print $2}' )
 		unset array
 		OIFS=$IFS
