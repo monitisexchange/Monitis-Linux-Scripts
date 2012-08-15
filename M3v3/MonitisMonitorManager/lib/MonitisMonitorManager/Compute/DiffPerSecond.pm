@@ -1,6 +1,6 @@
 package MonitisMonitorManager::Compute::DiffPerSecond;
+use MonitisMonitorManager::M3PluginCommon;
 use strict;
-use Carp;
 my %diff_hash = ();
 
 sub new {
@@ -62,7 +62,7 @@ sub calculate_diff {
 
 	my $diff_data = (int($new_data - $old_data)) / (($new_timestamp - $old_timestamp) / $seconds);
 
-	carp "Evalutaing diff for '$metric_name' = '($new_data - $old_data) / ($new_timestamp - $old_timestamp)' == '$diff_data'";
+	MonitisMonitorManager::M3PluginCommon::log_message("debug", "Evalutaing diff for '$metric_name' = '($new_data - $old_data) / ($new_timestamp - $old_timestamp)' == '$diff_data'");
 
 	return $diff_data;
 }

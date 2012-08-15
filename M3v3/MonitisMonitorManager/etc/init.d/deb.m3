@@ -22,7 +22,7 @@ DESC="Monitis M3"
 NAME=m3
 EXEC_NAME=monitis-m3
 DAEMON=/usr/bin/$EXEC_NAME
-DAEMON_ARGS="/etc/m3.d/config.xml"
+DAEMON_ARGS="--syslog /etc/m3.d/config.xml"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 

@@ -8,10 +8,12 @@ require URI;
 use Thread qw(async);
 
 use strict;
+no strict "refs";
 use warnings;
 use threads::shared;
 use URI::Escape;
 use MonitisMonitorManager::MonitisConnection;
+use MonitisMonitorManager::M3Logger;
 use Carp;
 use Date::Manip;
 use File::Basename;
@@ -43,7 +45,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '3.9';
+our $VERSION = '3.10';
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
@@ -72,6 +74,11 @@ sub new {
 
 	# initialize a static variable
 	$self->{monitis_datatypes} = \%monitis_datatypes;
+
+	# initialize M3Logger
+	$self->{m3logger} = MonitisMonitorManager::M3Logger->instance();
+	$self->{m3logger}->set_syslog_logging($self->is("syslog"));
+	$self->{m3logger}->log_message ("debug", "M3 starting");
 
 	# open the given XML file
 	open (FILE, $self->{configuration_xml} || croak "Failed to open configuration XML: $!");
@@ -117,6 +124,10 @@ sub new {
 # destructor
 sub DESTROY {
 	my $self = shift;
+
+	# let M3Logger clean stuff (mainly calls closelog())
+	$self->{m3logger}->cleanup();
+
 	# call parent dtor (not that there is any, but just to make it clean)
 	$self->SUPER::DESTROY if $self->can("SUPER::DESTROY");
 	# umn, why would destroy be called multiple times?
@@ -171,7 +182,7 @@ sub add_monitor {
 			foreach my $execution_xml_base (@{$monitor_xml_path->{$execution_plugin}}) {
 				# it's called a URI since it can be anything, from a command line
 				# executable, URL, SQL command...
-				carp "Calling extra_counters_cb for plugin: '$execution_plugin', monitor_name->'$monitor_name'" if DEBUG;
+				$self->{m3logger}->log_message ("debug", "Calling extra_counters_cb for plugin: '$execution_plugin', monitor_name->'$monitor_name'");
 				# executable, URL, SQL command...
 				$result_params .= $self->{execution_plugins}{$execution_plugin}->extra_counters_cb($self->{monitis_datatypes}, $execution_xml_base);
 			}
@@ -183,16 +194,16 @@ sub add_monitor {
 
 	# a simple sanity check
 	if ($result_params eq "") {
-		carp "ResultParams are empty for monitor '$monitor_name'... Skipping!";
+		$self->{m3logger}->log_message ("info", "ResultParams are empty for monitor '$monitor_name'... Skipping!");
 		return;
 	}
 
-	carp "Adding monitor '$monitor_name' with metrics '$result_params'" if DEBUG;
+	$self->{m3logger}->log_message ("debug", "Adding monitor '$monitor_name' with metrics '$result_params'");
 
 	# call Monitis using the api context provided
 	if ($self->is("dry_run")) {
 		# don't output this line if just testing configuration
-		not $self->is("test_config") and carp "This is a dry run, the monitor '$monitor_name' was not really added.";
+		not $self->is("test_config") and $self->{m3logger}->log_message ("info", "This is a dry run, the monitor '$monitor_name' was not really added.");
 	} else {
 		my @add_monitor_optional_params;
 		defined($monitor_type) && push @add_monitor_optional_params, type => $monitor_type;
@@ -211,7 +222,7 @@ sub add_agents {
 
 	# iterate on agents and add them one by one
 	foreach my $agent_name (keys %{$self->{agents}}) {
-		carp "Adding agent '$agent_name'" if DEBUG;
+		$self->{m3logger}->log_message ("debug", "Adding agent '$agent_name'");
 		$self->add_agent_monitors(agent_name => $agent_name);
 	}
 }
@@ -224,7 +235,7 @@ sub add_agent_monitors {
 	
 	# iterate on all monitors and add them
 	foreach my $monitor_name (keys %{$self->{agents}->{$agent_name}->{monitor}} ) {
-		carp "Adding monitor '$monitor_name' for agent '$agent_name'" if DEBUG;
+		$self->{m3logger}->log_message ("debug", "Adding monitor '$monitor_name' for agent '$agent_name'");
 		$self->add_monitor(
 			agent_name => $agent_name,
 			monitor_name =>  $monitor_name);
@@ -249,7 +260,7 @@ sub invoke_monitor {
 	my %additional_results = ();
 
 	# if just testing monitors - print a nice message
-	($self->is("test_config")) and carp "Testing monitor '$monitor_name': ";
+	($self->is("test_config")) and $self->{m3logger}->log_message ("info", "Testing monitor '$monitor_name': ");
 	my $config_ok = 1;
 
 	# find the relevant execution plugin and execute it
@@ -259,7 +270,7 @@ sub invoke_monitor {
 			foreach my $execution_xml_base (@{$monitor_xml_path->{$execution_plugin}}) {
 				# it's called a URI since it can be anything, from a command line
 				# executable, URL, SQL command...
-				carp "Calling execution plugin: '$execution_plugin', execution_xml_base->'$execution_xml_base', monitor_name->'$monitor_name'" if DEBUG;
+				$self->{m3logger}->log_message ("debug", "Calling execution plugin: '$execution_plugin', execution_xml_base->'$execution_xml_base', monitor_name->'$monitor_name'");
 				my %returned_results = ();
 				if ($self->is("test_config")) {
 					my %tmp_hash = ();
@@ -267,7 +278,7 @@ sub invoke_monitor {
 						$self->{execution_plugins}{$execution_plugin}->get_config($execution_xml_base, \%tmp_hash);
 					};
 					if ($@) {
-						carp "Configuration error: $@";
+						$self->{m3logger}->log_message ("err", "Configuration error: $@");
 						$config_ok = 0;
 					}
 				} else {
@@ -286,7 +297,7 @@ sub invoke_monitor {
 
 	# just testing configuration? - alright, quit!
 	if ($self->is("test_config")) {
-		($config_ok == 1) and carp "Monitor '$monitor_name' -> Configuration is OK";
+		($config_ok == 1) and $self->{m3logger}->log_message ("info", "Monitor '$monitor_name' -> Configuration is OK");
 		return;
 	}
 
@@ -337,7 +348,7 @@ sub handle_output_chunk {
 		# run the parsing plugin one by one
 		foreach my $potential_parsing_plugin (keys %{$monitor_xml_path->{metric}->{$metric_name}}) {
 			if (defined($self->{parsing_plugins}{$potential_parsing_plugin})) {
-				carp "Calling parsing plugin: '$potential_parsing_plugin'" if DEBUG;
+				$self->{m3logger}->log_message ("debug", "Calling parsing plugin: '$potential_parsing_plugin'");
 				$self->{parsing_plugins}{$potential_parsing_plugin}->parse($metric_name, $monitor_xml_path->{metric}->{$metric_name}, $output, \%returned_results);
 			}
 		}
@@ -347,7 +358,7 @@ sub handle_output_chunk {
 		foreach my $potential_compute_plugin (keys %{$monitor_xml_path->{metric}->{$metric_name}}) {
 			if (defined($self->{compute_plugins}{$potential_compute_plugin})) {
 				foreach my $code (@{$monitor_xml_path->{metric}->{$metric_name}->{$potential_compute_plugin}}) {
-					carp "Calling compute plugin: '$potential_compute_plugin'" if DEBUG;
+					$self->{m3logger}->log_message ("debug", "Calling compute plugin: '$potential_compute_plugin'");
 					my $code = $monitor_xml_path->{metric}->{$metric_name}->{$potential_compute_plugin}[0];
 					$self->{compute_plugins}{$potential_compute_plugin}->compute($agent_name, $monitor_name, $monitor_xml_path, $code, \%returned_results);
 				}
@@ -414,13 +425,13 @@ sub update_data_for_monitor {
 
 	# sanity check of results...
 	if ($results eq "") {
-		carp "Result set is empty! did it parse well? - Will not update any data!"; 
+		$self->{m3logger}->log_message ("info", "Result set is empty! did it parse well? - Will not update any data!"); 
 		return;
 	}
 
 	if ($self->is("dry_run")) {
-		carp "OK";
-		carp "This is a dry run, data for monitor '$monitor_name' was not really updated.";
+		$self->{m3logger}->log_message ("info", "OK");
+		$self->{m3logger}->log_message ("info", "This is a dry run, data for monitor '$monitor_name' was not really updated.");
 		return;
 	}
 
@@ -459,7 +470,7 @@ sub invoke_agent_monitors {
 
 # signals threads to stop execution
 sub agents_loop_stop {
-	carp "Stopping execution...";
+	MonitisMonitorManager::M3Logger->instance()->log_message ("info", "Stopping execution...");
 	lock($condition_loop_stop);
 	$condition_loop_stop = 1;
 	cond_broadcast($condition_loop_stop);
@@ -483,7 +494,7 @@ sub invoke_agents_loop {
 		foreach my $thread (@threads) {
 			if($thread->is_joinable()) {
 				$thread->join();
-				carp "Thread '$thread' has quitted." if DEBUG;
+				$self->{m3logger}->log_message ("debug", "Thread '$thread' has quitted.");
 				$running_threads--;
 			}
 		}
@@ -498,7 +509,7 @@ sub invoke_agent_monitors_loop {
 	my ($args) = {@_};
 	my $agent_name = $args->{agent_name};
 	my $agent_interval = $self->{agents}->{$agent_name}->{interval};
-	carp "Agent '$agent_name' will be invoked every '$agent_interval' seconds'" if DEBUG;
+	$self->{m3logger}->log_message ("debug", "Agent '$agent_name' will be invoked every '$agent_interval' seconds'");
 
 	# this loop will break when the user will hit ^C (SIGINT)
 	do {
@@ -522,12 +533,12 @@ sub handle_raw_command {
 	my ($args) = {@_};
 	my $raw_command = $args->{raw_command};
 
-	print "Raw command is: '$raw_command'\n";
+	$self->{m3logger}->log_message ("debug", "Raw command is: '$raw_command'");
 	my (@raw_parameters) = split /\s+/, $raw_command;
 	my $command = shift @raw_parameters;
 
 	# a quick debug message
-	carp "Handling raw command: '$command'" if DEBUG;
+	$self->{m3logger}->log_message ("debug", "Handling raw command: '$command'");
 
 	for ($command) {
 		/add_monitor/ and do {
@@ -635,7 +646,7 @@ sub load_plugins_in_directory {
 		if ($@) {
 			croak "error: $@";
 		} else {
-			carp "Loading plugin '" . $plugin_name . "'->'" . $plugin_name->name() . "'" if DEBUG;
+			$self->{m3logger}->log_message ("debug", "Loading plugin '" . $plugin_name . "'->'" . $plugin_name->name() . "'");
 			$self->{$plugin_table_name}{$plugin_name->name()} = "$plugin_name";
 		}
 	}
@@ -669,7 +680,7 @@ sub get_monitor_tag {
 	# if monitor tag is defined, use it!
 	if (defined ($self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{tag}) ) {
 		my $monitor_tag = $self->{agents}->{$agent_name}->{monitor}->{$monitor_name}->{tag};
-		carp "Obtained monitor tag '$monitor_tag' from XML" if DEBUG;
+		$self->{m3logger}->log_message ("debug", "Obtained monitor tag '$monitor_tag' from XML");
 		return $monitor_tag;
 	} else {
 		# make a monitor tag from name
@@ -704,7 +715,7 @@ sub run_macros() {
 # macro functions
 sub replace_template($) {
 	my ($template) = @_;
-	my $callback = \{"_get_$template"};
+	my $callback = "_get_$template";
 	return &$callback;
 }
 

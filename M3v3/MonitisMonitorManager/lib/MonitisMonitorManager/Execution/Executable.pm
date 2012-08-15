@@ -1,7 +1,6 @@
 package MonitisMonitorManager::Execution::Executable;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
 
 sub new {
 	my ($class, $name) = @_;
@@ -31,7 +30,7 @@ sub execute {
 	my $executable = $plugin_parameters{executable};
 
 	# running with qx{} as it should run also on windows
-	my $output = qx{ $executable } || carp "Failed running '$executable': $!" && return "";
+	my $output = qx{ $executable } || MonitisMonitorManager::M3PluginCommon::log_message("err", "Failed running '$executable': $!") && return "";
 	return $output;
 }
 

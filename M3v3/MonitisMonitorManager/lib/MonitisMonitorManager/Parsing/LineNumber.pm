@@ -1,6 +1,6 @@
 package MonitisMonitorManager::Parsing::LineNumber;
+use MonitisMonitorManager::M3PluginCommon;
 use strict;
-use Carp;
 
 sub new {
 	my ($class, $name) = @_;
@@ -34,18 +34,18 @@ sub parse {
 					# if it's not a boolean type, use the extracted data
 					my $data = $output_line;
 				}
-				carp "Matched '$metric_line_number'=>'$data' in '$output_line'";
+				MonitisMonitorManager::M3PluginCommon::log_message("debug", "Matched '$metric_line_number'=>'$data' in '$output_line'");
 				# yield a warning here if it's already in the hash
 				if (defined(${$results}{$metric_name})) {
-					carp "Metric '$metric_name' with line number '$metric_line_number' was already parsed!!";
-					carp "You should fix your script output to have '$metric_line_number' only once in the output";
+					MonitisMonitorManager::M3PluginCommon::log_message("warn", "Metric '$metric_name' with line number '$metric_line_number' was already parsed!!");
+					MonitisMonitorManager::M3PluginCommon::log_message("warn", "You should fix your script output to have '$metric_line_number' only once in the output");
 				}
 				# push into hash, we'll format it later...
 				${$results}{$metric_name} = $data;
 			} elsif ($metric_type eq "boolean") {
 				# if the data type is a boolean, and we didn't find the result
 				# we were looking for, then it's a 0
-				carp "Matched '$metric_line_number'=>'0' in '$output_line'";
+				MonitisMonitorManager::M3PluginCommon::log_message("debug", "Matched '$metric_line_number'=>'0' in '$output_line'");
 				${$results}{$metric_name} = 0;
 			}
 		}

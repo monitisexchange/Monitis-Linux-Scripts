@@ -1,6 +1,6 @@
 package MonitisMonitorManager::Parsing::JSON;
+use MonitisMonitorManager::M3PluginCommon;
 use strict;
-use Carp;
 use JSON;
 
 sub new {
@@ -32,7 +32,7 @@ sub match_strings_in_object {
 		if (defined(eval "\$presentation->$metric_string"))
 		{
 			my $data = eval "\$presentation->$metric_string";
-			carp "Matched '$metric_string'=>'$data'";
+			MonitisMonitorManager::M3PluginCommon::log_message("debug", "Matched '$metric_string'=>'$data'");
 			${$results}{$metric_name} = $data;
 		}
 	}

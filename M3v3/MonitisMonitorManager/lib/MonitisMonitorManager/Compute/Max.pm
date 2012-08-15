@@ -1,8 +1,8 @@
 package MonitisMonitorManager::Compute::Max;
 use strict;
-use Carp;
 require List::Util;
 use List::Util qw(max);
+use Carp;
 my %max_hash = ();
 
 sub new {

@@ -1,5 +1,6 @@
 package MonitisMonitorManager::MonitisConnection;
 use MonitisMonitorManager;
+use MonitisMonitorManager::M3Logger;
 use strict;
 require Thread;
 use Thread qw(async);
@@ -21,6 +22,9 @@ sub new {
 	my $self = {@_};
 	bless $self, $class;
 
+	# initialize M3Logger
+	$self->{m3logger} = MonitisMonitorManager::M3Logger->instance();
+
 	# create the queue which M3 will queue stuff on
 	$self->{queue} = Thread::Queue->new();
 
@@ -39,7 +43,7 @@ sub new {
 	$self->{monitor_ids_cache} = MonitisConnection::MonitorIDCache->new();
 
 	# initialize Monitis API
-	carp "Initializing Monitis API with secretkey='$self->{secretkey}' and api_key='$self->{apikey}'" if DEBUG;
+	$self->{m3logger}->log_message ("debug", "Initializing Monitis API with secretkey='$self->{secretkey}' and api_key='$self->{apikey}'");
 	$self->{monitis_api_context} = Monitis->new(
 		secret_key => $self->{secretkey},
 		api_key => $self->{apikey} );
@@ -59,17 +63,17 @@ sub add_monitor {
 	my $result_params = $args->{result_params};
 	my @optional_params = @{$args->{optional_params}};
 
-	print "Adding monitor '$monitor_name'...";
+	$self->{m3logger}->log_message ("debug", "Adding monitor '$monitor_name'...");
 	my $response = $self->{monitis_api_context}->custom_monitors->add(
 		name => $monitor_name, tag => $monitor_tag,
 		resultParams => $result_params, @optional_params);
 	if ($response->{status} eq 'ok') {
-		print "OK\n";
+		$self->{m3logger}->log_message ("info", "Monitor '$monitor_name' added successfully!");
 	} elsif ($response->{status} eq "monitorNameExists") {
-		print "OK (Monitor already exists)\n";
+		$self->{m3logger}->log_message ("info","'$monitor_name': Monitor already exists");
 	} else {
-		print "FAILED: '$response->{status}'\n";
-		carp Dumper($response) if DEBUG;
+		$self->{m3logger}->log_message ("err","Failed to add '$monitor_name': '$response->{status}'");
+		$self->{m3logger}->log_message ("err", Dumper($response));
 		# if we can add a monitor - we don't muck around...
 		exit(1);
 	}
@@ -91,13 +95,13 @@ sub delete_monitor {
 	my ($args) = {@_};
 	my $monitor_id = $args->{monitor_id};
 
-	print "Deleting monitor with ID '$monitor_id'...";
+	$self->{m3logger}->log_message ("info", "Deleting monitor with ID '$monitor_id'...");
 	my $response = $self->{monitis_api_context}->custom_monitors->delete(monitorId => $monitor_id);
 	if ($response->{status} eq 'ok') {
-		print "OK\n";
+		$self->{m3logger}->log_message ("info", "Monitor with ID '$monitor_id' deleted successfully");
 	} else {
-		print "FAILED: '$response->{status}'\n";
-		carp Dumper($response) if DEBUG;
+		$self->{m3logger}->log_message ("err", "Failed to delete monitor with ID '$monitor_id': '$response->{status}");
+		$self->{m3logger}->log_message ("err", Dumper($response));
 		# if we can't delete a monitor - we don't muck around...
 		exit(1);
 	}
@@ -130,7 +134,7 @@ sub main_loop {
 	if ($self->{queue}->pending() > 0) {
 		croak "Left queue with '" . $self->{queue}->pending() ."' pending requests";
 	}
-	print "MonitisConnection stopped execution.\n";
+	$self->{m3logger}->log_message ("debug", "MonitisConnection stopped execution.");
 }
 
 # handles item in queue
@@ -144,7 +148,7 @@ sub handle_queued_items {
 		}
 
 		my $queue_item = $self->{queue}->peek();
-		print "Reporting: '$queue_item->{results}'\n";
+		$self->{m3logger}->log_message ("debug", "Reporting: '$queue_item->{results}'");
 		# handle item and pop it if we succeeded
 		$self->update_data_for_monitor(
 			agent_name => $queue_item->{agent_name},
@@ -160,7 +164,7 @@ sub handle_queued_items {
 # will signal the main loop to stop
 sub stop {
 	my $self = shift;
-	carp "Stopping execution of MonitisConnection...";
+	$self->{m3logger}->log_message ("info", "Stopping execution of MonitisConnection...");
 
 	# lock and signal in a different block
 	{
@@ -185,7 +189,7 @@ sub queue {
 	my $results = $args->{results};
 	my $additional_results = $args->{additional_results};
 
-	carp "Queuing item: '$agent_name' => '$monitor_name' => '$results','$additional_results' (TS: '$checktime') (TAG: '$monitor_tag')";
+	$self->{m3logger}->log_message ("info", "Queuing item: '$agent_name' => '$monitor_name' => '$results','$additional_results' (TS: '$checktime') (TAG: '$monitor_tag')");
 
 	# queue the item
 	$self->{queue}->enqueue(
@@ -216,7 +220,7 @@ sub update_data_for_monitor {
 
 	# sanity check of results...
 	if ($results eq "" and $additional_results eq "") {
-		carp "Result set is empty! did it parse well?"; 
+		$self->{m3logger}->log_message ("info", "Result set is empty! did it parse well?"); 
 	}
 
 	# we have to obtain the monitor id in order to update results
@@ -228,13 +232,11 @@ sub update_data_for_monitor {
 	if(0 == $monitor_id) {
 		return 0;
 	} else {
-		carp "Obtained monitor_id '$monitor_id' from API call" if DEBUG;
+		$self->{m3logger}->log_message ("debug", "Obtained monitor_id '$monitor_id' from API call");
 	}
 
 	# call Monitis using the api context provided
-	carp "Calling API with '$monitor_id' '$checktime' '$results'" if DEBUG;
-
-	print "Updating data for monitor '$monitor_name'...";
+	$self->{m3logger}->log_message ("debug", "Calling API with '$monitor_id' '$checktime' '$results'");
 
 	# adding results
 	my $retval = 0;
@@ -243,38 +245,38 @@ sub update_data_for_monitor {
 			monitorId => $monitor_id, checktime => $checktime,
 			results => $results);
 		if ($response->{status} eq 'ok') {
-			print "OK\n";
+			$self->{m3logger}->log_message ("info", "Data update for '$monitor_name' successful!");
 			$retval = 1;
 		} else {
-			print "FAILED: '$response->{status}'\n";
-			carp Dumper($response) if DEBUG;
+			$self->{m3logger}->log_message ("info", "Data update for '$monitor_name' failed: '$response->{status}'");
+			$self->{m3logger}->log_message ("debug", Dumper($response));
 		}
 	};
 	if ($@) {
 		# we assume a connection error...
-		carp "Error connecting to Monitis: $@";
+		$self->{m3logger}->log_message ("err", "Error connecting to Monitis: $@");
 		$self->{monitis_connection} = 0;
 		return 0;
 	}
 
 	# adding additional results
 	if ($additional_results ne "") {
-		carp "Adding additional results, calling API with '$monitor_id' '$checktime' '$additional_results'" if DEBUG;
+		$self->{m3logger}->log_message ("debug", "Adding additional results, calling API with '$monitor_id' '$checktime' '$additional_results'");
 		eval {
 			my $response = $self->{monitis_api_context}->custom_monitors->add_additional_results(
 				monitorId => $monitor_id, checktime => $checktime,
 				results => $additional_results);
-				if ($response->{status} eq 'ok') {
-				print "OK\n";
+			if ($response->{status} eq 'ok') {
+				$self->{m3logger}->log_message ("info", "Adding results update for '$monitor_name' successful!");
 				$retval = 1;
 			} else {
-				print "FAILED: '$response->{status}'\n";
-				carp Dumper($response) if DEBUG;
+				$self->{m3logger}->log_message ("err", "Additional results update for '$monitor_name' failed: '$response->{status}'");
+				$self->{m3logger}->log_message ("err", Dumper($response));
 			}
 		};
 		if ($@) {
 			# we assume a connection error...
-			carp "Error connecting to Monitis: $@";
+			$self->{m3logger}->log_message ("err", "Error connecting to Monitis: $@");
 			$self->{monitis_connection} = 0;
 			return 0;
 		}
@@ -307,7 +309,7 @@ sub get_id_of_monitor {
 		};
 		if ($@) {
 			# we assume a connection error...
-			print "Error connecting to Monitis: $@\n";
+			$self->{m3logger}->log_message ("err", "Error connecting to Monitis: $@");
 			$self->{monitis_connection} = 0;
 			return 0;
 		}
@@ -317,7 +319,7 @@ sub get_id_of_monitor {
 			if (defined($response) and defined($response->{error}) and
 					$response->{error} eq 'Invalid api key') {
 				# just exit, we don't want any business if the API key is invalid
-				carp "Invalid API key";
+				$self->{m3logger}->log_message ("err", "Invalid API key");
 				exit(1);
 			}
 		};
@@ -326,7 +328,7 @@ sub get_id_of_monitor {
 		my $i = 0;
 		while (defined($response->[$i]->{id})) {
 			if ($response->[$i]->{name} eq $monitor_name) {
-				carp "Monitor tag/name: '$monitor_tag/$monitor_name' -> ID: '$response->[$i]->{id}'" if DEBUG;
+				$self->{m3logger}->log_message ("debug", "Monitor tag/name: '$monitor_tag/$monitor_name' -> ID: '$response->[$i]->{id}'");
 				# cache it for next time!
 				$monitor_id = $response->[$i]->{id};
 				$self->{monitor_ids_cache}->store(
@@ -339,7 +341,7 @@ sub get_id_of_monitor {
 			$i++;
 		}
 		# TODO perhaps add this monitor automatically?
-		carp "Could not obtain ID for monitor '$monitor_tag'/'$monitor_name'";
+		$self->{m3logger}->log_message ("err", "Could not obtain ID for monitor '$monitor_tag'/'$monitor_name'");
 		exit(1);
 	}
 }

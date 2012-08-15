@@ -1,7 +1,6 @@
 package MonitisMonitorManager::Execution::SNMP;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
 require Net::SNMP;
 
 sub new {
@@ -44,14 +43,14 @@ sub execute {
 	);
 
 	if (!defined $session) {
-		carp "SNMP Error: ", $error;
+		MonitisMonitorManager::M3PluginCommon::log_message("err", "SNMP Error: " . $error);
 		return "";
 	}
 
 	my $result = $session->get_request(-varbindlist => [ $oid ],);
 
 	if (!defined $result) {
-		carp "SNMP Error: ", $session->error();
+		MonitisMonitorManager::M3PluginCommon::log_message("err", "SNMP Error: " . $session->error());
 		$session->close();
 		return "";
 	}

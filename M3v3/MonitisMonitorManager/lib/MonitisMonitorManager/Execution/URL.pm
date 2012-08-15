@@ -1,10 +1,10 @@
 package MonitisMonitorManager::Execution::URL;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
 require LWP::UserAgent;
 require Time::HiRes;
 use Time::HiRes qw(clock_gettime);
+use Carp;
 
 # constants for HTTP statistics
 use constant {
@@ -57,7 +57,7 @@ sub execute {
 
 	# credentials defined?
 	if (defined($username) and defined($password)) {
-		carp "Using authentication '" . $username . "'/'" . $password . "'";
+		MonitisMonitorManager::M3PluginCommon::log_message("debug", "Using authentication '" . $username . "'/'" . $password . "'");
 		$browser->credentials($username => $password);
 	}
 

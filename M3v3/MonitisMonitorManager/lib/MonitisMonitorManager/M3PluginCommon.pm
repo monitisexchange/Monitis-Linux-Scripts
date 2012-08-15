@@ -1,6 +1,7 @@
 package MonitisMonitorManager::M3PluginCommon;
 use strict;
 use Carp;
+use Sys::Syslog;
 
 # returns the parameter specified or croaks on an error
 sub get_mandatory_parameter {
@@ -30,6 +31,11 @@ sub get_optional_parameter {
 	} else {
 		return $return_value;
 	}
+}
+
+sub log_message {
+	my ($priority, $message) = @_;
+	MonitisMonitorManager::M3Logger->instance()->log_message($priority, $message);
 }
 
 1;

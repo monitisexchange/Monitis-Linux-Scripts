@@ -1,7 +1,6 @@
 package MonitisMonitorManager::Execution::LinuxSysStatistics;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
 require Sys::Statistics::Linux;
 my $linux_sys_statistics = Sys::Statistics::Linux->new( cpustats => 1,memstats  => 1,diskusage => 1 , loadavg   => 1);
 
@@ -34,7 +33,7 @@ sub execute {
 	my $value = $plugin_parameters{value};
 
 	my $sysinfo  = $linux_sys_statistics->get(1);
-	carp "Evaluating: \$sysinfo->$value == " . eval "\$sysinfo->$value";
+	MonitisMonitorManager::M3PluginCommon::log_message("debug", "Evaluating: \$sysinfo->$value == " . eval "\$sysinfo->$value");
 	my $output = eval "\$sysinfo->$value";
 	return $output;
 }

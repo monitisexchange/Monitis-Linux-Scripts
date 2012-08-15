@@ -1,6 +1,5 @@
 package MonitisMonitorManager::Compute::Math;
 use strict;
-use Carp;
 
 sub new {
 	my ($class, $name) = @_;
@@ -17,7 +16,7 @@ sub compute {
 	my ($self, $agent_name, $monitor_name, $monitor_xml_path, $code, $results) = @_;
 	foreach my $metric_name (keys %{$results}) {
 		my $computed_value = eval "${$results}{$metric_name} $code";
-		carp "Evalutaing '$metric_name' = '${$results}{$metric_name} $code' == '$computed_value'";
+		MonitisMonitorManager::M3PluginCommon::log_message("debug", "Evalutaing '$metric_name' = '${$results}{$metric_name} $code' == '$computed_value'");
 		${$results}{$metric_name} = $computed_value;
 	}
 }

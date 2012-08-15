@@ -51,7 +51,7 @@ start()
 			return 1
 		fi
 
-		$m3 $M3_CONFIG_XML >> $M3_LOG_FILE 2>&1 &
+		$m3 --syslog $M3_CONFIG_XML >> $M3_LOG_FILE 2>&1 &
 		success; echo
 	else
 		echo -n " already running!"

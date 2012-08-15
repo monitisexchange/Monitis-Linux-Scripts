@@ -1,7 +1,6 @@
 package MonitisMonitorManager::Execution::RemoteCommand;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
 require Net::Telnet;
 require Net::SSH::Perl;
 require Encode;

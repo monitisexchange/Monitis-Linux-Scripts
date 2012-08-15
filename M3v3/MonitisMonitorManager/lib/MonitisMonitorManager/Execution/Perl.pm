@@ -1,7 +1,6 @@
 package MonitisMonitorManager::Execution::Perl;
 use strict;
 use MonitisMonitorManager::M3PluginCommon;
-use Carp;
 require File::Temp;
 use File::Temp qw/tempfile tempdir/;
 
@@ -36,7 +35,7 @@ sub execute {
 	my ($fh, $perl_filename) = tempfile();
 	print $perl_filename . "\n";
 	print $fh $code;
-	my $output = qx{ perl -- $perl_filename } || carp "Failed running '$perl_filename': $!" && return "";
+	my $output = qx{ perl -- $perl_filename } || MonitisMonitorManager::M3PluginCommon::log_message("err", "Failed running '$perl_filename': $!") && return "";
 	unlink($perl_filename);
 	return $output;
 }
