@@ -7,13 +7,13 @@
 			<metric name="RX Total MBytes">
 				<type>integer</type>
 				<uom>MBytes</uom>
-				<regex>\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<regex>\s+\S+:\s*(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
 				<math>/ 1024 / 1024</math>
 			</metric>
 			<metric name="TX Total MBytes">
 				<type>integer</type>
 				<uom>MBytes</uom>
-				<regex>\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<regex>\s+\S+:\s*\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
 				<math>/ 1024 / 1024</math>
 			</metric>
 		</monitor>
@@ -22,14 +22,14 @@
 			<metric name="RX KBytes/sec">
 				<type>integer</type>
 				<uom>KBytes/sec</uom>
-				<regex>\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<regex>\s+\S+:\s*(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
 				<diffpersec>1</diffpersec>
 				<math>/ 1024</math>
 			</metric>
 			<metric name="TX KBytes/sec">
 				<type>integer</type>
 				<uom>KBytes/sec</uom>
-				<regex>\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
+				<regex>\s+\S+:\s*\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+</regex>
 				<diffpersec>1</diffpersec>
 				<math>/ 1024</math>
 			</metric>
