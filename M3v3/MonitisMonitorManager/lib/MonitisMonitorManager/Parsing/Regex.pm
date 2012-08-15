@@ -18,9 +18,13 @@ sub parse {
 
 	# if metric is boolean, set it as 0, first of all
 	# if it will be matched, it'll turn into a 1
-	if ($metric_type eq "boolean") {
-		if (not defined(${$results}{$metric_name})) {
-			${$results}{$metric_name} = 0;
+	my $metric_type;
+	if (defined($metric_xml_path->{$self->name()}[0])) {
+		$metric_type = $metric_xml_path->{type}[0];
+		if ($metric_type eq "boolean") {
+			if (not defined(${$results}{$metric_name})) {
+				${$results}{$metric_name} = 0;
+			}
 		}
 	}
 
@@ -30,7 +34,6 @@ sub parse {
 		# look for the metric regex on each line
 		if (defined($metric_xml_path->{$self->name()}[0])) {
 			my $metric_regex = $metric_xml_path->{$self->name()}[0];
-			my $metric_type = $metric_xml_path->{type}[0];
 			if ($output_line =~ m/$metric_regex/) {
 				chomp $output_line;
 				my $data = $1;
