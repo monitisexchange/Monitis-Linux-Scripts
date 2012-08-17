@@ -23,7 +23,7 @@ sub parse {
 		$metric_type = $metric_xml_path->{type}[0];
 		if ($metric_type eq "boolean") {
 			if (not defined(${$results}{$metric_name})) {
-				${$results}{$metric_name} = 0;
+				${$results}{$metric_name} = "false";
 			}
 		}
 	}
@@ -40,7 +40,7 @@ sub parse {
 				if ($metric_type eq "boolean") {
 					# if it's a boolean, use a positive value instead of
 					# the extracted value
-					$data = 1;
+					$data = "true";
 				} else {
 					# if it's not a boolean type, use the extracted data
 					my $data = $1;
