@@ -37,13 +37,6 @@ start()
 	echo -n "Starting m3:"
 	export M3_CONFIG_DIR
 	if ! status >& /dev/null; then
-		# check if M3_LOG_FILE is defined
-		if [ x"$M3_LOG_FILE" = x ]; then
-			echo -n " M3_LOG_FILE undefined in /etc/sysconfig/m3"
-			failure; echo
-			return 1
-		fi
-
 		# check if M3_CONFIG_XML is defined
 		if [ x"$M3_CONFIG_XML" = x ]; then
 			echo -n " M3_CONFIG_XML undefined in /etc/sysconfig/m3"
@@ -51,7 +44,7 @@ start()
 			return 1
 		fi
 
-		$m3 --syslog $M3_CONFIG_XML >> $M3_LOG_FILE 2>&1 &
+		$m3 --syslog $M3_CONFIG_XML &
 		success; echo
 	else
 		echo -n " already running!"
