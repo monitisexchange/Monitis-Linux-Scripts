@@ -200,7 +200,7 @@ function get_measure() {
 	    done
 	    details="$details+${problem}"
 	else
-	    #details="$details + ""MySQL is OK"
+	    details="$details + ""MySQL is OK"
 	    #details="$details + Master writes to $Master_binlog_file ($Master_binlog_pos) with rate $Master_load pos/sec"
 	    #details="$details + Slave reads from $Slave_read_binlog_file ($Slave_read_binlog_pos) with rate $Slave_load pos/sec"	
 	fi

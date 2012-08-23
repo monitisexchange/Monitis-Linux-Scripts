@@ -12,6 +12,7 @@ declare -r MONITOR_TYPE="BASH_Monitor"		# type for custom monitor
 # format of result params - name1:displayName1:uom1:Integer
 declare -r P0="status:Status::3;receive:Received:kb:4;send:Sent:kb:4;insert:Insert::2;select:Select::2;update:Update::2;delete:Delete::2"
 declare -r P1="queries:Queries::2;slow_queries:Slow_queries::2;thread_running:Threads_running::2;Connections_usage:Connections_usage:pr:4;uptime:Uptime::3"
+
 declare -r RESULT_PARAMS="$P0;$P1" 
 
 declare -r RESP_DOWN="status:DOWN"
