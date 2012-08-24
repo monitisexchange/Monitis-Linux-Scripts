@@ -114,6 +114,10 @@ function get_measure() {
 	local long_query_time=$(extract_value variables long_query_time)
 	
 	local time_stamp=`date -u +%s` 		#current timestamp in sec
+	local dur=$DURATION
+	if [[ ($prev_time -gt 0) ]] ; then
+		dur=$(( $time_stamp - $prev_time ))
+	fi
 	
 	# load factor calculation [positions/sec]
 	local pBytes_received=0
@@ -154,14 +158,14 @@ function get_measure() {
 	local Com_show_variables_dif=$(( $Com_show_variables - $pCom_show_variables ))
 
 	local Bytes_received_dif=$(( $Bytes_received - $pBytes_received ))
-	local KBytes_received_dif=$(echo "scale=3; $Bytes_received_dif/1024" | bc )
+	local KBytes_received_dif_ps=$(echo "scale=3; $Bytes_received_dif/1024/$dur" | bc )
 	local Bytes_sent_dif=$(( $Bytes_sent - $pBytes_sent ))
-	local KBytes_sent_dif=$(echo "scale=3; $Bytes_sent_dif/1024" | bc )
-	local Com_insert_dif=$(( $Com_insert - $pCom_insert ))
-	local Com_select_dif=$(( $Com_select - $pCom_select ))
-	local Com_update_dif=$(( $Com_update - $pCom_update ))
-	local Com_delete_dif=$(( $Com_delete - $pCom_delete ))
-	local Queries_dif=$(( $Queries - $pQueries ))
+	local KBytes_sent_dif_ps=$(echo "scale=3; $Bytes_sent_dif/1024/$dur" | bc )
+	local Com_insert_dif_ps=$(echo "scale=3; ( $Com_insert - $pCom_insert )/$dur" | bc )
+	local Com_select_dif_ps=$(echo "scale=3; ( $Com_select - $pCom_select )/$dur" | bc )
+	local Com_update_dif_ps=$(echo "scale=3; ( $Com_update - $pCom_update )/$dur" | bc )
+	local Com_delete_dif_ps=$(echo "scale=3; ( $Com_delete - $pCom_delete )/$dur" | bc )
+	local Queries_dif_ps=$(echo "scale=3; ( $Queries - $pQueries )/$dur" | bc )
 	local Slow_queries_dif=$(( $Slow_queries - $pSlow_queries ))
 	local Connections_usage=$(echo "scale=1; 100 * $Threads_connected/$max_connections" | bc )
 	local up=$(formatTimestamp $Uptime )
@@ -204,8 +208,8 @@ function get_measure() {
 	    #details="$details + Master writes to $Master_binlog_file ($Master_binlog_pos) with rate $Master_load pos/sec"
 	    #details="$details + Slave reads from $Slave_read_binlog_file ($Slave_read_binlog_pos) with rate $Slave_load pos/sec"	
 	fi
-	local param="status:$status;receive:$KBytes_received_dif;send:$KBytes_sent_dif;insert:$Com_insert_dif;select:$Com_select_dif;update:$Com_update_dif;delete:$Com_delete_dif"
-	param=$param";queries:$Queries_dif;slow_queries:$Slow_queries_dif;thread_running:$Threads_running;Connections_usage:$Connections_usage;uptime:$up"
+	local param="status:$status;receive:$KBytes_received_dif_ps;send:$KBytes_sent_dif_ps;insert:$Com_insert_dif_ps;select:$Com_select_dif_ps;update:$Com_update_dif_ps;delete:$Com_delete_dif_ps"
+	param=$param";queries:$Queries_dif_ps;slow_queries:$Slow_queries_dif;thread_running:$Threads_running;thread_connected:$Threads_connected;Connections_usage:$Connections_usage;uptime:$up"
 	return_value="$param | $details"
 	return 0
 }
