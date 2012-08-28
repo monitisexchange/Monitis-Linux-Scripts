@@ -111,6 +111,9 @@ do
 	if [[ ($ret -ne 0) ]]
 	then
 		error "$ret" "$MSG"
+		if [[ ( -n ` echo $MSG | grep -asio -m1 "expired" `) ]] ; then
+			get_token $TRUE		# force to get a new token
+		fi
 		continue
 	else
 		echo $( date +"%D %T" ) - The Custom monitor data were successfully added
