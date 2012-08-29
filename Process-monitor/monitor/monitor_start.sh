@@ -155,5 +155,6 @@ do
 			echo "****No any detailed records yet ($array_length)"
 		fi			
 	fi
+
 done
 
