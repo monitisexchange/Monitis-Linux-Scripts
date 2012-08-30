@@ -1,7 +1,7 @@
 __Introduction__
 
  mongodb_monitor.xml is a template for Monitis Monitor Manager. 
- It allows to you get statistic data from MongoDB
+ It allows you get statistic data from MongoDB
       
 __Install/configure__
 
