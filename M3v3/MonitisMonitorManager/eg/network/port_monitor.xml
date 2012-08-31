@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Port Monitor Agent" interval="60">
+		<monitor name="www.google.com Port Status">
+			<exectemplate>nmap -sS -p80,443 www.google.com</exectemplate>
+			<metric name="Port 80 Status">
+				<type>boolean</type>
+				<uom>n/a</uom>
+				<regex>80/tcp\s+open</regex>
+			</metric>
+			<metric name="Port 443 Status">
+				<type>boolean</type>
+				<uom>n/a</uom>
+				<regex>443/tcp\s+open</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
