@@ -136,7 +136,7 @@ do
 	get_token				# get new token in case of the existing one is too old
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
-	then
+	then	# some problems while getting token...
 		error "$ret" "$MSG"
 		continue
 	fi
