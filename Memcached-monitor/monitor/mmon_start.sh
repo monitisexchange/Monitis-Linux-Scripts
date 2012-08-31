@@ -105,7 +105,9 @@ do
 
 	result=$return_value	# retrieve measure values
 	# Compose monitor data
-	param=$(echo ${result} | awk -F "|" '{print $1}' )
+	param=$(echo ${result} | awk -F "|" '{print $1}')
+	param=` trim $param `
+	param=` uri_escape $param `
 	#echo
 	#echo DEBUG: Composed params is \"$param\" >&2
 	#echo
@@ -113,16 +115,25 @@ do
 	#echo
 	#echo DEBUG: Timestamp is \"$timestamp\" >&2
 	#echo
+
 	# Sending to Monitis
 	add_custom_monitor_data $param $timestamp
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
 		error "$ret" "$MSG"
+		if [[ ( -n ` echo $MSG | grep -asio -m1 "expired" `) ]] ; then
+			get_token $TRUE		# force to get a new token
+		fi
 		continue
 	else
 		echo $( date +"%D %T" ) - The Custom monitor data were successfully added
+
 		# Now create additional data
+		if [[ -z "${ADDITIONAL_PARAMS}" ]] ; then # ADDITIONAL_PARAMS is not set
+			continue
+		fi
+
 		param=$(echo ${result} | awk -F "|" '{print $2}' )
 		unset array
 		OIFS=$IFS
@@ -155,5 +166,6 @@ do
 			echo "****No any detailed records yet ($array_length)"
 		fi			
 	fi
+
 done
 

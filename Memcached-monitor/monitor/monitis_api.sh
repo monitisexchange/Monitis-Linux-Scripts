@@ -144,27 +144,27 @@ function add_custom_monitor {
 	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
 	then # Likely, we received correct answer
 		#parsing
-		json=$response
+		json="$response"
 		data=""
-		status=`jsonval $json $RES_STATUS `	
-		if [[ (-n $status) ]]
+		status=`jsonval "$json" "$RES_STATUS" `	
+		if [[ (-n "$status") ]]
 		then
 			if [[ (($status = "ok") || ($status = "OK")) ]]
 			then
 				# status is ok - checking data...
-				data=`jsonval $json $RES_DATA `
+				data=`jsonval "$json" "$RES_DATA" `
 			else
-				if [[ (-n `echo $status | grep -asio -m1 "exists"`) ]]
+				if [[ (-n `echo "$status" | grep -asio -m1 "exists"`) ]]
 				then
-					MSG="WARNING: monitor with specified parameters already exists"
+					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
 				else
-					MSG='ERROR while adding custom monitor. Response - '$response
+					MSG='add_custom_monitor: Response - '$response
 					return 3
 				fi
 			fi
 		else
-			MSG='ERROR while adding custom monitor - NO RESPONSE STATUS??'
+			MSG='add_custom_monitor - NO RESPONSE STATUS??'
 			return 3
 		fi	
 	else
@@ -172,13 +172,13 @@ function add_custom_monitor {
 		return 3
 	fi
 	
-	if [[ ( -z $data) ]]
+	if [[ ( -z "$data") ]]
 	then
-		MSG='ERROR while adding custom monitor - NO RESPONSE DATA??'
+		MSG='add_custom_monitor - NO RESPONSE DATA??'
 		return 3
 	fi	
 		
-	MONITOR_ID=$data
+	MONITOR_ID="$data"
 	return 0
 }
 
@@ -265,10 +265,10 @@ function get_monitors_list() {
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="get_monitors_list - No response received while getting monitors list..."
+			MSG="get_monitors_list - No response received..."
 			return 1
 		else
-			MSG="get_monitors_list - Response is too long while getting monitors list..."
+			MSG="get_monitors_list - Response is too long..."
 		fi
 	fi	
 	return 0
@@ -324,7 +324,7 @@ function get_monitorID {
 						fi
 					fi
 				done
-				MSG="get_monitorID - Monitor not found in resonse list"
+				MSG="get_monitorID - Monitor not found in response list"
 			fi
 		fi
 	fi
@@ -362,16 +362,16 @@ function add_custom_monitor_data() {
 		then	# status is ok
 			MSG="$TRUE"
 		else
-			MSG='ERROR while adding custom monitor data. Response - '$response
+			MSG='add_custom_monitor_data: response - '$response
 			return 1
 		fi
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="No response received while adding monitor data..."
+			MSG="add_custom_monitor_data: No response received.."
 			return 1
 		else
-			MSG="Response is too long while adding monitor data..."
+			MSG="add_custom_monitor_data: Response is too long..."
 		fi
 	fi
 	return 0
@@ -408,7 +408,7 @@ function add_custom_monitor_additional_data() {
 		then	# status is ok
 			MSG="$TRUE"
 		else
-			MSG='ERROR while adding custom monitor additional data. Response - '$response
+			MSG='add_custom_monitor_additional_data. Response - '$response
 			return 1
 		fi
 	else

@@ -45,10 +45,10 @@ function formatTimestamp(){
 	local min=$(( ($time/60)%60 ))
 	local hr=$(( ($time/3600)%24 ))
 	local da=$(( $time/86400 ))
-	local str=$(echo `printf "%u.%02u.%02u" $hr $min $sec`)
+	local str=$(echo `printf "%02u.%02u.%02u" $hr $min $sec`)
 	if [[ ($da -gt 0) ]]
 	then
-		str="$da day $str" 
+		str="$da""-""$str" 
 	fi
 	echo $str
 }
@@ -182,11 +182,11 @@ function get_measure() {
 	lres=$(( $delete_hits + $delete_misses ))
 	if [[ ($lres -lt 1) ]]
 	then
-		local delete_miss=$(echo "scale=2;(100*$delete_misses)" | bc )
-		lres=$((100*$delete_misses))
+		local delete_miss=$(echo "scale=2;(100*($delete_misses - $delete_misses_))" | bc )
+		lres=$((100*($delete_misses - $delete_misses_)))
 	else
-		local delete_miss=$(echo "scale=2;(100*$delete_misses/$lres)" | bc )
-		lres=$((100*$delete_misses/$lres))
+		local delete_miss=$(echo "scale=2;(100*($delete_misses - $delete_misses_)/$lres)" | bc )
+		lres=$((100*($delete_misses - $delete_misses_)/$lres))
 	fi	
 	if [[ ($lres -gt 10) ]]
 	then
@@ -198,11 +198,11 @@ function get_measure() {
 	lres=$(( $incr_hits + $incr_misses ))
 	if [[ ($lres -le 0) ]]
 	then
-		local incr_miss=$(echo "scale=2;(100*$incr_misses)" | bc )
-		lres=$((100*$incr_misses))
+		local incr_miss=$(echo "scale=2;(100*($incr_misses - $incr_misses_))" | bc )
+		lres=$((100*($incr_misses - $incr_misses_)))
 	else
-		local incr_miss=$(echo "scale=2;(100*$incr_misses/$lres)" | bc )
-		lres=$((100*$incr_misses/$lres))
+		local incr_miss=$(echo "scale=2;(100*($incr_misses - $incr_misses_)/$lres)" | bc )
+		lres=$((100*($incr_misses - $incr_misses_)/$lres))
 	fi	
 	if [[ ($lres -gt 5) ]]
 	then
@@ -214,11 +214,11 @@ function get_measure() {
 	lres=$(( $decr_hits + $decr_misses ))
 	if [[ ($lres -le 0) ]]
 	then
-		local decr_miss=$(echo "scale=2;(100*$decr_misses)" | bc )
-		lres=$((100*$decr_misses))
+		local decr_miss=$(echo "scale=2;(100*($decr_misses - $decr_misses_))" | bc )
+		lres=$((100*($decr_misses - $decr_misses_)))
 	else
-		local decr_miss=$(echo "scale=2;(100*$decr_misses/$lres)" | bc )
-		lres=$((100*$decr_misses/$lres))
+		local decr_miss=$(echo "scale=2;(100*($decr_misses - $decr_misses_)/$lres)" | bc )
+		lres=$((100*($decr_misses - $decr_misses_)/$lres))
 	fi	
 	if [[ ($lres -gt 5) ]]
 	then
