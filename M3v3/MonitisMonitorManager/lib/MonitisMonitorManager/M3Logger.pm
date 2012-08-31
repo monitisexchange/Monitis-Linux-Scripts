@@ -20,7 +20,11 @@ sub instance {
 	return $instance;
 }
 
-sub cleanup {
+# destructor
+sub DESTROY {
+	my $self = shift;
+
+	# close the syslog logging facility
 	closelog();
 }
 

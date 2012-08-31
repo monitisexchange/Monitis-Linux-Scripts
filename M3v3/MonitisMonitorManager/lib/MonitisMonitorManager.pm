@@ -125,9 +125,6 @@ sub new {
 sub DESTROY {
 	my $self = shift;
 
-	# let M3Logger clean stuff (mainly calls closelog())
-	$self->{m3logger}->cleanup();
-
 	# call parent dtor (not that there is any, but just to make it clean)
 	$self->SUPER::DESTROY if $self->can("SUPER::DESTROY");
 	# umn, why would destroy be called multiple times?
