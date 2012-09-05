@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <config>
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
-	<agent name="Tomcat monitor for %HOSTNAME%" interval="60">
+	<agent name="Tomcat monitor for %HOSTNAME%" interval="10">
 		
 		<monitor name="Tomcat">
-<exectemplate>curl -s http://127.0.0.1/manager/status/all?XML=true -u tomcat:tomcat</exectemplate>	
+<exectemplate>curl -s http://192.168.10.249:8080/manager/status/all?XML=true -u tomcat:tomcat</exectemplate>	
 			<metric name="JVMFreeMemory">
 				<type>integer</type>
 				<uom>NA</uom>

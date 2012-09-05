@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="http load monitor" interval="10">
+		<monitor name="Http LoadTime">
+			<exectemplate>http-loadtime http://localhost/index.php</exectemplate>
+			<metric name="Time connect">
+				<type>float</type>
+				<uom>NA</uom>
+				<line>1</line>
+			</metric>
+			
+			<metric name="Time start transfer">
+				<type>float</type>
+				<uom>NA</uom>
+				<line>2</line>
+			</metric>
+
+			<metric name="Time total">
+				<type>float</type>
+				<uom>NA</uom>
+				<line>3</line>
+			</metric>
+
+		</monitor>
+	</agent>
+</config>
