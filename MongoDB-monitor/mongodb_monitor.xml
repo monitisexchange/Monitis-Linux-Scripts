@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="MongoDB monitor" interval="60">
+		
+		<monitor name="MongoDB monitor">
+			<exectemplate>mongostat -n 1 |tail -1|sed -e 's/\s\+/\n/g'</exectemplate>
+			
+			<metric name="Insert">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>2</line>
+			</metric>
+			
+			<metric name="Query">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>3</line>
+			</metric>
+
+			<metric name="Update">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>4</line>
+			</metric>
+
+			<metric name="Delete">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>5</line>	
+			</metric>
+
+			<metric name="GetMore">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>6</line>
+			</metric>
+
+			<metric name="Command">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>7</line>
+			</metric>
+
+			<metric name="Flushes">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>8</line>
+			</metric>
+
+			<metric name="Mapped">
+				<type>string</type>
+				<uom>NA</uom>
+				<line>9</line>
+			</metric>
+
+			<metric name="VSize">
+				<type>string</type>
+				<uom>NA</uom>
+				<line>10</line>
+			</metric>
+			<metric name="Res">
+				<type>string</type>
+				<uom>NA</uom>
+				<line>11</line>
+			</metric>
+			<metric name="Faults">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>12</line>
+			</metric>
+			
+			<metric name="NetIn">
+				<type>string</type>
+				<uom>NA</uom>
+				<line>17</line>
+			</metric>
+			
+			<metric name="NetOut">
+				<type>string</type>
+				<uom>NA</uom>
+				<line>18</line>
+			</metric>
+			<metric name="Conn">
+				<type>integer</type>
+				<uom>NA</uom>
+				<line>19</line>
+			</metric>
+
+						
+		</monitor>
+	</agent>
+</config>
