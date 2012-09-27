@@ -111,12 +111,12 @@ Please note that retrieve the monitored data can be done from Monitis dashboard 
 #### Testing 
 To check the correctness of monitor workability, some tests was done on working RabbitMQ server (2.8.1) which was under real load.  
 
-<a href="http://i.imgur.com/pdOw2"><img src="http://i.imgur.com/pdOw2.png" title="RabbitMQ monitoring test" /></a>
+<a href="http://i.imgur.com/l5kJB"><img src="http://i.imgur.com/l5kJB.png" title="RabbitMQ monitoring test" /></a>
 
 
 Double-clicking on any line lead to alternate view which shows additional data about RabbitMQ state at that moment.  
 
-<a href="http://i.imgur.com/LazBD"><img src="http://i.imgur.com/LazBD.png" title="RabbitMQ monitoring test" /></a>
+<a href="http://i.imgur.com/e8WoY"><img src="http://i.imgur.com/e8WoY.png" title="RabbitMQ monitoring test" /></a>
 
 It can be noticed that the RabbitMQ engine is alive and have quite good state. 
 
