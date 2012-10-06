@@ -28,6 +28,13 @@ First you have to install RabbitMQ server. Easiest way is to install it from __d
         sudo dpkg -i rabbitmq-server_2.8.6-1_all.deb
 
 The latest version can be downloaded from [original RabbitMQ site](http://www.rabbitmq.com/install-debian.html)  
+Please NOTE that RabbitMQ requires the latest version of Erlang (at least version R12B-3).  
+Thus, during install of RabbitMQ you can get warning message about unresolved dependencies.  
+Try to use the following command to resolve this issue   
+
+        sudo apt-get update
+        sudo apt-get -f install
+
 To provide monitoring of RabbitMQ server you have to enable [RabbitMQ Management HTTP API](http://hg.rabbitmq.com/rabbitmq-management/raw-file/rabbitmq_v2_8_6/priv/www/api/index.html).  
 It allow to get necessary information by using REST technology.  
 The management plugin is included in the RabbitMQ distribution since version 2.8.1. To enable it, use the following command:
