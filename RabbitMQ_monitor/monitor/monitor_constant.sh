@@ -8,9 +8,9 @@ declare -r USER="guest"
 declare -r PSWD="guest"
 
 declare -r NAME="RabbitMQ"
-declare    MONITOR_NAME="$NAME"_"$HOST_IP-$HOST:$PORT" # name of custom monitor
+declare    MONITOR_NAME="$NAME"_"$HOST_IP-$HOST:$PORT" 	# name of custom monitor
 declare -r MONITOR_TAG="rabbitmq"						# tag for custom monitor
-declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor#declare -r MONITOR_TYPE="custom"						# type for custom monitor
+declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 # monitor commands
 declare -r MON_ACTION="action"
 declare -r MON_GET_DATA="getData"

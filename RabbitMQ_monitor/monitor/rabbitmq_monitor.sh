@@ -254,6 +254,86 @@ fi
 recv_rate=$(echo "scale=1;($r_rate/1024)" | bc )
 sent_rate=$(echo "scale=1;($w_rate/1024)" | bc )
 
+# get queue info
+access_rabbitmq "queues"
+ret="$?"
+if [[ ($ret -ne 0) ]] ; then
+	return_value="$UNAC_STATE" - "$ret_msg"
+	echo "$return_value"
+	exit 0
+fi
+
+res="{\"queues\" : "${result}" }"
+#echo "$res"
+
+tickParse "$res"
+
+queue_count=0
+l=1
+while [  $l -gt 0 ] ; do
+	case $queue_count in
+		0) 	l=``queues[0].length()``
+			if [[ ($l -gt 0) ]] ; then 
+				queue_count=$((queue_count+1))
+				if [[ (``queues[0].message_stats.length()`` -gt 0) ]] ; then
+					r_rate=$(echo "scale=1; (``queues[0].message_stats.publish_details.rate`` / 1)" | bc)
+					w_rate=$(echo "scale=1; (``queues[0].message_stats.deliver_get_details.rate`` / 1)" | bc)
+				else
+					r_rate=0 ; w_rate=0
+				fi
+				queue="'``queues[0].name``' (``queues[0].consumers``) pub: $r_rate msg/s; get: $w_rate msg/s"
+			fi ;;
+		1) 	l=``queues[1].length()``
+			if [[ ($l -gt 0) ]] ; then 
+				queue_count=$((queue_count+1))
+				if [[ (``queues[1].message_stats.length()`` -gt 0) ]] ; then
+					r_rate=$(echo "scale=1; (``queues[1].message_stats.publish_details.rate`` / 1)" | bc)
+					w_rate=$(echo "scale=1; (``queues[1].message_stats.deliver_get_details.rate`` / 1)" | bc)
+				else
+					r_rate=0 ; w_rate=0
+				fi
+				queue_="\'``queues[1].name``\' (``queues[1].consumers``) pub: $r_rate msg/s; get: $w_rate msg/s"
+				if [[ ($(expr "$queue" : ".*$queue_") -eq 0) ]] ; then
+					queue="$queue   $queue_"
+				fi
+			fi ;;
+		2) 	l=``queues[2].length()``
+			if [[ ($l -gt 0) ]] ; then 
+				queue_count=$((queue_count+1))
+				if [[ (``queues[2].message_stats.length()`` -gt 0) ]] ; then
+					r_rate=$(echo "scale=1; (``queues[2].message_stats.publish_details.rate`` / 1)" | bc)
+					w_rate=$(echo "scale=1; (``queues[2].message_stats.deliver_get_details.rate`` / 1)" | bc)
+				else
+					r_rate=0 ; w_rate=0
+				fi
+				queue_="\'``queues[2].name``\' (``queues[2].consumers``) pub: $r_rate msg/s; get: $w_rate msg/s"
+				if [[ ($(expr "$queue" : ".*$queue_") -eq 0) ]] ; then
+					queue="$queue   $queue_"
+				fi
+			fi ;;
+		3) 	l=``queues[3].length()``
+			if [[ ($l -gt 0) ]] ; then 
+				queue_count=$((queue_count+1))
+				if [[ (``queues[3].message_stats.length()`` -gt 0) ]] ; then
+					r_rate=$(echo "scale=1; (``queues[3].message_stats.publish_details.rate`` / 1)" | bc)
+					w_rate=$(echo "scale=1; (``queues[3].message_stats.deliver_get_details.rate`` / 1)" | bc)
+				else
+					r_rate=0 ; w_rate=0
+				fi
+				queue_="\'``queues[3].name``\' (``queues[3].consumers``) pub: $r_rate msg/s; get: $w_rate msg/s"
+				if [[ ($(expr "$queue" : ".*$queue_") -eq 0) ]] ; then
+					queue="$queue   $queue_"
+				fi
+			fi ;;
+		*)  l=0 ; break ;;
+	esac
+done		
+
+if [[ ($queue_count -eq 0) ]] ; then		
+	queue="No any queues are created yet"
+fi
+
+
 details="details"
 if [[ ($errors -gt 0) ]]
 then
@@ -266,19 +346,19 @@ then
     done
     details="$details+${problem}"
     status="$FAIL_STATE"
-elif  [[ ($conn -eq 0) ]] ; then
+elif  [[ (( ($conn -eq 0) || ($queue_count -eq 0) )) ]] ; then
     details="$details + RabbitMQ ($pid) $IDLE_STATE"
-    details="$details + WARN - No any client establish connections yet"
     status="$IDLE_STATE"
 else
     details="$details + RabbitMQ ($pid) $NORM_STATE"
     details="$details + $conn connections are established"
-    details="$details + clients: $client"
     status="$NORM_STATE"
 fi
+details="$details + clients: $client"
+details="$details + queues: $queue"
 
 param="status:$status;osd:$osdp;ofd:$ofdp;cpu_usage:$cpu_pr;mem_usage:$mem_pr;recv_mps:$deliver_get_rate;sent_mps:$pub_rate;msg_queue:$msg_in_queue;timeout:$timeout;recv_kbps:$recv_rate;sent_kbps:$sent_rate;uptime:$upt"
 return_value="$param | $details"
-echo $return_value
+echo "$return_value"
 exit 0
 

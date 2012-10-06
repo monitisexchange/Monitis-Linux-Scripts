@@ -20,7 +20,7 @@ do
 	m) HOST=$OPTARG ; echo Set rabbitmq ip to $HOST ;;
 	p) PORT=$OPTARG ; echo Set rabbitmq port to $PORT ;;
 	d) dur=$OPTARG 
-		if [[ ($dur -gt $DURATION) ]] ; then
+		if [[ ($dur -gt 0) ]] ; then
 		    echo Set duration to $dur min
 		    DURATION=$dur
 		fi
@@ -31,7 +31,6 @@ do
 	   ;;
 	esac
 done
-
 
 DURATION=$((60*$DURATION)) #convert to sec
 
