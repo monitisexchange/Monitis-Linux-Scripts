@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<config>
+    <apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+    <agent name="Apache Agent" interval="60">
+         <monitor name="Apache monitor - HTTP Response groups" tag="apache">
+            <exectemplate>/usr/local/monitis/apache-log-parser.py -t "unix" -r "min" -m "response_group"</exectemplate>
+            <metric name="Number of 2XX">
+                <type>integer</type>
+                <uom>Response/min</uom>
+                <regex>\d+,\s*(\d+)</regex>
+            </metric>
+            <metric name="Number of 3XX">
+                <type>integer</type>
+                <uom>Response/min</uom>
+                <regex>\d+,\s*\d+,\s*(\d+)</regex>
+            </metric>
+            <metric name="Number of 4XX">
+                <type>integer</type>
+                <uom>Response/min</uom>
+                <regex>\d+,\s*\d+,\s*\d+,\s*(\d+)</regex>
+            </metric>
+            <metric name="Number of 5XX">
+                <type>integer</type>
+                <uom>Response/min</uom>
+                <regex>\d+,\s*\d+,\s*\d+,\s*\d+,\s*(\d+)</regex>
+            </metric>
+            <metric name="MONITIS_CHECK_TIME">
+                <type>integer</type>
+                <uom>timestamp</uom>
+                <regex>(\d+)</regex>
+            </metric>
+        </monitor>
+    </agent>
+</config>
