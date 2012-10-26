@@ -6,44 +6,51 @@ source monitor_constant.sh || error 2 monitor_constant.sh
 
 DURATION=$((60*$DURATION)) #convert to sec
 
-# obtaining TOKEN
+echo "***$NAME - Monitor start with following parameters***"
+echo "Monitor name = $MONITOR_NAME"
+echo "Monitor tag = $MONITOR_TAG"
+echo "Monitor type = $MONITOR_TYPE"
+echo "Duration for sending info = $DURATION sec"
+
+echo obtaining TOKEN
 get_token
 ret="$?"
 if [[ ($ret -ne 0) ]]
 then
 	error 3 "$MSG"
 else
-	echo RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))`
+	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))`
 	echo "All is OK for now."
 fi
 
-# Adding custom monitor
+echo $NAME - Adding custom monitor
 add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 ret="$?"
 if [[ ($ret -ne 0) ]]
 then
-	error "$ret" "$MSG"
+	error "$ret" "$NAME - $MSG"
 else
-	echo Custom monitor id = "$MONITOR_ID"
+	echo $NAME - Custom monitor id = "$MONITOR_ID"
 	echo "All is OK for now."
 fi
 
 if [[ ($MONITOR_ID -le 0) ]]
 then 
-	echo MonitorId is still zero - try to obtain it from Monitis
+	echo $NAME - MonitorId is still zero - try to obtain it from Monitis
 	
 	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
-		error "$ret" "$MSG"
+		error "$ret" "$NAME - $MSG"
 	else
-		echo Custom monitor id = "$MONITOR_ID"
+		echo $NAME - Custom monitor id = "$MONITOR_ID"
 		echo "All is OK for now."
 	fi
 fi
 
 # Periodically adding new data
+echo "$NAME - Starting LOOP for adding new data"
 file=$ERR_FILE # errors record file 
 file_=$file"_" # temporary file
 rep_count=3	   # the count of repetitions	
@@ -54,8 +61,8 @@ do
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
-		error "$ret" "$MSG"
-		continue
+	    error "$ret" "$NAME - $MSG"
+#	    continue
 	fi
 	if [[ -e "$file" ]]	# err file must exist!!!
 	then
@@ -101,11 +108,13 @@ do
 					error "$ret" "$MSG"
 					continue
 				fi
-				echo $( date +"%D %T" ) - The Custom monitor data were successfully added
+				echo $( date +"%D %T" ) - $NAME - The Custom monitor data were successfully added
+
 				# Now create additional data
 				if [[ -z "${ADDITIONAL_PARAMS}" ]] ; then # ADDITIONAL_PARAMS is not set
 					continue
 				fi
+
 				param=`create_additional_param "${array[@]}"`
 				if [[ ($ret -ne 0) ]]
 				then
@@ -120,9 +129,9 @@ do
 					ret="$?"
 					if [[ ($ret -ne 0) ]]
 					then
-						error "$ret" "$MSG"
+						error "$ret" "$NAME - $MSG"
 					else
-						echo $( date +"%D %T" ) - The Custom monitor additional data were successfully added
+						echo $( date +"%D %T" ) - $NAME - The Custom monitor additional data were successfully added
 					fi
 				fi				
 			else
@@ -132,23 +141,24 @@ do
 				ret="$?"
 				if [[ ($ret -eq 0) ]]
 				then
-					echo ****Succesfully added dummy data
+					echo **** "$NAME" - Succesfully added dummy data
 				else
-					error "$ret" "$MSG"
+					error "$ret" "$NAME - $MSG"
 				fi
 			fi
 		fi
 	else
-		echo ****No any new records yet contain log file \(or not exist\) 
+		echo **** "$NAME" No any new records yet contain log file \(or not exist\) 
 		# Sending DUMMY data to Monitis 
 		add_custom_monitor_data "$FAIL_RESULT"
 		ret="$?"
 		if [[ ($ret -eq 0) ]]
 		then
-			echo ****Added failed data
+			echo **** "$NAME" Added failed data
 		else
-			error "$ret" "$MSG"
+			error "$ret"  "$NAME" - "$MSG"
 		fi
 	fi
+
 done
 

@@ -4,7 +4,8 @@ declare -r LOG_FILE=~/temporary/tmp.log					# Monitored textual log file path (R
 declare -r ERR_FILE=~/temporary/errors.txt				# temporary file
 
 # Declaration of monitor constants
-declare -r MONITOR_NAME="Log_monitor_for_"$(basename "$LOG_FILE")	# name of custom monitor
+declare -r NAME="Log_monitor"
+declare -r MONITOR_NAME="$NAME"_for_"$(basename "$LOG_FILE")	# name of custom monitor
 declare -r MONITOR_TAG="logging"						# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 

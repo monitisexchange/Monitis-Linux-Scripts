@@ -144,19 +144,19 @@ function add_custom_monitor {
 	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
 	then # Likely, we received correct answer
 		#parsing
-		json=$response
+		json="$response"
 		data=""
-		status=`jsonval $json $RES_STATUS `	
-		if [[ (-n $status) ]]
+		status=`jsonval "$json" "$RES_STATUS" `	
+		if [[ (-n "$status") ]]
 		then
 			if [[ (($status = "ok") || ($status = "OK")) ]]
 			then
 				# status is ok - checking data...
-				data=`jsonval $json $RES_DATA `
+				data=`jsonval "$json" "$RES_DATA" `
 			else
-				if [[ (-n `echo $status | grep -asio -m1 "exists"`) ]]
+				if [[ (-n `echo "$status" | grep -asio -m1 "exists"`) ]]
 				then
-					MSG="monitor with specified parameters already exists"
+					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
 				else
 					MSG='add_custom_monitor: Response - '$response
@@ -172,13 +172,13 @@ function add_custom_monitor {
 		return 3
 	fi
 	
-	if [[ ( -z $data) ]]
+	if [[ ( -z "$data") ]]
 	then
 		MSG='add_custom_monitor - NO RESPONSE DATA??'
 		return 3
 	fi	
 		
-	MONITOR_ID=$data
+	MONITOR_ID="$data"
 	return 0
 }
 

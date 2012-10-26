@@ -37,7 +37,7 @@ fi
 
 if [[ ($MONITOR_ID -eq 0) ]]
 then	# retrieve monitor ID
-	echo "Retrieving monitor ID..."
+	echo "Retrieving monitor ID for $MONITOR_NAME $MONITOR_TAG $MONITOR_TYPE..."
 	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
 	ret="$?"
 	if [[ ($ret -ne 0) ]]

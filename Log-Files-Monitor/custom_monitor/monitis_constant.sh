@@ -2,8 +2,8 @@
 
 # Declaration of constants used by Monitis API
 
-declare -r SERVER="http://www.monitis.com/"
-#declare -r SERVER="http://www.monitor.us/"			# Monitis server
+declare -r SERVER="http://www.monitis.com/"			# Monitis server
+#declare -r SERVER="http://www.monitor.us/"			# Monitor.us server
 declare -r API_PATH="customMonitorApi"				# Custom API path
 
 declare -r APIKEY="T5BAQQ46JPTGR6EBLFE28OSSQ"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)

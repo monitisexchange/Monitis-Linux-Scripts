@@ -38,6 +38,22 @@ function get_timestamp() {
 	echo $(( `date -u +%s` * 1000 ))
 }
 
+#  Format a timestamp into the form 'x day hh:mm:ss'
+#  @param TIMESTAMP {NUMBER} the timestamp in sec
+function formatTimestamp(){
+	local time="$1"
+	local sec=$(( $time%60 ))
+	local min=$(( ($time/60)%60 ))
+	local hr=$(( ($time/3600)%24 ))
+	local da=$(( $time/86400 ))
+	local str=$(echo `printf "%02u.%02u.%02u" $hr $min $sec`)
+	if [[ ($da -gt 0) ]]
+	then
+		str="$da""-""$str" 
+	fi
+	echo $str
+}
+
 # sample: echo "'$(trim "  one   two    three  ")'"
 function trim {
     echo $*
