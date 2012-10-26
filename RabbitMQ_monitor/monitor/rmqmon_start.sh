@@ -147,6 +147,7 @@ do
 				#echo
 				#echo $NAME - DEBUG: Composed additional params is \"$param\" >&2
 				#echo
+
 				# Sending to Monitis
 				add_custom_monitor_additional_data $param $timestamp
 				ret="$?"
