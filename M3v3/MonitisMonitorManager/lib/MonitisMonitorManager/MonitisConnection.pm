@@ -69,7 +69,7 @@ sub add_monitor {
 		resultParams => $result_params, @optional_params);
 	if ($response->{status} eq 'ok') {
 		$self->{m3logger}->log_message ("info", "Monitor '$monitor_name' added successfully!");
-	} elsif ($response->{status} eq "monitorNameExists") {
+	} elsif ($response->{status} eq "monitorNameExists" or $response->{status} = "Monitor with that name already exists") {
 		$self->{m3logger}->log_message ("info","'$monitor_name': Monitor already exists");
 	} else {
 		$self->{m3logger}->log_message ("err","Failed to add '$monitor_name': '$response->{status}'");
