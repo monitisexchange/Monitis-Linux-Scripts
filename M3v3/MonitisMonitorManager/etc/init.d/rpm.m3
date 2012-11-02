@@ -55,13 +55,22 @@ start()
 # stop m3 instances
 stop() {
 	echo -n "Stopping m3:"
-	for i in `seq 1 10`; do
+	local signal=SIGINT
+	local -i i
+	for i in `seq 1 15`; do
 		local m3_pids=`pidofm3`
 		if [ x"$m3_pids" != x ]; then
-			kill -SIGINT $m3_pids
+			kill -$signal $m3_pids
 		else
 			success; echo
 			return 0
+		fi
+		# escalate signal from SIGINT to SIGTERM to SIGKILL
+		if [ $i -eq 5 ]; then
+			signal=SIGTERM
+		fi
+		if [ $i -eq 10 ]; then
+			signal=SIGKILL
 		fi
 		sleep 1
 	done

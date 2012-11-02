@@ -189,7 +189,7 @@ sub queue {
 	my $results = $args->{results};
 	my $additional_results = $args->{additional_results};
 
-	$self->{m3logger}->log_message ("info", "Queuing item: '$agent_name' => '$monitor_name' => '$results','$additional_results' (TS: '$checktime') (TAG: '$monitor_tag')");
+	$self->{m3logger}->log_message ("debug", "Queuing item: '$agent_name' => '$monitor_name' => '$results','$additional_results' (TS: '$checktime') (TAG: '$monitor_tag')");
 
 	# queue the item
 	$self->{queue}->enqueue(
@@ -245,7 +245,7 @@ sub update_data_for_monitor {
 			monitorId => $monitor_id, checktime => $checktime,
 			results => $results);
 		if ($response->{status} eq 'ok') {
-			$self->{m3logger}->log_message ("info", "Data update for '$monitor_name' successful!");
+			$self->{m3logger}->log_message ("debug", "Data update for '$monitor_name' successful!");
 			$retval = 1;
 		} else {
 			$self->{m3logger}->log_message ("info", "Data update for '$monitor_name' failed: '$response->{status}'");
@@ -267,7 +267,7 @@ sub update_data_for_monitor {
 				monitorId => $monitor_id, checktime => $checktime,
 				results => $additional_results);
 			if ($response->{status} eq 'ok') {
-				$self->{m3logger}->log_message ("info", "Adding results update for '$monitor_name' successful!");
+				$self->{m3logger}->log_message ("debug", "Adding results update for '$monitor_name' successful!");
 				$retval = 1;
 			} else {
 				$self->{m3logger}->log_message ("err", "Additional results update for '$monitor_name' failed: '$response->{status}'");
