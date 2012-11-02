@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="Disk Agent" interval="300">
+		<monitor name="Disk Usage">
+			<linuxsysstats>diskusage->{'/dev/sda1'}{total}</linuxsysstats>
+			<linuxsysstats>diskusage->{'/dev/sda1'}{usage}</linuxsysstats>
+			<linuxsysstats>diskusage->{'/dev/sda1'}{usageper}</linuxsysstats>
+			<metric name="Total">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>1</line>
+			</metric>
+			<metric name="Used">
+				<type>integer</type>
+				<uom>KB</uom>
+				<line>2</line>
+			</metric>
+			<metric name="Percent Used">
+				<type>integer</type>
+				<uom>%</uom>
+				<line>3</line>
+			</metric>
+		</monitor>
+	</agent>
+</config>
