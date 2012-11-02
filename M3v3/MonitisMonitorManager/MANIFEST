@@ -35,6 +35,7 @@ eg/system/config_nagios.xml
 eg/system/etc_file_monitor.xml
 eg/system/snmp_test.xml
 eg/system/cpu_memory_stats.xml
+eg/system/disk_usage.xml
 eg/RRD/munin_xml_generator
 eg/RRD/nfsen_xml_generator
 eg/network/linux_bandwidth_monitor.xml

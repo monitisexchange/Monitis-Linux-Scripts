@@ -1,6 +1,6 @@
 Summary: MonitisMonitorManager Perl module
 Name: perl-MonitisMonitorManager
-Version: 3.10
+Version: 3.11
 Release: 1
 License: GPL or Artistic
 Group: Development/Libraries
@@ -78,6 +78,29 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/sysconfig/m3
 
 %changelog
+* Sat Nov 3 2012 Dan Fruehauf <malkodan@gmail.com> - 3.11-1
+- Added disk usage agent
+- init.d service for RHEL/CentOS is a bit better at stopping the service
+- Reduced some log messages to debug, so the main log doesn't get spammed
+- Handling case if monitor exists on sandbox
+- Rixed cleanup of M3Logger
+- Added port_monitor.xml, used to monitor open ports easily
+- Removed redundant code - now working with syslog
+- Fixed parameter extraction of boolean values
+- Another tiny fix for boolean value parsing in Regex.pm
+- Added rsyslog.d m3.conf file
+
+* Wed Aug 15 2012 Dan Fruehauf <malkodan@gmail.com> - 3.10-1
+- Fixed issues with binary value parsing in Regex.pm
+- Added syslog logging
+- Improved bandwidth monitor
+- Fixed bug where empty result set was sent to server
+- Added nginx_monitor.xml - monitor for nginx StubStatus module
+- Code cleanup of callbacks - cleaner now
+- Improved parsing of boolean values
+- Rearranged eg directory
+- Added linux_bandwidth_monitor.xml
+
 * Fri May 18 2012 Dan Fruehauf <malkodan@gmail.com> - 3.6-1
 - Added raw command for listing and deleting monitors
 
