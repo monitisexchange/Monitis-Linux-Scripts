@@ -16,7 +16,7 @@ The Repository contains the following files
           mmon_start.sh          Main executable script
 
 #### Dependencies
-The current version of Memcached monitor provide TCP access to the engine so you have to have installed the NetCat library (usually named 'nc') on Linux  machine where monitor will be run.  
+The current version of Memcached monitor provide TCP access to the engine so you have to have installed the __cURL__ tool on Linux  machine where monitor will be run.  
 Besides, the monitor uses Linux calculator (named 'bc') to provide floating points calculations. Thus, you have to have installed Linux calculator too.  
 
 #### Monitored parameters
