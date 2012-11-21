@@ -5,7 +5,8 @@ declare    HOST_IP="174.37.16.80"						# host mashine real IP-address
 declare    MEMCACHED_IP=127.0.0.1						# host IP where located remote MySQL master
 declare    MEMCACHED_PORT=11211							# remote MySQL master listen port
 
-declare    MONITOR_NAME="Memcached_$HOST_IP-$MEMCACHED_IP:$MEMCACHED_PORT" # name of custom monitor
+declare -r NAME="Memcached"
+declare    MONITOR_NAME="$NAME"_"$HOST_IP:$MEMCACHED_PORT" # name of custom monitor
 declare -r MONITOR_TAG="memcached"						# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 #declare -r MONITOR_TYPE="custom"						# type for custom monitor

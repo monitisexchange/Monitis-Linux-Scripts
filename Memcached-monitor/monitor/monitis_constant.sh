@@ -2,7 +2,7 @@
 
 # Declaration of constants used by Monitis API
 
-declare -r SERVER="http://www.monitis.com/"
+declare -r SERVER="http://www.monitis.com/"			# Monitis server
 #declare -r SERVER="http://www.monitor.us/"			# Monitis server
 declare -r API_PATH="customMonitorApi"				# Custom API path
 

@@ -16,20 +16,20 @@ declare    return_value
 #
 #echo -e 'stats\r' | nc localhost 11211
 function access_memcached {
-	local HOST=$1
-	local PORT=$2
-	local CMD=$3
-	local FILE=$4
-	if [[ ("x$FILE" != "x") ]] #file specified
+	local h=$1
+	local p=$2
+	local c=$3
+	local f=$4
+	if [[ ("x$f" != "x") ]] #file specified
 	then	
-		echo -e "$CMD" | nc -q 1 $HOST $PORT | tee $FILE > /dev/null
+		echo -e "$c" | nc -q 1 $h $p | tee $f > /dev/null
 		ret="$?"
-		if [[ ($ret -gt 0) || !(-r $FILE) || ($(stat -c%s $FILE) -le 0) ]]
+		if [[ ($ret -gt 0) || !(-r $f) || ($(stat -c%s $f) -le 0) ]]
 		then
 			return 1
 		fi
 	else
-		echo -e "$CMD" | nc -q 1 $HOST $PORT
+		echo -e "$c" | nc -q 1 $h $p
 		ret="$?"
 	fi
 	return $ret
