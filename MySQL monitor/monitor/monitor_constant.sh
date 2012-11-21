@@ -5,9 +5,15 @@ declare -r HOST="127.0.0.1"			# host where located MySQL server
 declare -r USER="root"				# MySQL server user name
 declare -r PASSWORD="r00t"			# MySQL server user password
 
-declare -r MONITOR_NAME="MySQL_$HOST" 		# name of custom monitor
-declare -r MONITOR_TAG="MySQL"			# tag for custom monitor
+declare -r NAME="MySQL"
+declare -r MONITOR_NAME="$NAME"_"$HOST"		# name of custom monitor
+declare -r MONITOR_TAG="MySQL"				# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"		# type for custom monitor
+
+# monitor commands
+declare -r MON_ACTION="action"
+declare -r MON_GET_DATA="getData"
+declare -r MON_GET_ADATA="getAData"
 
 # format of result params - name1:displayName1:uom1:Integer
 declare -r P0="status:Status::3;receive:Received_kb_per_second::4;send:Sent_kb_per_second::4;insert:Inserts_per_second::4;select:Selects_per_second::4;update:Updates_per_second::4;delete:Deletes_per_second::4"

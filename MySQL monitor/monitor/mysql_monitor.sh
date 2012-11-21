@@ -39,10 +39,10 @@ function formatTimestamp(){
 	local min=$(( ($time/60)%60 ))
 	local hr=$(( ($time/3600)%24 ))
 	local da=$(( $time/86400 ))
-	local str=$(echo `printf "%u.%02u.%02u" $hr $min $sec`)
+	local str=$(echo `printf "%02u.%02u.%02u" $hr $min $sec`)
 	if [[ ($da -gt 0) ]]
 	then
-		str="$da day $str" 
+		str="$da""-""$str" 
 	fi
 	echo $str
 }
@@ -61,9 +61,9 @@ function extract_value() {
     DELIMITER=$3
     if [ $DELIMITER ]
     then
-	    grep -w $VAR $FILENAME | awk -F $DELIMITER '{print $2 $3}'    
+	    grep -w $VAR $FILENAME | tr '\r' ' ' | awk -F $DELIMITER '{print $2 $3}'    
     else
-	    grep -w $VAR $FILENAME | awk '{print $2 $3}'
+	    grep -w $VAR $FILENAME | tr '\r' ' ' | awk '{print $2 $3}'
     fi
 }
 
@@ -118,24 +118,22 @@ function get_measure() {
 	if [[ ($prev_time -gt 0) ]] ; then
 		dur=$(( $time_stamp - $prev_time ))
 	fi
-	
-	# load factor calculation [positions/sec]
-	local pBytes_received=0
-	local pBytes_sent=0
-	local pCom_insert=0
-	local pCom_select=0
-	local pCom_update=0
-	local pCom_delete=0
-	local pCom_show_status=0
-	local pCom_show_variables=0
-	local pConnections=0
-	local pQueries=0
-	local pSlow_queries=0
-	local pThreads_connected=0
-	
-	
-	if [[ ($prev_time -gt 0) && ($(stat -c%s pstatus) -gt 0) ]]
-	then
+		
+	if [[ ($prev_time -eq 0) || !(-r pstatus) || ($(stat -c%s pstatus) -le 0) ]] # No yet previous results
+    then
+	 	local pBytes_received=$Bytes_received
+		local pBytes_sent=$Bytes_sent
+		local pCom_insert=$Com_insert
+		local pCom_select=$Com_select
+		local pCom_update=$Com_update
+		local pCom_delete=$Com_delete
+		local pCom_show_status=$Com_show_status
+		local pCom_show_variables=$Com_show_variables
+		local pConnections=$Connections
+		local pQueries=$Queries
+		local pSlow_queries=$Slow_queries
+		local pThreads_connected=$Threads_connected
+	else
 		local pBytes_received=$(extract_value pstatus Bytes_received)
 		local pBytes_sent=$(extract_value pstatus Bytes_sent)
 		local pCom_insert=$(extract_value pstatus Com_insert)
@@ -147,8 +145,9 @@ function get_measure() {
 		local pConnections=$(extract_value pstatus Connections)
 		local pQueries=$(extract_value pstatus Queries)
 		local pSlow_queries=$(extract_value pstatus Slow_queries)
-		local pThreads_connected=$(extract_value pstatus Threads_connected)	fi
-	fi
+		local pThreads_connected=$(extract_value pstatus Threads_connected)	
+    fi
+	
 	
 	# Copy the current result as previous one
 	cp -f status pstatus
@@ -169,13 +168,14 @@ function get_measure() {
 	local Slow_queries_dif=$(( $Slow_queries - $pSlow_queries ))
 	local Connections_usage=$(echo "scale=1; 100 * $Threads_connected/$max_connections" | bc )
 	local up=$(formatTimestamp $Uptime )
-	#echo "*********** Analizing ****************"
+	
+	#echo "*********** Analyzing ****************"
 	local status="OK"
 	
 	errors=0
 	if [[ $(($Bytes_received_dif + $Bytes_sent_dif)) -le 0 ]]
 	then
-	    MSG[$errors]="ERROR - MySQL is in IDLE state"
+	    MSG[$errors]="WARNING - MySQL is in IDLE state"
 	    errors=$(($errors+1))
 	    status="IDLE"
 	fi

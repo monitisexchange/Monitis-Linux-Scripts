@@ -18,5 +18,5 @@ cd $tmp
 ./stop.sh
 
 echo ---------starting test loop--------------
-./monitor_start.sh 1> /dev/null &
+./mymon_start.sh 1> /dev/null &
 
