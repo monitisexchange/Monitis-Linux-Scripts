@@ -141,40 +141,47 @@ function add_custom_monitor {
 	
 	response="$(curl -s $permdata $postdata	 $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
-	then # Likely, we received correct answer
-		#parsing
-		json="$response"
-		data=""
-		status=`jsonval "$json" "$RES_STATUS" `	
-		if [[ (-n "$status") ]]
-		then
-			if [[ (($status = "ok") || ($status = "OK")) ]]
+	res_length=${#response}
+	if [[ ($res_length -gt 0) ]]
+	then
+		if [[ ($res_length -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
+		then # Likely, we received correct answer
+			#parsing
+			json="$response"
+			data=""
+			status=`jsonval "$json" "$RES_STATUS" `	
+			if [[ (-n "$status") ]]
 			then
-				# status is ok - checking data...
-				data=`jsonval "$json" "$RES_DATA" `
-			else
-				if [[ (-n `echo "$status" | grep -asio -m1 "exists"`) ]]
+				if [[ (($status = "ok") || ($status = "OK")) ]]
 				then
-					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
-					return 1
+					# status is ok - checking data...
+					data=`jsonval "$json" "$RES_DATA" `
 				else
-					MSG='add_custom_monitor: Response - '$response
-					return 3
+					if [[ (-n `echo "$status" | grep -asio -m1 "exists"`) ]]
+					then
+						MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
+						return 1
+					else
+						MSG='add_custom_monitor: Response - '$response
+						return 3
+					fi
 				fi
-			fi
+			else
+				MSG='add_custom_monitor - NO STATUS IN RESPONSE ??'
+				return 3
+			fi	
 		else
-			MSG='add_custom_monitor - NO RESPONSE STATUS??'
+			MSG="add_custom_monitor - RESPONSE IS TO LONG ($res_length)"
 			return 3
-		fi	
+		fi
 	else
-		MSG="Unknown problem while adding monitor..."
+		MSG="add_custom_monitor - NO RESPONSE FROM MONITIS"
 		return 3
 	fi
 	
 	if [[ ( -z "$data") ]]
 	then
-		MSG='add_custom_monitor - NO RESPONSE DATA??'
+		MSG='add_custom_monitor - NO DATA IN RESPONSE ??'
 		return 3
 	fi	
 		

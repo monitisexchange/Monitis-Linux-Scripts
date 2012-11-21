@@ -32,7 +32,7 @@ echo check memcached accessible
 access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "get 0"
 if [[ ("$?" -gt 0) ]]
 then
-	error 4 "The specified memcached \( $MEMCACHED_IP:$MEMCACHED_PORT \) is not accessible!!!"
+	error 1 "The specified memcached \( $MEMCACHED_IP:$MEMCACHED_PORT \) is not accessible!!!"
 fi
 
 DURATION=$((60*$DURATION)) #convert to sec
@@ -50,6 +50,7 @@ echo "Setting file = $FILE_SETTING"
 echo "Status file = $FILE_STATUS"
 echo "Previous status file = $FILE_STATUS_PREV"
 echo "Duration for sending info = $DURATION sec"
+echo "Sending into $SERVER"
 
 echo obtaining TOKEN
 get_token

@@ -25,8 +25,9 @@ declare -r RESULT_PARAMS="$P1;$P2;$P3"
 declare -r ADDITIONAL_PARAMS="details:Details::3"	
 
 declare -r NORM_STATE="OK"
+declare -r IDLE_STATE="IDLE"
 declare -r FAIL_STATE="NOK"	
-declare -r UNAC_STATE="status:FAIL | details + Cannot access to the memcached engine"
+declare -r UNAC_STATE="status:DOWN | details + Cannot access to the memcached engine"
 
 declare -r CMD_SETTING="stats settings"
 declare    FILE_SETTING="setting"

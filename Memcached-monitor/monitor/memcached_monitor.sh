@@ -286,7 +286,12 @@ function get_measure() {
 	    details="$details + Memcached receive  $lres requests during $DURATION sec"
 	    details="$details + Memcached use $curr_connections connections from available $maxconns"
 	    details="$details + Memcached use $bytes bytes from available $limit_maxbytes"
-	    status="$NORM_STATE"
+	    if [[ ($lres -eq 0) ]]
+	    then
+	    	status="$IDLE_STATE"
+	    else
+	    	status="$NORM_STATE"
+		fi
 	fi
 
 	param="status:$status;conn:$conn;get_miss:$get_miss;delete_miss:$delete_miss;incr_miss:$incr_miss;decr_miss:$decr_miss;mem_usage:$mem_usage;evictions:$evictions;reqs:$reqs;in_kbps:$inbound;out_kbps:$outbound;uptime:$upt"

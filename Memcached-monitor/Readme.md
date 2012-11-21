@@ -14,6 +14,7 @@ The Repository contains the following files
           memcached_monitor.sh   Memcached custom monitor implementation
           monitor_constant.sh    Memcached monitor constants
           mmon_start.sh          Main executable script
+          monitor_controller.sh  Additional controller of monitor
 
 #### Dependencies
 The current version of Memcached monitor provide TCP access to the engine so you have to have installed the __cURL__ tool on Linux  machine where monitor will be run.  
@@ -73,7 +74,22 @@ To use existing scripts you need to do some changes that will correspond your ac
           (not recommended because you will be needed to correct correspondingly the 'get_measure' function body)
         - you may do also definition of DURATION between measurements and sending results (currently it is declared as 60 sec)
         
-That's all. Now you can run __monitor_start.sh__ and monitoring process will be started.
+That's all. Now you can run __monitor_start.sh__ and monitoring process will be started.  
+
+Please note that you can run __monitor_start.sh__ script with few parameters which allow  
+to tune monitor without doing big changes in the __monitor_constant.sh__ script.  
+
+        mmon_start.sh -h <host_addres> -m <memcached access IP> -p <memcached access port> -d <duration in min>
+
+#### Usage monitor as a daemon process
+Quite often it is necessary to run the monitor as a daemon process to avoid its stopping when your session is closed.  
+
+To do so the __monitor_controller.sh__ script is added into the scripts bunch.  
+Use the following pattern to use it  
+
+        monitor_controller.sh [command]
+
+where allowed commands: __start__ (default); __stop__; __restart__.
 
 #### You can also getting monitoring data from monitis 
 To do so you should use __mmon_getdata.sh__ script by following pattern  
