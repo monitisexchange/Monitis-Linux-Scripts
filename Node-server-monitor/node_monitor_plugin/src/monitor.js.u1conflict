@@ -32,7 +32,7 @@ function createMon() {
 		'5xx' : 0,
 		'timeS' : new Date().getTime(),
 		'timeE' : new Date().getTime(),
-		// lexible part
+		// flexible part
 		'info' : {
 			'add' : function(name, data, count) {
 				if (!this[name]) {
@@ -69,7 +69,7 @@ function createMon() {
  * @param server
  *            {Object}
  * @param options
- *            {Object} the optional options for given server monitor 
+ *            {Object} the options for given server monitor 
  *            {'active': ('yes' | 'no'), 'collect_all': ('yes' | 'no')}
  * @returns {Object} mon_server structure if given server added to the monitor
  *          chain null if server is already in monitor
@@ -78,6 +78,7 @@ function addToMonitors(server, options){
 	var active = true;
 	var collect_all = false;
 	if ('object' == typeof options) {
+		logger.info("Registering Monitor: "+JSON.stringify(options));
 		active = (options['active'] && options['active'] == 'yes')?true:false;
 		collect_all = (options['collect_all'] && options['collect_all'] == 'yes')?true:false;
 	}
@@ -103,7 +104,8 @@ function addToMonitors(server, options){
  */
 function removeFromMonitor(server){
 	if (server && monitors.length > 0) {
-		for (var i = 0; i <monitors.length; i++) {
+		for (var i = 0; i < monitors.length; i++) {
+			var mon_server = monitors[i];
 			if (mon_server['server'] == server){
 				logger.info("Server "+server.address()['address']+":"+server.address()['port']+" stopped and removed from monitors chain");
 				monitors.splice(i, 1);//remove monitored element
