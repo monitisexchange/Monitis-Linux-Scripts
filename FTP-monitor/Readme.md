@@ -25,8 +25,7 @@ The Repository contains the following files
     Processing part  
 
         fmon_start.sh         Main executable script
-        start.sh              runs both monitor and executor parts (deamon processes - for production use)
-        stop.sh               stops conveyor all parts
+        monitor_controller.sh start/stop/restart FTP monitor as a deamon processes (for production use)
 
     Additional part  
 
@@ -65,15 +64,15 @@ next, make customization of scripts like it described below.
 #### Customizing and Usage 
 To use existing scripts you need to do some changes that will correspond your account and data
 
-        in monitis_constant.sh 
-        - replace ApiKey and SecretKey by your keys values (can be obtained from your Monitis account)
+  - in monitis_constant.sh  
+      - replace ApiKey and SecretKey by your keys values (can be obtained from your Monitis account)
         
-        in monitor_constant.sh 
-        - replace HOST, USER, PASSWD and FOLDER according your FTP engine parameters and your credentials
-        - replace MONITOR_NAME, MONITOR_TAG and MONITOR_TYPE by your desired names (optional)
-        - replace RESULT_PARAMS and ADDITIONAL_PARAMS strings by data formats definition of your monitor  
-          (not recommended because you will be needed to correct correspondingly some functions body in few scripts)
-        - you may do also definition of DURATION between measurements and sending results (currently it is declared as 5 min)
+  - in monitor_constant.sh  
+      - replace HOST, USER, PASSWD and FOLDER according your FTP engine parameters and your credentials
+      - replace MONITOR_NAME, MONITOR_TAG and MONITOR_TYPE by your desired names (optional)
+      - replace RESULT_PARAMS and ADDITIONAL_PARAMS strings by data formats definition of your monitor  
+       (not recommended because you will be needed to correct correspondingly some functions body in few scripts)
+      - you may do also definition of DURATION between measurements and sending results (currently it is declared as 5 min)
         
 That's all. Now you can run __fmon_start.sh__ and monitoring process will be started.  
 
