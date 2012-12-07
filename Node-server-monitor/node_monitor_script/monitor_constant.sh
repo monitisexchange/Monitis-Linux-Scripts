@@ -5,10 +5,10 @@ declare -r MON_SERVER="174.37.16.80"					# monitored server host
 declare -r NODE_MONITOR="http://127.0.0.1:10010/"		# node server monitor access url
 declare    ACCESS_CODE="monitis"						# access code for node monitor
 
-declare    MONITOR_NAME="NServer_Monitor_$MON_SERVER"	# name of custom monitor
-declare -r MONITOR_TAG="Node_Server"					# tag for custom monitor
-#declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
-declare -r MONITOR_TYPE="custom"						# type for custom monitor
+declare -r NAME="Node.js"
+declare    MONITOR_NAME="$NAME"_"$MON_SERVER"			# name of custom monitor
+declare -r MONITOR_TAG="Node_Server"				# tag for custom monitor
+declare -r MONITOR_TYPE="BASH_Monitor"				# type for custom monitor
 # monitor commands
 declare -r MON_PATHNAME="node_monitor"
 declare -r MON_ACTION="action"
@@ -31,6 +31,6 @@ declare -r RESULT_PARAMS="$P1;$P2;$P3"
 declare -r RESP_DOWN="listen:NONE"
 
 # format of additional params - name:displayName:uom:String
-declare -r ADDITIONAL_PARAMS="details:Details::3"	
-	
-declare    DURATION=5	 							# information sending duration [min] (REPLACE by any desired value)
+declare -r ADDITIONAL_PARAMS="details:Details::3"
+
+declare    DURATION=5 						# information sending duration [min] (REPLACE by any desired value)
