@@ -65,7 +65,7 @@ next, make customization of scripts like it described below.
 To use existing scripts you need to do some changes that will correspond your account and data
 
   - in monitis_constant.sh  
-      - replace ApiKey and SecretKey by your keys values (can be obtained from your Monitis account)
+      - replace ApiKey and SecretKey by your keys values (can be obtained from your Monitis account)  
         
   - in monitor_constant.sh  
       - replace HOST, USER, PASSWD and FOLDER according your FTP engine parameters and your credentials
