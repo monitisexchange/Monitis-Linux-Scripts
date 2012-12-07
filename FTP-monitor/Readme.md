@@ -110,7 +110,7 @@ After finishing you will see few files named like "_FTP_10.37.125.50:11211_2012-
 
 #### About FTP check script
 
-The __ftp_check.sh__ script runs in standalone mode and puts a measurement data into _sysout_ strim.  
+The __ftp_check.sh__ script runs in standalone mode and puts a measurement data into _sysout_ stream.  
 So, the calling application should grab the data just from _sysout_.  
 This script should be called with few parameters like depicted below  
 
