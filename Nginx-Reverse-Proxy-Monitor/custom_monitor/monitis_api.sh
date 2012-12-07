@@ -41,7 +41,7 @@ function get_token() {
 		fi
 	else
 		MSG="Needless to get token this time"
-		return 1
+		return 0
 	fi
 	
 	if [[ "$(isAlphaNum "$val")" == "$TRUE" ]]	# token should contain an alphanumeric symbols only
