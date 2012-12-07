@@ -125,9 +125,13 @@ This script should be called with few parameters like depicted below
 Note that {bracketed expression}  means - must be chosen one of enumerated values, [bracketed expression] means - can be chosen one of enumerated values (aka optional).  
 In case when any parameter contains witespace symbols this parameter should be enclosed in the quotation marks (").  
 The "CUSTOM" mode forces to work the script in custom monitor mode which prints out the output in format that require just Monitis API  
+
         paramName1:paramValues1[;paramName2:paramValues2...] 
+
 The PLUGIN (and DEBUG) mode forces to work the script in mode which prints out the output in format that require Monitis plugable agent  
+
         paramName1=paramValues1[ paramName2=paramValues2...] 
+
 NNote that the _paramValues_ data should be enclosed in the [brackets] like it is done for JSON array.  
 
 As an example you can see the command bellow  
