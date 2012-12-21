@@ -1,0 +1,163 @@
+#!/bin/bash
+:
+#set -x
+SED=$(which sed)
+AWK=$(which awk)
+MONGOSTAT=$(which mongostat)
+TAIL=$(which tail)
+GREP=$(which grep)
+#
+declare OUTPUT
+USE_AUTH=false
+PARAM_ERROR_STRING="Missing parameter name"
+RETURN_CODE=0
+#
+##################################################################################################
+# Checking for required tools
+##################################################################################################
+if [[ -z $SED ]]
+then
+echo "sed not found"
+exit 1
+fi
+#
+if [[ -z $AWK ]]
+then
+echo "awk not found"
+exit 1
+fi
+#
+if [[ -z $MONGOSTAT ]]
+then
+echo "mongostat not found"
+exit 1
+fi
+#
+if [[ -z $TAIL ]]
+then
+echo "tail not found"
+exit 1
+fi
+#
+if [[ -z $GREP ]]
+then
+echo "grep not found"
+exit 1
+fi
+#
+###################################################################################################
+# Checking for input parameters
+###################################################################################################
+if [[ $# -le 3 ]]
+then
+	echo "Usage: $0 [user <username> pwd <password>]  host <hostname> port <port> metrics <metric1,metric2,metricN>"
+	RETURN_CODE=1
+	exit $RETURN_CODE
+fi
+
+for ((i=1;i<=${#@}+2;i++))
+do
+    declare params_$1="$2"
+#
+if [[ -n $params_user ]]
+then
+	USE_AUTH=true
+	if [ -z "$params_pwd" ]; then
+                echo "$PARAM_ERROR_STRING 'pwd'"
+                RETURN_CODE=1
+		exit $RETURN_CODE 
+        fi
+
+        if [ -z "$params_host" ]; then
+                echo "$PARAM_ERROR_STRING 'host'"
+                RETURN_CODE=1
+		exit $RETURN_CODE
+        fi
+
+        if [ -z "$params_port" ]; then
+                echo "$PARAM_ERROR_STRING 'port'"
+                RETURN_CODE=1
+		exit $RETURN_CODE
+        fi
+	if [ -z "$params_metrics" ]; then
+		echo "$PARAM_ERROR_STRING 'metrics'"
+		RETURN_CODE=1
+		exit $RETURN_CODE
+	fi
+
+fi
+#
+    shift 2
+done
+#
+if [[ $USE_AUTH == true ]]
+then
+	MONGOSTAT_OPTS=" --host $params_host:$params_port -u $params_user -p $params_pwd"
+else
+	MONGOSTAT_OPTS=" --host $params_host:$params_port"
+fi
+#
+metrics=$($MONGOSTAT $MONGOSTAT_OPTS -n 1|$TAIL -1)
+error=$(echo $metrics|$GREP 'failed')
+if [[ -n $error ]]
+then
+	exit 1
+fi
+splited_metrics=$(echo $params_metrics|tr ',' ' ')
+for metric in $splited_metrics
+do
+	case "$metric" in
+	"insert")
+	OUTPUT=" $OUTPUT insert="$(echo $metrics|$AWK '{print $1}')
+	;;
+	"query")
+	OUTPUT=" $OUTPUT query="$(echo $metrics|$AWK '{print $2}')
+	;;
+	"update")
+	OUTPUT=" $OUTPUT update="$(echo $metrics|$AWK '{print $3}')
+	;;
+	"delete")
+	OUTPUT=" $OUTPUT delete="$(echo $metrics|$AWK '{print $4}')
+	;;
+	"getmore")
+	OUTPUT=" $OUTPUT getmore="$(echo $metrics|$AWK '{print $5}')
+	;;
+	"command")
+	OUTPUT=" $OUTPUT command="$(echo $metrics|$AWK '{print $6}')	
+	;;
+	"flushes")
+	OUTPUT=" $OUTPUT flushes="$(echo $metrics|$AWK '{print $7}')
+	;;
+	"mapped")
+	OUTPUT=" $OUTPUT mapped="$(echo $metrics|$AWK '{print $8}')
+	;;
+	"vsize")
+	OUTPUT=" $OUTPUT vsize="$(echo $metrics|$AWK '{print $9}')
+	;;
+	"res")
+	OUTPUT=" $OUTPUT res="$(echo $metrics|$AWK '{print $10}')
+	;;
+	"faults")
+	OUTPUT=" $OUTPUT faults="$(echo $metrics|$AWK '{print $11}')
+	;;
+	"locked")
+	OUTPUT=" $OUTPUT locked="$(echo $metrics|$AWK '{print $12}')
+	;;
+	"netIn")
+	OUTPUT=" $OUTPUT netIn="$(echo $metrics|$AWK '{print $16}')
+	;;
+	"netOut")
+	OUTPUT=" $OUTPUT netOut="$(echo $metrics|$AWK '{print $17}')
+	;;
+	"conn")
+	OUTPUT=" $OUTPUT conn="$(echo $metrics|$AWK '{print $18}')
+	;;
+	"time")
+	OUTPUT=" $OUTPUT time="$(echo $metrics|$AWK '{print $19}')
+	;;
+esac
+done
+#
+#
+echo $OUTPUT
+exit $RETURN_CODE

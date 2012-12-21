@@ -1,0 +1,263 @@
+#!/bin/bash
+:
+#set -x
+#
+PIDFILE=/tmp/monitis-mongo.pid
+TMP_MONGO=/tmp/mongo.tmp
+IDLETIME=10
+
+AWK=$(which awk)
+PLUGIN="./monitis-mongo-plugin"
+MONGOSTAT=$(which mongostat)
+TAIL=$(which tail)
+#
+declare OUTPUT
+USE_AUTH=false
+PARAM_ERROR_STRING="Missing parameter name"
+RETURN_CODE=0
+MONITOR_NAME="MongoDB monitor"
+MONITOR_TAG="monitor"
+#
+
+declare POSTDATA=
+declare RESULTS=
+#
+#
+##################################################################################################
+# Checking for required tools
+##################################################################################################
+#
+if [[ -z $AWK ]]
+then
+echo "awk not found"
+exit 1
+fi
+#
+if [[ -z $MONGOSTAT ]]
+then
+echo "mongostat not found"
+exit 1
+fi
+#
+if [[ -z $TAIL ]]
+then
+echo "tail not found"
+exit 1
+fi
+if [[ -z $PLUGIN ]]
+then
+echo "mongostat plugin not found"
+exit 1
+fi
+#
+###################################################################################################
+# Checking for input parameters
+###################################################################################################
+
+
+for ((i=1;i<=${#@}+2;i++))
+do
+    declare params_$1="$2"
+#
+	if [ -z "$params_mode" ]; then
+                params_mode="daemon"
+		params_metrics=""
+        fi
+if [[ -n $params_user ]]
+then
+	USE_AUTH=true
+	if [ -z "$params_pwd" ]; then
+                echo "$PARAM_ERROR_STRING 'pwd'"
+                RETURN_CODE=1
+		exit $RETURN_CODE 
+        fi
+
+        if [ -z "$params_host" ]; then
+                echo "$PARAM_ERROR_STRING 'host'"
+                RETURN_CODE=1
+		exit $RETURN_CODE
+        fi
+
+        if [ -z "$params_port" ]; then
+                echo "$PARAM_ERROR_STRING 'port'"
+                RETURN_CODE=1
+		exit $RETURN_CODE
+        fi
+	if [ -z "$params_metrics" ]; then
+		echo "$PARAM_ERROR_STRING 'metrics'"
+		RETURN_CODE=1
+		exit $RETURN_CODE
+	fi
+fi
+
+    shift 2
+done
+#
+	if [[ -z $params_host ]]
+	then
+		params_host="localhost"
+	fi
+	if [[ -z $params_port ]]
+	then
+		params_port=27017
+	fi
+if [[ $USE_AUTH == true ]]
+then
+	MONGOSTAT_OPTS=" --host $params_host:$params_port -u $params_user -p $params_pwd"
+	PLUGIN_OPTS="user $params_user pwd $params_pwd  host $params_host port $params_port metrics $params_metrics"
+else
+if [[ -n $params_host && -n $params_port ]]
+then
+	MONGOSTAT_OPTS=" --host $params_host --port $params_port"
+fi
+	MONGOSTAT_OPTS=""
+	PLUGIN_OPTS="host $params_host port $params_port metrics $params_metrics"
+fi
+#
+
+
+source monitis_api.sh || exit 1 
+
+
+get_data(){
+
+
+	data=$($MONGOSTAT $MONGOSTAT_OPTS -n 1|$TAIL -1 | \
+	$AWK '{ print "Insert",$1"\n""Query",$2"\n""Update",$3"\n""Delete",$4"\n""GetMore",$5"\n""Command",$6"\n""Flushes",$7"\n""Mapped", $8"\n""VSize",$9"\n""Res",$10"\n""Faults",$11"\n""NetIn",$16"\n""NetOut",$17"\n""Conn",$18 }' > $TMP_MONGO)
+	#
+	#
+	UOM=
+	###########################################################
+	value=$(grep 'Insert' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Insert:$value;"
+	result=$result"Insert:Number+of+inserts:$UOM:2;";
+	#
+	###########################################################
+	value=$(grep 'Query' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Query:$value;"
+	result=$result"Query:Number+of+queries:$UOM:2;";
+	###########################################################
+	value=$(grep 'Update' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Update:$value;"
+	result=$result"Update:Number+of+updates:$UOM:2;";
+	###########################################################
+	value=$(grep 'Delete' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Delete:$value;"
+	result=$result"Delete:Number+of+deletes:$UOM:2;";
+	###########################################################
+	value=$(grep 'GetMore' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"GetMore:$value;"
+	result=$result"GetMore:GetMore:$UOM:2;";
+	###########################################################
+	value=$(grep 'Command' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Command:$value;"
+	result=$result"Command:Command:$UOM:2;";
+	###########################################################
+	value=$(grep 'Flushes' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Flushes:$value;"
+	result=$result"Flushes:Flushes:$UOM:2;";
+	###########################################################
+	value=$(grep 'Mapped' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Mapped:$value;"
+	result=$result"Mapped:DescMapped:$UOM:3;";
+	###########################################################
+	value=$(grep 'VSize' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"VSize:$value;"
+	result=$result"VSize:VSize:$UOM:3;";
+	###########################################################
+	value=$(grep 'Res' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Res:$value;"
+	result=$result"Res:Res:$UOM:3;";
+	###########################################################
+	value=$(grep 'Faults' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Faults:$value;"
+	result=$result"Faults:Faults:$UOM:2;";
+	###########################################################
+	value=$(grep 'NetIn' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"NetIn:$value;"
+	result=$result"NetIn:NetIn:$UOM:3;";
+	###########################################################
+	value=$(grep 'NetOut' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"NetOut:$value;"
+	result=$result"NetOut:NetOut:$UOM:3;";
+	###########################################################
+	value=$(grep 'Conn' $TMP_MONGO|head -1|awk '{print $2}')
+	if [[ "x$value" == "x" ]] ; then
+		value=-1
+	fi
+	postdata=$postdata"Conn:$value;"
+	result=$result"Conn:Number+of+connections:$UOM:2;";
+	#
+	#
+	#end of get_data
+	test -f $TMP_MONGO && rm $TMP_MONGO > /dev/null
+
+}
+
+
+#
+daemonize (){
+get_data
+/bin/echo $$ > $PIDFILE
+#
+	monitis_add_custom_monitor $MONITOR_NAME $result $MONITOR_TAG 
+#
+while [ true ]
+    do
+    {
+	get_data
+	monitis_update_custom_monitor_data $MONITOR_TAG $postdata
+    /bin/sleep $IDLETIME
+    }
+done
+
+}
+##############################################################################
+if [[ $params_mode == "plugin" ]]
+then
+/bin/bash $PLUGIN $PLUGIN_OPTS
+exit 0
+fi
+#
+daemonize
+#
+exit 0
