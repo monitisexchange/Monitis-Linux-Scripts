@@ -1,4 +1,4 @@
-MONITORING RIAK WITH MONITIS
+MONITORING CouchDB WITH MONITIS
 
 Original Author: Arthur Tumanyan
 
