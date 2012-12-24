@@ -29,7 +29,7 @@ How to uninstall:
 
 This will send data every time you run it.  Set it up with Cron or any other
 scheduling agent to begin periodically sending data back to Monitis.  You can 
-check into the Monitis dashboard to view your Riak Stats.
+check into the Monitis dashboard to view your CouchDB Stats.
 
 
 DEPENDENCIES:
