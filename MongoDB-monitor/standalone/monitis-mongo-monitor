@@ -1,12 +1,15 @@
 #!/bin/bash
 :
-#set -x
+set -x
 #
 PIDFILE=/tmp/monitis-mongo.pid
 TMP_MONGO=/tmp/mongo.tmp
+REQUEST_TIME_FILE=/tmp/req_time.tmp
 IDLETIME=10
-
+xml_output_type="xml"
 AWK=$(which awk)
+TIME=$(which time)
+CP=$(which cp)
 PLUGIN="./monitis-mongo-plugin"
 MONGOSTAT=$(which mongostat)
 TAIL=$(which tail)
@@ -19,9 +22,13 @@ MONITOR_NAME="MongoDB monitor"
 MONITOR_TAG="monitor"
 #
 
-declare POSTDATA=
-declare RESULTS=
+
+source monitis_api.sh || exit 1 
 #
+monitor_id=$(curl -s "$API_URL?apikey=$API_KEY&output=$xml_output_type&version=$API_VERSION&action=getMonitors&tag=$MONITOR_TAG" | $XPATH \
+/monitors/monitor/id 2> /dev/null | sed -e 's#</\?id>##g')
+
+
 #
 ##################################################################################################
 # Checking for required tools
@@ -49,50 +56,53 @@ then
 echo "mongostat plugin not found"
 exit 1
 fi
+if [[ -z $TIME ]]
+then
+echo "time not found"
+exit 1
+fi
+#
+if [[ -z $CP ]]
+then
+echo "cp not found"
+exit 1
+fi
 #
 ###################################################################################################
 # Checking for input parameters
 ###################################################################################################
 
+declare metric
 
 for ((i=1;i<=${#@}+2;i++))
 do
     declare params_$1="$2"
 #
+      
+    shift 2
+done
+#################################################################################
+	if [[ -z "$params_metrics" && "$params_mode" != "daemon" ]]; then
+		echo "$PARAM_ERROR_STRING 'metrics'"
+		RETURN_CODE=1
+		exit $RETURN_CODE
+	fi
+#################################################################################
 	if [ -z "$params_mode" ]; then
                 params_mode="daemon"
 		params_metrics=""
         fi
-if [[ -n $params_user ]]
-then
+#################################################################################
+	if [[ -n $params_user ]]
+	then
 	USE_AUTH=true
 	if [ -z "$params_pwd" ]; then
                 echo "$PARAM_ERROR_STRING 'pwd'"
                 RETURN_CODE=1
 		exit $RETURN_CODE 
         fi
-
-        if [ -z "$params_host" ]; then
-                echo "$PARAM_ERROR_STRING 'host'"
-                RETURN_CODE=1
-		exit $RETURN_CODE
-        fi
-
-        if [ -z "$params_port" ]; then
-                echo "$PARAM_ERROR_STRING 'port'"
-                RETURN_CODE=1
-		exit $RETURN_CODE
-        fi
-	if [ -z "$params_metrics" ]; then
-		echo "$PARAM_ERROR_STRING 'metrics'"
-		RETURN_CODE=1
-		exit $RETURN_CODE
 	fi
-fi
-
-    shift 2
-done
-#
+#################################################################################
 	if [[ -z $params_host ]]
 	then
 		params_host="localhost"
@@ -101,6 +111,7 @@ done
 	then
 		params_port=27017
 	fi
+#################################################################################
 if [[ $USE_AUTH == true ]]
 then
 	MONGOSTAT_OPTS=" --host $params_host:$params_port -u $params_user -p $params_pwd"
@@ -110,23 +121,62 @@ if [[ -n $params_host && -n $params_port ]]
 then
 	MONGOSTAT_OPTS=" --host $params_host --port $params_port"
 fi
-	MONGOSTAT_OPTS=""
+
 	PLUGIN_OPTS="host $params_host port $params_port metrics $params_metrics"
 fi
-#
-
-
-source monitis_api.sh || exit 1 
-
+#################################################################################
+if [[ "$params_mode" == "uniq" && -z "$params_metrics" ]]; then
+		echo "$PARAM_ERROR_STRING 'metrics'"
+		RETURN_CODE=1
+		exit $RETURN_CODE
+fi
+#################################################################################
 
 get_data(){
 
 
-	data=$($MONGOSTAT $MONGOSTAT_OPTS -n 1|$TAIL -1 | \
+	$($TIME -f "%e" -o $REQUEST_TIME_FILE  $MONGOSTAT $MONGOSTAT_OPTS -n 1|$TAIL -1 | \
 	$AWK '{ print "Insert",$1"\n""Query",$2"\n""Update",$3"\n""Delete",$4"\n""GetMore",$5"\n""Command",$6"\n""Flushes",$7"\n""Mapped", $8"\n""VSize",$9"\n""Res",$10"\n""Faults",$11"\n""NetIn",$16"\n""NetOut",$17"\n""Conn",$18 }' > $TMP_MONGO)
 	#
+	$CP $TMP_MONGO $TMP_MONGO.bak
 	#
+
 	UOM=
+		if [[ $params_mode == "uniq" && -n $params_metrics ]]
+		then
+			value=$(grep "$params_metrics" $TMP_MONGO|head -1|awk '{print $2}')
+			response=$(cat $REQUEST_TIME_FILE|$AWK '{print $1}')
+			
+			if [[ "x$value" == "x" ]] ; then
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
+			fi
+			value_last=$(grep "$params_metrics" $TMP_MONGO.bak|head -1|awk '{print $2}')
+			if [[ "x$value_last" != "x" ]] ; then
+
+			if [[ $value -eq $value && $value_last -eq $value_last ]]
+			then
+				differ=$(expr $value - $value_last)
+				if [[ -z $differ ]];then
+				differ=0
+				fi
+			else
+				differ=0
+			fi
+			fi
+
+			postdata=$postdata"ResponseTime:$response;"
+			result=$result"ResponseTime:Query+execution+time:$UOM:4;";
+
+			postdata=$postdata"Value:$value;"
+			result=$result"Value:Query+result:$UOM:2;";
+
+			postdata=$postdata"Difference:$differ;"
+			result=$result"Difference:Difference+from+previous+value:$UOM:2;";
+
+			return
+		fi
 	###########################################################
 	value=$(grep 'Insert' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
@@ -239,13 +289,16 @@ daemonize (){
 get_data
 /bin/echo $$ > $PIDFILE
 #
-	monitis_add_custom_monitor $MONITOR_NAME $result $MONITOR_TAG 
+if [[ "x$monitor_id" == "x" ]]
+then
+	monitis_add_custom_monitor $MONITOR_NAME $result $MONITOR_TAG 2>&1
+fi
 #
 while [ true ]
     do
     {
 	get_data
-	monitis_update_custom_monitor_data $MONITOR_TAG $postdata
+	monitis_update_custom_monitor_data $MONITOR_TAG $postdata 2>&1
     /bin/sleep $IDLETIME
     }
 done
@@ -257,6 +310,8 @@ then
 /bin/bash $PLUGIN $PLUGIN_OPTS
 exit 0
 fi
+#
+#
 #
 daemonize
 #

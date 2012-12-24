@@ -1,0 +1,62 @@
+MONITORING MONGODB WITH MONITIS
+
+Original Author: Arthur Tumanyan
+
+Company: Netangels
+
+Web Site: http://www.netangels.net
+
+OVERVIEW:
+---------
+These scripts allow a user to easily get some monitoring around their MongoDB instance using Monitis.
+
+
+INSTALLATION:
+
+How to Install:
+	
+	Make sure you have MongoDB installed (mongostat required)
+	Download <mongodb monitor>
+	Cd <mongodb monitor>
+	bash ./monitis-mongo-monitor [arguments]
+	Enjoy!
+	
+How to uninstall:
+
+	rm -rf <mongodb monitor>
+
+
+DEPENDENCIES:
+
+	Bourne Again Shell
+	Mongostat utility
+	Curl (required for monitis bash API)
+
+OTHER:
+
+	Change APIKEY & SECRETKEY in monitis_config according to your settings
+
+USAGE: 
+	monitis-mongo-monitor [user <username> pwd <password>] mode <daemon|plugin|uniq>  host <hostname> port <port> metrics <metric1,metric2,metricN>
+
+ARGUMENTS:
+	user - mongodb database user
+	password - mongodb database password
+	mode - monitor mode
+		daemon -- just sends all metrics available every 10 seconds to the monitis server
+		plugin -- works in plugin mode , outputs requested metric's values
+		uniq -- works in individual mode, outputs specified metric value, value mining requested time and the difference from previous value
+	host - mongodb database host
+	port - mongodb database port
+	metrics - metrics to be retrived. In modes other than uniq it can be comma separated list like "metric1",metric2,metricN
+
+EXAMPLES:
+	monitis-mongo-monitor (without arguments) -- it will send all the metrics values every 10 seconds
+	monitis-mongo-monitor user mongouser \
+				password secret \
+				mode plugin \
+				host mongoserverhost \
+				port portnum \
+				metrics "Insert",Delete  -- (case sensitive)
+	monitis-mongo-monitor mode uniq metric "Insert" -- only one metric available at time
+	
