@@ -135,7 +135,7 @@ fi
 get_data(){
 
 
-	$($TIME -f "%e" -o $REQUEST_TIME_FILE  $MONGOSTAT $MONGOSTAT_OPTS -n 1|$TAIL -1 | \
+$($TIME -f "%e" -o $REQUEST_TIME_FILE  $MONGOSTAT $MONGOSTAT_OPTS -n 1 |$TAIL -1 | \
 	$AWK '{ print "Insert",$1"\n""Query",$2"\n""Update",$3"\n""Delete",$4"\n""GetMore",$5"\n""Command",$6"\n""Flushes",$7"\n""Mapped", $8"\n""VSize",$9"\n""Res",$10"\n""Faults",$11"\n""NetIn",$16"\n""NetOut",$17"\n""Conn",$18 }' > $TMP_MONGO)
 	#
 	$CP $TMP_MONGO $TMP_MONGO.bak
@@ -180,7 +180,9 @@ get_data(){
 	###########################################################
 	value=$(grep 'Insert' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Insert:$value;"
 	result=$result"Insert:Number+of+inserts:$UOM:2;";
@@ -188,14 +190,18 @@ get_data(){
 	###########################################################
 	value=$(grep 'Query' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Query:$value;"
 	result=$result"Query:Number+of+queries:$UOM:2;";
 	###########################################################
 	value=$(grep 'Update' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Update:$value;"
 	result=$result"Update:Number+of+updates:$UOM:2;";
@@ -209,70 +215,90 @@ get_data(){
 	###########################################################
 	value=$(grep 'GetMore' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"GetMore:$value;"
 	result=$result"GetMore:GetMore:$UOM:2;";
 	###########################################################
 	value=$(grep 'Command' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Command:$value;"
 	result=$result"Command:Command:$UOM:2;";
 	###########################################################
 	value=$(grep 'Flushes' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Flushes:$value;"
 	result=$result"Flushes:Flushes:$UOM:2;";
 	###########################################################
 	value=$(grep 'Mapped' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Mapped:$value;"
 	result=$result"Mapped:DescMapped:$UOM:3;";
 	###########################################################
 	value=$(grep 'VSize' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"VSize:$value;"
 	result=$result"VSize:VSize:$UOM:3;";
 	###########################################################
 	value=$(grep 'Res' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Res:$value;"
 	result=$result"Res:Res:$UOM:3;";
 	###########################################################
 	value=$(grep 'Faults' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Faults:$value;"
 	result=$result"Faults:Faults:$UOM:2;";
 	###########################################################
 	value=$(grep 'NetIn' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"NetIn:$value;"
 	result=$result"NetIn:NetIn:$UOM:3;";
 	###########################################################
 	value=$(grep 'NetOut' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"NetOut:$value;"
 	result=$result"NetOut:NetOut:$UOM:3;";
 	###########################################################
 	value=$(grep 'Conn' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
-		value=-1
+				echo "Search item not found"
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
 	fi
 	postdata=$postdata"Conn:$value;"
 	result=$result"Conn:Number+of+connections:$UOM:2;";
