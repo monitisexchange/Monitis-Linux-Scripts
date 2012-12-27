@@ -8,23 +8,24 @@ Web Site: http://www.netangels.net
 
 OVERVIEW:
 ---------
-These scripts allow a user to easily get some monitoring around their MongoDB instance using Monitis.
+These scripts allow a user to easily get some monitoring around MongoDB instance using Monitis.
 
 INSTALL:
 
-We will first need to install basic packages:
+At first install required packages:
 	apt-get install git curl mongodb
+	# Make a copy of monitis linux scripts
 	git clone https://github.com/monitisexchange/Monitis-Linux-Scripts.git
 	cd Monitis-Linux-Scripts/MongoDB-monitor/bash/standalone
-	bash ./monitis-mongo-monitor [arguments]
-	
-UNINSTALL:
-
-	rm -rf Monitis-Linux-Scripts/MongoDB-monitor/bash/standalone
+	Run bash ./monitis-mongo-monitor [arguments]
 
 OTHER:
 
 	Change APIKEY & SECRETKEY in monitis_config according to your settings
+
+UNINSTALL:
+
+	rm -rf Monitis-Linux-Scripts/MongoDB-monitor/bash/standalone
 
 USAGE: 
 	monitis-mongo-monitor [user <username> pwd <password>] mode <daemon|plugin|query>  host <hostname> port <port> idletime <seconds> query <mongodb query> metrics <metric1,metric2,metricN>
