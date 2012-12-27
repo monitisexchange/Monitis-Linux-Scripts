@@ -52,6 +52,7 @@ EXAMPLES:
 				host mongoserverhost \
 				port portnum \
 				idletime 15 \
-				metrics "Insert",Delete  -- (case sensitive)
+				metrics "Insert",Delete,Update
 
-	./monitis-mongo-monitor mode query query "printjson(db.getCollectionNames())"
+	./monitis-mongo-monitor mode query \
+				query "printjson(db.getCollectionNames())"
