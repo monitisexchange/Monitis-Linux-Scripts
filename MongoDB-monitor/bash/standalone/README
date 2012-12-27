@@ -44,7 +44,8 @@ ARGUMENTS:
 	query - mongodb query (query syntax like in mongo shell #example mongo --eval "db")
 
 EXAMPLES:
-	monitis-mongo-monitor (without arguments) -- it will send all the metrics values every <idletime> seconds
+	monitis-mongo-monitor
+
 	monitis-mongo-monitor user mongouser \
 				password secret \
 				mode plugin \
