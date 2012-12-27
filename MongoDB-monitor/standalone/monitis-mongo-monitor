@@ -134,6 +134,11 @@ fi
 
 get_data(){
 
+value=
+value_last=
+postdata=
+result=
+
 
 $($TIME -f "%e" -o $REQUEST_TIME_FILE  $MONGOSTAT $MONGOSTAT_OPTS -n 1 |$TAIL -1 | \
 	$AWK '{ print "Insert",$1"\n""Query",$2"\n""Update",$3"\n""Delete",$4"\n""GetMore",$5"\n""Command",$6"\n""Flushes",$7"\n""Mapped", $8"\n""VSize",$9"\n""Res",$10"\n""Faults",$11"\n""NetIn",$16"\n""NetOut",$17"\n""Conn",$18 }' > $TMP_MONGO)
