@@ -1,6 +1,6 @@
 #!/bin/bash
 :
-#set -x
+set -x
 #
 PIDFILE=/tmp/monitis-mongo.pid
 TMP_MONGO=/tmp/mongo.tmp
@@ -12,6 +12,7 @@ TIME=$(which time)
 CP=$(which cp)
 PLUGIN="./monitis-mongo-plugin"
 MONGOSTAT=$(which mongostat)
+MONGO=$(which mongo)
 TAIL=$(which tail)
 #
 declare OUTPUT
@@ -68,6 +69,12 @@ echo "cp not found"
 exit 1
 fi
 #
+if [[ -z $MONGO ]]
+then
+echo "mongo not found"
+exit 1
+fi
+#
 ###################################################################################################
 # Checking for input parameters
 ###################################################################################################
@@ -82,7 +89,7 @@ do
     shift 2
 done
 #################################################################################
-	if [[ -z "$params_metrics" && "$params_mode" != "daemon" ]]; then
+	if [[ -z "$params_metrics" && "$params_mode" != "daemon" && "$params_mode" != "query" ]]; then
 		echo "$PARAM_ERROR_STRING 'metrics'"
 		RETURN_CODE=1
 		exit $RETURN_CODE
@@ -112,6 +119,10 @@ done
 		params_port=27017
 	fi
 #################################################################################
+	if [[ -n "$params_idletime" && $params_idletime -eq $params_idletime ]]; then
+                IDLETIME=$params_idletime
+        fi
+#################################################################################
 if [[ $USE_AUTH == true ]]
 then
 	MONGOSTAT_OPTS=" --host $params_host:$params_port -u $params_user -p $params_pwd"
@@ -125,63 +136,74 @@ fi
 	PLUGIN_OPTS="host $params_host port $params_port metrics $params_metrics"
 fi
 #################################################################################
-if [[ "$params_mode" == "uniq" && -z "$params_metrics" ]]; then
-		echo "$PARAM_ERROR_STRING 'metrics'"
+if [[ "$params_mode" == "query" && -z "$params_query" ]]; then
+		echo "$PARAM_ERROR_STRING 'query'"
 		RETURN_CODE=1
 		exit $RETURN_CODE
 fi
 #################################################################################
 
 get_data(){
-
+#
 value=
 value_last=
 postdata=
 result=
 
-
-$($TIME -f "%e" -o $REQUEST_TIME_FILE  $MONGOSTAT $MONGOSTAT_OPTS -n 1 |$TAIL -1 | \
-	$AWK '{ print "Insert",$1"\n""Query",$2"\n""Update",$3"\n""Delete",$4"\n""GetMore",$5"\n""Command",$6"\n""Flushes",$7"\n""Mapped", $8"\n""VSize",$9"\n""Res",$10"\n""Faults",$11"\n""NetIn",$16"\n""NetOut",$17"\n""Conn",$18 }' > $TMP_MONGO)
 	#
-	$CP $TMP_MONGO $TMP_MONGO.bak
-	#
-
 	UOM=
-		if [[ $params_mode == "uniq" && -n $params_metrics ]]
+		if [[ $params_mode == "query" && -n $params_query ]]
 		then
-			value=$(grep "$params_metrics" $TMP_MONGO|head -1|awk '{print $2}')
+			$TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "$params_query"|$TAIL -1  > $TMP_MONGO
+			$CP $TMP_MONGO $TMP_MONGO.bak
+			#
+			value=$(cat $TMP_MONGO)
 			response=$(cat $REQUEST_TIME_FILE|$AWK '{print $1}')
 			
-			if [[ "x$value" == "x" ]] ; then
-				echo "Search item not found"
+			if [[ "x${value}" == "x" ]] ; then
+				echo "Query result is empty"
 	                	RETURN_CODE=1
 				exit $RETURN_CODE
 			fi
-			value_last=$(grep "$params_metrics" $TMP_MONGO.bak|head -1|awk '{print $2}')
-			if [[ "x$value_last" != "x" ]] ; then
+			error=$(grep 'Error:' $TMP_MONGO)
+			if [[ "x$error" != "x" ]] ; then
+				echo "Error accured... Check query..."
+	                	RETURN_CODE=1
+				exit $RETURN_CODE
+			fi
+			value_last=$(cat $TMP_MONGO.bak)
+			if [[ "x${value_last}" != "x" ]] ; then
 
-			if [[ $value -eq $value && $value_last -eq $value_last ]]
+			v1_ret=$(test -n "$value" -a "$value" -ge 0 2>/dev/null)
+			v2_ret=$(test -n "$value_last" -a "$value_last" -ge 0 2>/dev/null)
+			if [[ $v1_ret && $v2_ret ]]
 			then
 				differ=$(expr $value - $value_last)
 				if [[ -z $differ ]];then
 				differ=0
+				vartype=2
 				fi
 			else
 				differ=0
+				vartype=3
 			fi
 			fi
 
 			postdata=$postdata"ResponseTime:$response;"
 			result=$result"ResponseTime:Query+execution+time:$UOM:4;";
 
-			postdata=$postdata"Value:$value;"
-			result=$result"Value:Query+result:$UOM:2;";
+			postdata=$postdata"Value:${value};"
+			result=$result"Value:Query+result:$UOM:$vartype;";
 
 			postdata=$postdata"Difference:$differ;"
 			result=$result"Difference:Difference+from+previous+value:$UOM:2;";
 
 			return
 		fi
+
+$($TIME -f "%e" -o $REQUEST_TIME_FILE  $MONGOSTAT $MONGOSTAT_OPTS -n 1 |$TAIL -1 | \
+	$AWK '{ print "Insert",$1"\n""Query",$2"\n""Update",$3"\n""Delete",$4"\n""GetMore",$5"\n""Command",$6"\n""Flushes",$7"\n""Mapped", $8"\n""VSize",$9"\n""Res",$10"\n""Faults",$11"\n""NetIn",$16"\n""NetOut",$17"\n""Conn",$18 }' > $TMP_MONGO)
+	#
 	###########################################################
 	value=$(grep 'Insert' $TMP_MONGO|head -1|awk '{print $2}')
 	if [[ "x$value" == "x" ]] ; then
