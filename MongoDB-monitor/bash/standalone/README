@@ -10,53 +10,47 @@ OVERVIEW:
 ---------
 These scripts allow a user to easily get some monitoring around their MongoDB instance using Monitis.
 
+INSTALL:
 
-INSTALLATION:
-
-How to Install:
-	
-	Make sure you have MongoDB installed (mongostat required)
-	Download <mongodb monitor>
-	Cd <mongodb monitor>
+We will first need to install basic packages:
+	apt-get install git curl mongodb
+	git clone https://github.com/monitisexchange/Monitis-Linux-Scripts.git
+	cd Monitis-Linux-Scripts/MongoDB-monitor/bash/standalone
 	bash ./monitis-mongo-monitor [arguments]
-	Enjoy!
 	
-How to uninstall:
+UNINSTALL:
 
-	rm -rf <mongodb monitor>
-
-
-DEPENDENCIES:
-
-	Bourne Again Shell
-	Mongostat utility
-	Curl (required for monitis bash API)
+	rm -rf Monitis-Linux-Scripts/MongoDB-monitor/bash/standalone
 
 OTHER:
 
 	Change APIKEY & SECRETKEY in monitis_config according to your settings
 
 USAGE: 
-	monitis-mongo-monitor [user <username> pwd <password>] mode <daemon|plugin|uniq>  host <hostname> port <port> metrics <metric1,metric2,metricN>
+	monitis-mongo-monitor [user <username> pwd <password>] mode <daemon|plugin|query>  host <hostname> port <port> idletime <seconds> query <mongodb query> metrics <metric1,metric2,metricN>
 
 ARGUMENTS:
 	user - mongodb database user
 	password - mongodb database password
 	mode - monitor mode
-		daemon -- just sends all metrics available every 10 seconds to the monitis server
+		daemon -- just sends all metrics available every <idletime> seconds to the monitis server
 		plugin -- works in plugin mode , outputs requested metric's values
-		uniq -- works in individual mode, outputs specified metric value, value mining requested time and the difference from previous value
+		query -- outputs specified query value, value mining requested time and the difference from previous value if it is numeric
+
 	host - mongodb database host
 	port - mongodb database port
-	metrics - metrics to be retrived. In modes other than uniq it can be comma separated list like "metric1",metric2,metricN
+	idletime - data will be sent to server every <idletime> seconds (default value is 10s)
+	metrics - metrics to be retrived. In modes other than query it can be comma separated list like "metric1",metric2,metricN
+	query - mongodb query (query syntax like in mongo shell #example mongo --eval "db")
 
 EXAMPLES:
-	monitis-mongo-monitor (without arguments) -- it will send all the metrics values every 10 seconds
+	monitis-mongo-monitor (without arguments) -- it will send all the metrics values every <idletime> seconds
 	monitis-mongo-monitor user mongouser \
 				password secret \
 				mode plugin \
 				host mongoserverhost \
 				port portnum \
+				idletime 15 \
 				metrics "Insert",Delete  -- (case sensitive)
-	monitis-mongo-monitor mode uniq metric "Insert" -- only one metric available at time
-	
+
+	monitis-mongo-monitor mode query query "printjson(db.getCollectionNames())"
