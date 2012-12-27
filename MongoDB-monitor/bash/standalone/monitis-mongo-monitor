@@ -89,16 +89,19 @@ do
     shift 2
 done
 #################################################################################
-	if [[ -z "$params_metrics" && "$params_mode" != "daemon" && "$params_mode" != "query" ]]; then
-		echo "$PARAM_ERROR_STRING 'metrics'"
-		RETURN_CODE=1
-		exit $RETURN_CODE
-	fi
-#################################################################################
 	if [ -z "$params_mode" ]; then
                 params_mode="daemon"
 		params_metrics=""
         fi
+#################################################################################
+	if [[ -z "$params_metrics" && "$params_mode" != "daemon" ]]; then
+	 if [[ "$params_mode" != "query" ]];then
+		echo "$PARAM_ERROR_STRING 'metrics'"
+		RETURN_CODE=1
+		exit $RETURN_CODE
+	fi
+	fi
+
 #################################################################################
 	if [[ -n $params_user ]]
 	then
