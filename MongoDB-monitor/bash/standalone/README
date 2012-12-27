@@ -44,9 +44,9 @@ ARGUMENTS:
 	query - mongodb query (query syntax like in mongo shell #example mongo --eval "db")
 
 EXAMPLES:
-	monitis-mongo-monitor
+	./monitis-mongo-monitor
 
-	monitis-mongo-monitor user mongouser \
+	./monitis-mongo-monitor user mongouser \
 				password secret \
 				mode plugin \
 				host mongoserverhost \
@@ -54,4 +54,4 @@ EXAMPLES:
 				idletime 15 \
 				metrics "Insert",Delete  -- (case sensitive)
 
-	monitis-mongo-monitor mode query query "printjson(db.getCollectionNames())"
+	./monitis-mongo-monitor mode query query "printjson(db.getCollectionNames())"
