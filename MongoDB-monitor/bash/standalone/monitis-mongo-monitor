@@ -157,10 +157,15 @@ result=
 	UOM=
 		if [[ $params_mode == "query" && -n $params_query ]]
 		then
-			$TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "$params_query"|$TAIL -1  > $TMP_MONGO
+$TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "printjson($params_query)" $params_database|$TAIL -1  > $TMP_MONGO
 			$CP $TMP_MONGO $TMP_MONGO.bak
 			#
 			value=$(cat $TMP_MONGO)
+			g1_r=$(echo $value|grep '^{')
+			g2_r=$(echo $value|grep '}$')
+			if [[ $g1_r && $g2_r ]];then
+				value=$(cat $TMP_MONGO|sed -e 's/[{}]/''/g' | awk -v RS=',' -F: '/"n"/ {print $2}'|tr -d ' ')
+			fi
 			response=$(cat $REQUEST_TIME_FILE|$AWK '{print $1}')
 			
 			if [[ "x${value}" == "x" ]] ; then
@@ -175,6 +180,11 @@ result=
 				exit $RETURN_CODE
 			fi
 			value_last=$(cat $TMP_MONGO.bak)
+			g1_r=$(echo $value_last|grep '^{')
+			g2_r=$(echo $value_last|grep '}$')
+			if [[ $g1_r && $g2_r ]];then
+				value_last=$(cat $TMP_MONGO|sed -e 's/[{}]/''/g' | awk -v RS=',' -F: '/"n"/ {print $2}'|tr -d ' ')
+			fi
 			if [[ "x${value_last}" != "x" ]] ; then
 
 			v1_ret=$(test -n "$value" -a "$value" -ge 0 2>/dev/null)
