@@ -43,6 +43,7 @@ ARGUMENTS:
 	idletime - data will be sent to server every <idletime> seconds (default value is 10s)
 	metrics - metrics to be retrived. In modes other than query it can be comma separated list like "metric1",metric2,metricN
 	query - mongodb query (query syntax like in mongo shell. Example: /usr/bin/mongo --eval "db")
+	database - the database name to connect to
 
 EXAMPLES:
 	./monitis-mongo-monitor
@@ -56,4 +57,8 @@ EXAMPLES:
 				metrics "Insert",Delete,Update
 
 	./monitis-mongo-monitor mode query \
-				query "printjson(db.getCollectionNames())"
+				query "db.getCollectionNames()" \
+				database mongodb_name
+--
+Do not use printjson() in query, it can cause invalid results.
+The 'database' parameter is useless unless mode is not 'query'
