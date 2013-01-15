@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 
-# TickTick enables you to put JSON in bash scripts
-# https://github.com/kristopolous/TickTick
-
 ARGV=$@
 
 __tick_error() {
   echo "TICKTICK PARSING ERROR: "$1
 }
 
-# Parts of this work are derived from https://github.com/dominictarr/JSON.sh
+# This is from https://github.com/dominictarr/JSON.sh
 # See LICENSE for more info. {{{
 __tick_json_tokenize() {
   local ESCAPE='(\\[^u[:cntrl:]]|\\u[0-9a-fA-F]{4})'
@@ -42,6 +39,9 @@ __tick_json_parse_array() {
         case "$Token" in
           ']') break ;;
           ',') ary+=_ ;;
+          *) 
+            __tick_error "Array syntax malformed"
+            break ;;
         esac
         read -r Token
       done
@@ -122,7 +122,7 @@ __tick_json_parse() {
 # This one separates out the valid JSON from the runtime library support
 # and little fo' language that this is coded in.
 __tick_fun_tokenize_expression() {
-  CHAR='[A-Za-z_$\\]'
+  CHAR='[0-9]*[A-Za-z_$\\][0-9]*'
   FUNCTION="(push|pop|shift|items|delete|length)[[:space:]]*\("
   NUMBER='[0-9]*'
   STRING="$CHAR*($CHAR*)*"
@@ -202,6 +202,8 @@ __tick_fun_parse_expression() {
 
           return
           ;;
+
+        [0-9]*[A-Za-z]*[0-9]*) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
 
         [0-9]*) Prefix+=`printf "%012d" $token` ;;
         '['|.) Prefix+=_ ;;

@@ -20,4 +20,4 @@ cd $tmp
 echo ---------starting test loop--------------
 ./log_simulation.sh &
 xterm -hold -sb -e ./monitor.sh &
-xterm -hold -sb -e ./monitor_test.sh
+xterm -hold -sb -e ./monitor_test.sh "$@"

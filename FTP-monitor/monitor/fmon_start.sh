@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # sorces included
-source monitis_api.sh  || exit 2
+source monitis_api.sh      || exit 2
 source monitor_constant.sh || error 2 monitor_constant.sh
 
 #usage: fmon_start.sh -d <duration in min>
@@ -86,6 +86,7 @@ then
 	fi
 fi
 
+# Periodically adding new data
 echo "$NAME - Starting LOOP for adding new data"
 while $(sleep "$DURATION")
 do

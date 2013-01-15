@@ -38,6 +38,22 @@ function get_timestamp() {
 	echo $(( `date -u +%s` * 1000 ))
 }
 
+#  Format a timestamp into the form 'x day hh:mm:ss'
+#  @param TIMESTAMP {NUMBER} the timestamp in sec
+function formatTimestamp(){
+	local time="$1"
+	local sec=$(( $time%60 ))
+	local min=$(( ($time/60)%60 ))
+	local hr=$(( ($time/3600)%24 ))
+	local da=$(( $time/86400 ))
+	local str=$(echo `printf "%02u.%02u.%02u" $hr $min $sec`)
+	if [[ ($da -gt 0) ]]
+	then
+		str="$da""-""$str" 
+	fi
+	echo $str
+}
+
 # sample: echo "'$(trim "  one   two    three  ")'"
 function trim {
     echo $*
@@ -107,9 +123,10 @@ function jsonval() {
 function create_additional_param() {
 	if [[ (-n $1) ]]
 	then
-		array="$1"
+		array=("${!1}")
 		if [[ (${#array[*]} -gt 0) ]]
 		then
+			array_length=${#array[*]}
 			param="["
 			for (( i=1; i < $array_length; i++ ))
 			do
@@ -132,6 +149,57 @@ function create_additional_param() {
 	return 0
 }
 
+# Transforming JSON string to array (first level only)
+#
+# @param $1 - json string that contains the data to be transforming
+# @return Strings array
+function json2array(){
+	local param="$1"
+	local details=""
+	local array
+	if [[ (${#param} -gt 0) ]]
+	then
+		details=${param/'{'/''}
+		details=${details/%'}'/''}
+		details=${details//'},'/'} + '}
+		details=${details//'],'/'] + '}
+		details=${details//'"'/''}	
+		details=${details//' '/''}
+				
+		param="details + $details"	
+		
+		unset array
+		OIFS=$IFS
+		IFS='+'
+		array=($param)
+		IFS=$OIFS	
+	else
+		return 1	
+	fi
+	echo "${array[@]}"
+	return 0
+}
+
+# Replace value of given metric in the file
+# @param $1 - STRING file path
+# @param $2 - String metric name 
+# @param $3 - String a new value to be replaced
+function replaceInFile(){
+	local ret=1
+	if [[ ("x$1" != "x") && ("x$2" != "x") && ("x$3" != "x") ]]
+	then
+		local file="$1"
+		local key="$2"
+		local value="$3"
+		if [[ (-w "$file") ]] ; then
+			sed -i.bak "s/\($key *= *\).*/\1$value/" $file
+			ret="$?"
+		fi
+			
+	fi
+	return $ret
+}
+
 # Provides errors processing
 #
 # @param $1 - error code for processing 
@@ -151,24 +219,24 @@ function error {
 		;;
 	1) 
 	#warning during processing
-		echo WARNING: "$2" >&2
+		echo $( date +"%D %T" ) - WARNING: "$2" >&2
 		return $1
 		;;
 	2)
 	# errors while import sources
-		echo ERROR: The source file "$2" couldn\'t find >&2
+		echo $( date +"%D %T" ) - ERROR: The source file "$2" couldn\'t find >&2
 	   ;;
 	3)
 	# errors in responces
-		echo ERROR: The response failed..."$2" >&2
+		echo $( date +"%D %T" ) - ERROR: The response failed..."$2" >&2
 		;;
 	4)
 	# errors...
-		echo ERROR: "$2" >&2
+		echo $( date +"%D %T" ) - ERROR: "$2" >&2
 		;;
 	*)
 	# unknown error
-		echo "UNKNOWN ERROR..." >&2
+		echo $( date +"%D %T" ) - "UNKNOWN ERROR..." >&2
 		;;
 	esac
 	exit $1

@@ -15,7 +15,7 @@ currentscriptpath()
 tmp=`currentscriptpath`
 cd $tmp
 
-./stop.sh
+./stop.sh 1> /dev/null
 
 echo ---------starting test loop--------------
 ./mymon_start.sh 1> /dev/null &

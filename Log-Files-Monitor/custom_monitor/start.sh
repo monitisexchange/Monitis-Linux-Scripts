@@ -15,9 +15,9 @@ currentscriptpath()
 tmp=`currentscriptpath`
 cd $tmp
 
-./stop.sh
+./stop.sh 1> /dev/null
 
 echo ---------starting test loop--------------
 ./monitor.sh 1> /dev/null &
-./monitor_test.sh 1> /dev/null &
+./monitor_test.sh "$@" 1> /dev/null &
 

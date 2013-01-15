@@ -4,12 +4,33 @@
 source monitis_api.sh      || exit 2
 source monitor_constant.sh || error 2 monitor_constant.sh
 
+#usage: monitor_test.sh -d <duration in min>
+# default values 
+# 		d = 5 min
+
+while getopts "d:h" opt;
+do
+	case $opt in
+	d) dur=$OPTARG 
+		if [[ ($dur -gt 0) ]] ; then
+		    echo Set duration to $dur min
+		    DURATION=$dur
+		fi
+	;;
+	h) echo "Usage: $0 -d <duration in min>" ; exit 0 ;;
+	*) echo "Usage: $0 -d <duration in min>" 
+	   error 4 "invalid parameter(s) while start"
+	   ;;
+	esac
+done
+
 DURATION=$((60*$DURATION)) #convert to sec
 
 echo "***$NAME - Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
 echo "Monitor tag = $MONITOR_TAG"
 echo "Monitor type = $MONITOR_TYPE"
+echo "Monitor ID = $MONITOR_ID"
 echo "Duration for sending info = $DURATION sec"
 
 echo obtaining TOKEN
@@ -23,15 +44,33 @@ else
 	echo "All is OK for now."
 fi
 
-echo $NAME - Adding custom monitor
-add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
-ret="$?"
-if [[ ($ret -ne 0) ]]
+if [[ ($MONITOR_ID -gt 0) ]]
+then 
+	echo "$NAME - Monitor ID isn't ZERO - try to check correctness."
+	get_custom_monitor_info "$MONITOR_ID"
+	ret="$?"
+	if [[ ($ret -ne 0) ]]
+	then # not found monitor with given ID
+		echo "$NAME - Monitor ID is incorrect - it cannot be used"
+		MONITOR_ID=0
+	else
+		echo "$NAME - Monitor ID is correct - we will use it"
+	fi
+fi
+
+if [[ ($MONITOR_ID -le 0) ]]
 then
-	error "$ret" "$NAME - $MSG"
-else
-	echo $NAME - Custom monitor id = "$MONITOR_ID"
-	echo "All is OK for now."
+	echo $NAME - Adding custom monitor with parameters name: "$MONITOR_NAME" tag: "$MONITOR_TAG" type: "$MONITOR_TYPE" params: "$RESULT_PARAMS" a_params: "$ADDITIONAL_PARAMS"
+	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
+	ret="$?"
+	if [[ ($ret -ne 0) ]]
+	then
+		error "$ret" "$NAME - $MSG"
+	else
+		echo $NAME - Custom monitor id = "$MONITOR_ID"
+		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+		echo "All is OK for now."
+	fi
 fi
 
 if [[ ($MONITOR_ID -le 0) ]]
@@ -45,6 +84,7 @@ then
 		error "$ret" "$NAME - $MSG"
 	else
 		echo $NAME - Custom monitor id = "$MONITOR_ID"
+		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
 	fi
 fi
@@ -60,7 +100,7 @@ do
 	get_token				# get new token in case of the existing one is too old
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
-	then
+	then	# some problems while getting token...
 	    error "$ret" "$NAME - $MSG"
 #	    continue
 	fi
@@ -106,6 +146,9 @@ do
 				if [[ ($ret -ne 0) ]]
 				then
 					error "$ret" "$MSG"
+					if [[ ( -n ` echo $MSG | grep -asio -m1 "expired" `) ]] ; then
+						get_token $TRUE		# force to get a new token
+					fi
 					continue
 				fi
 				echo $( date +"%D %T" ) - $NAME - The Custom monitor data were successfully added

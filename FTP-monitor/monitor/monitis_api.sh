@@ -30,8 +30,7 @@ function get_token() {
 		local req="$SERVER$action"
 		local response="$(curl -Gs $req)"
 		if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
-		then # Likely, we received correct answer
-			#parsing
+		then # Likely, we received correct answer - parsing
 			val=`jsonval $response $API_GET_TOKEN_ACTION `
 		else
 			MSG="Incorrect response while obtaining token..."
@@ -112,7 +111,6 @@ function add_custom_monitor {
 	local result_params="$3"
 	local additional_params="$4"
 	local monitor_type="$5"
-	local multivalue="$6"
 	MSG=""
 	
 	# check correctness of mandatory parameters
@@ -131,14 +129,11 @@ function add_custom_monitor {
 	postdata=$postdata" -d resultParams=$result_params "
 #	postdata=$postdata" -d resultParams=`uri_escape "$(result_params)"` "
 	postdata=$postdata" -d tag=$monitor_tag "
-		if [[ (-n "$monitor_type") ]] ; then
+	if [[ (-n "$monitor_type") ]] ; then
 		postdata=$postdata" -d type=$monitor_type "
 	fi
 	if [[ (-n "$additional_params") ]] ; then
 		postdata=$postdata" -d additionalResultParams=$additional_params "
-	fi
-	if [[ (-n "$multivalue") ]] ; then
-		postdata=$postdata" -d multiValue=$multivalue "
 	fi
 	
 	local req="$SERVER""$API_PATH"
@@ -146,8 +141,7 @@ function add_custom_monitor {
 	response="$(curl -s $permdata $postdata	 $req)"
 	
 	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
-	then # Likely, we received correct answer {"error":"monitorNameExists"}
-		#parsing
+	then # Likely, we received correct answer - parsing
 		json="$response"
 		data=""
 		status=`jsonval "$json" "$RES_STATUS" `	
@@ -211,7 +205,7 @@ function get_custom_monitor_info() {
 	
 	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
 	then # Seems, we received correct answer - parsing
-		id=`jsonval $response "id" `
+		id=`jsonval "$response" "id" `
 		if [[ (-n $id) && ($id -eq $monitor_id) ]]
 		then
 			MSG=$response
@@ -363,8 +357,7 @@ function add_custom_monitor_data() {
 	response="$(curl -s $permdata $postdata	 $req)"
 	
 	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]] # Normally, the response text length shouldn't exceed 200 chars
-	then # Likely, we received correct answer
-		#parsing
+	then # Likely, we received correct answer - parsing
 		status=`jsonval $response $RES_STATUS `
 		if [[ (-n $status) && (($status = "ok") || ($status = "OK")) ]]	# status should be OK
 		then	# status is ok

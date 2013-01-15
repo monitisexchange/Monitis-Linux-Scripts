@@ -4,7 +4,15 @@
 source monitis_api.sh  || exit 2
 source monitor_node.sh || error 2 monitor_node.sh
 
-# obtaining TOKEN
+DURATION=$((60*$DURATION)) #convert to sec
+
+echo "***$NAME - Monitor start with following parameters***"
+echo "Monitor name = $MONITOR_NAME"
+echo "Monitor tag = $MONITOR_TAG"
+echo "Monitor type = $MONITOR_TYPE"
+echo "Duration for sending info = $DURATION sec"
+
+echo obtaining TOKEN
 get_token
 ret="$?"
 if [[ ($ret -ne 0) ]]
@@ -15,17 +23,32 @@ else
 	echo "All is OK for now."
 fi
 
-DURATION=$((60*$DURATION)) #convert to sec
+if [[ ($MONITOR_ID -gt 0) ]]
+then 
+	echo "$NAME - Monitor ID isn't ZERO - try to check correctness."
+	get_custom_monitor_info "$MONITOR_ID"
+	ret="$?"
+	if [[ ($ret -ne 0) ]]
+	then # not found monitor with given ID
+		echo "$NAME - Monitor ID is incorrect - it cannot be used"
+		MONITOR_ID=0
+	else
+		echo "$NAME - Monitor ID is correct - we will use it"
+	fi
+fi
 
-echo $NAME - Adding custom monitor
-add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
-ret="$?"
-if [[ ($ret -ne 0) ]]
+if [[ ($MONITOR_ID -le 0) ]]
 then
-	error "$ret" "$NAME - $MSG"
-else
-	echo $NAME - Custom monitor id = "$MONITOR_ID"
-	echo "All is OK for now."
+	echo $NAME - Adding custom monitor with parameters name: "$MONITOR_NAME" tag: "$MONITOR_TAG" type: "$MONITOR_TYPE" params: "$RESULT_PARAMS" a_params: "$ADDITIONAL_PARAMS" multiValue: "$MULTIVALUE"
+	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
+	ret="$?"
+	if [[ ($ret -ne 0) ]]
+	then
+		error "$ret" "$NAME - $MSG"
+	else
+		echo $NAME - Custom monitor id = "$MONITOR_ID"
+		echo "All is OK for now."
+	fi
 fi
 
 if [[ ($MONITOR_ID -le 0) ]]
@@ -39,10 +62,12 @@ then
 		error "$ret" "$NAME - $MSG"
 	else
 		echo $NAME - Custom monitor id = "$MONITOR_ID"
+		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
 	fi
 fi
 
+# Periodically adding new data
 echo "$NAME - Starting LOOP for adding new data"
 while $(sleep "$DURATION")
 do

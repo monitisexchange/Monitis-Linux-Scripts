@@ -123,7 +123,7 @@ function jsonval() {
 function create_additional_param() {
 	if [[ (-n $1) ]]
 	then
-		array=( $1 )
+		array=("${!1}")
 		if [[ (${#array[*]} -gt 0) ]]
 		then
 			array_length=${#array[*]}
@@ -178,6 +178,26 @@ function json2array(){
 	fi
 	echo "${array[@]}"
 	return 0
+}
+
+# Replace value of given metric in the file
+# @param $1 - STRING file path
+# @param $2 - String metric name 
+# @param $3 - String a new value to be replaced
+function replaceInFile(){
+	local ret=1
+	if [[ ("x$1" != "x") && ("x$2" != "x") && ("x$3" != "x") ]]
+	then
+		local file="$1"
+		local key="$2"
+		local value="$3"
+		if [[ (-w "$file") ]] ; then
+			sed -i.bak "s/\($key *= *\).*/\1$value/" $file
+			ret="$?"
+		fi
+			
+	fi
+	return $ret
 }
 
 # Provides errors processing
