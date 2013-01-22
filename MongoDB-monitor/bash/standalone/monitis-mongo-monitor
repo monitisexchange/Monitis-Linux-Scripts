@@ -164,10 +164,12 @@ $TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "printjson($pa
 #			g1_r=$(echo $value|grep '^{')
 #			g2_r=$(echo $value|grep '}$')
 #			if [[ $g1_r && $g2_r ]];then
-#				#value=$(cat $TMP_MONGO|sed -e 's/[{}]/''/g' | awk -v RS=',' -F: '/"n"/ {print $2}'|tr -d ' ')
+#				value=$(cat $TMP_MONGO|sed -e 's/[{}]/''/g' | awk -v RS=',' -F: '/"n"/ {print $2}'|tr -d ' ')
 #			fi
 			response=$(cat $REQUEST_TIME_FILE|$AWK '{print $1}')
-			
+			if [[ "x${value}" == "x}" ]];then
+				value="No Data"	
+			fi 
 			if [[ "x${value}" == "x" ]] ; then
 				echo "Query result is empty"
 	                	RETURN_CODE=1
@@ -364,7 +366,7 @@ while [ true ]
     do
     {
 	get_data
-	monitis_update_custom_monitor_data $MONITOR_TAG $postdata 2>&1
+	monitis_update_custom_monitor_data "$MONITOR_TAG" "$postdata" 2>&1
     /bin/sleep $IDLETIME
     }
 done
