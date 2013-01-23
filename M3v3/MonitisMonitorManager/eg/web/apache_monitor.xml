@@ -1,5 +1,35 @@
 <?xml version="1.0"?>
 <config>
+	<!--
+		=== CentOS/RHEL =====
+		Just add the section below to /etc/httpd/conf.d/status.conf
+		Restart your web server by running:
+		# service httpd restart
+		=====================
+
+		=== Debian/Ubuntu ===
+		Just add the section below to /etc/apache2/sites-available/status
+		Then link it:
+		# ln -s /etc/apache2/sites-available/mod_status /etc/apache2/sites-enabled/mod_status
+		Restart your web server by running:
+		# /etc/init.d/apache2 restart
+		=====================
+
+		The configuration to add:
+		=======================
+		<IfModule mod_status.c>
+			ExtendedStatus On
+			<Location /server-status>
+				SetHandler server-status
+				Order deny,allow
+				Deny from all
+				Allow from localhost ip6-localhost
+				</Location>
+		</IfModule>
+		=======================
+
+		Now you should be set for running this monitor...
+	-->
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Apache mod_status Agent" interval="60">
 		<monitor name="Apache mod_status Monitor" tag="apacheMonitor">

@@ -1,5 +1,36 @@
 <?xml version="1.0"?>
 <config>
+	<!--
+		=== CentOS/RHEL =====
+		Just add the section below to /etc/nginx/conf.d/status.conf
+		Restart your web server by running:
+		# service nginx restart
+		=====================
+
+		=== Debian/Ubuntu ===
+		Just add the section below to /etc/nginx/sites-available/status
+		Then link it:
+		# ln -s /etc/nginx/sites-available/status /etc/nginx/sites-enabled/status
+		Restart your web server by running:
+		# /etc/init.d/nginx restart
+		=====================
+
+		The configuration to add:
+		=====================
+		server {
+			listen               80;
+			server_name   localhost;
+			location /nginx_status {
+				stub_status         on;
+				access_log         off;
+				allow        127.0.0.1;
+				deny               all;
+			}
+		}
+		=====================
+
+		Now you should be set for running this monitor...
+	-->
 	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
 	<agent name="Nginx StubStatus Agent" interval="60">
 		<monitor name="Nginx Active Connections Monitor" tag="nginxMonitor">
