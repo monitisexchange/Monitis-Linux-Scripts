@@ -50,36 +50,43 @@ fi
 ###################################################################################################
 if [[ $# -le 3 ]]
 then
-	echo "Usage: $0 [user <username> pwd <password>]  host <hostname> port <port> metrics <metric1,metric2,metricN>"
-	RETURN_CODE=1
-	exit $RETURN_CODE
+	usage
 fi
-
-for ((i=1;i<=${#@}+2;i++))
+while [ $# -gt 0 ]    # Until run out of parameters . . .
 do
-    declare params_$1="$2"
+	case $1 in
+    	-u | --user | -user )  			USERNAME="$2"; shift	;;
+    	-p | --pwd | -pwd ) 			PSWD="$2"; shift	;;
+    	-h | --host | -host )  			HOST="$2"; shift	;;
+    	-t | --port | -port )  			PORT="$2"; shift	;;
+    	-m | --metrics | -metrics )		METRICS="$2"; shift ;;
+
+    	*) ;; # unknown option		
+  	esac
+  	shift
+done
 #
-if [[ -n $params_user ]]
+if [[ -n $USERNAME ]]
 then
 	USE_AUTH=true
-	if [ -z "$params_pwd" ]; then
+	if [ -z "$PSWD" ]; then
                 echo "$PARAM_ERROR_STRING 'pwd'"
                 RETURN_CODE=1
 		exit $RETURN_CODE 
         fi
 
-        if [ -z "$params_host" ]; then
+        if [ -z "$HOST" ]; then
                 echo "$PARAM_ERROR_STRING 'host'"
                 RETURN_CODE=1
 		exit $RETURN_CODE
         fi
 
-        if [ -z "$params_port" ]; then
+        if [ -z "$PORT" ]; then
                 echo "$PARAM_ERROR_STRING 'port'"
                 RETURN_CODE=1
 		exit $RETURN_CODE
         fi
-	if [ -z "$params_metrics" ]; then
+	if [ -z "$METRICS" ]; then
 		echo "$PARAM_ERROR_STRING 'metrics'"
 		RETURN_CODE=1
 		exit $RETURN_CODE
@@ -87,14 +94,13 @@ then
 
 fi
 #
-    shift 2
-done
+
 #
 if [[ $USE_AUTH == true ]]
 then
-	MONGOSTAT_OPTS=" --host $params_host:$params_port -u $params_user -p $params_pwd"
+	MONGOSTAT_OPTS=" --host $HOST:$PORT -u $USER -p $PSWD"
 else
-	MONGOSTAT_OPTS=" --host $params_host:$params_port"
+	MONGOSTAT_OPTS=" --host $HOST:$PORT"
 fi
 #
 metrics=$($MONGOSTAT $MONGOSTAT_OPTS -n 1|$TAIL -1)
@@ -103,7 +109,8 @@ if [[ -n $error ]]
 then
 	exit 1
 fi
-splited_metrics=$(echo $params_metrics|tr ',' ' ')
+#
+splited_metrics=$(echo $METRICS|tr ',' ' ')
 for metric in $splited_metrics
 do
 	case "$metric" in
@@ -161,3 +168,11 @@ done
 #
 echo $OUTPUT
 exit $RETURN_CODE
+
+
+usage(){
+
+	echo "Usage: $0 [-user|--user <username> -pwd|--pwd <password>]  -host|--host <hostname> -port|--port <port> -metrics|--metrics <metric1,metric2,metricN>"
+	RETURN_CODE=1
+	exit $RETURN_CODE
+}
