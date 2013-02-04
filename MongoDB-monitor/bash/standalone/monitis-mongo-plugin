@@ -66,6 +66,9 @@ do
   	shift
 done
 #
+METRICS=${METRICS/'['/''}
+METRICS=${METRICS/%']'/''}
+#
 if [[ -n $USERNAME ]]
 then
 	USE_AUTH=true
