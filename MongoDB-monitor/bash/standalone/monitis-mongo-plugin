@@ -1,7 +1,7 @@
 #!/bin/bash
 :
 
-#set -x
+set -x
 SED=$(which sed)
 AWK=$(which awk)
 TAIL=$(which tail)
@@ -158,7 +158,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["insert"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -169,7 +169,7 @@ do
 	else
 		OUTPUT=" $OUTPUT insert="$result
 	fi
-	save_value="$save_value insert "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value insert "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"query")
@@ -177,7 +177,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["query"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -188,7 +188,7 @@ do
 	else
 		OUTPUT=" $OUTPUT query="$result
 	fi
-	save_value="$save_value query "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value query "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"update")
@@ -196,7 +196,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["update"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -207,7 +207,7 @@ do
 	else
 		OUTPUT=" $OUTPUT update="$result
 	fi
-	save_value="$save_value update "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value update "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"delete")
@@ -215,7 +215,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["delete"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -226,7 +226,7 @@ do
 	else
 		OUTPUT=" $OUTPUT delete="$result
 	fi
-	save_value="$save_value delete "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value delete "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"getmore")
@@ -234,7 +234,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["getmore"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -245,7 +245,7 @@ do
 	else
 		OUTPUT=" $OUTPUT getmore="$result
 	fi
-	save_value="$save_value getmore "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value getmore "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"command")
@@ -253,7 +253,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["command"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -264,7 +264,7 @@ do
 	else
 		OUTPUT=" $OUTPUT command="$result
 	fi
-	save_value="$save_value command "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value command "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"flushes")
@@ -272,7 +272,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["flushes"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -283,7 +283,7 @@ do
 	else
 		OUTPUT=" $OUTPUT flushes="$result
 	fi
-	save_value="$save_value flushes "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value flushes "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"mapped")
@@ -291,7 +291,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["mapped"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -302,7 +302,7 @@ do
 	else
 		OUTPUT=" $OUTPUT mapped="$result
 	fi
-	save_value="$save_value mapped "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value mapped "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"vsize")
@@ -310,7 +310,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["virtual"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -321,7 +321,7 @@ do
 	else
 		OUTPUT=" $OUTPUT vsize="$result
 	fi
-	save_value="$save_value vsize "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value vsize "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"res")
@@ -329,7 +329,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["mapped"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -340,7 +340,7 @@ do
 	else
 		OUTPUT=" $OUTPUT res="$result
 	fi
-	save_value="$save_value res "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value res "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"faults")
@@ -348,7 +348,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["extra_info"]["page_faults"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -359,7 +359,7 @@ do
 	else
 		OUTPUT=" $OUTPUT faults="$result
 	fi
-	save_value="$save_value faults "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value faults "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"netIn")
@@ -367,7 +367,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["network"]["bytesIn"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -378,7 +378,7 @@ do
 	else
 		OUTPUT=" $OUTPUT netIn="$result
 	fi
-	save_value="$save_value netIn "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value netIn "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"netOut")
@@ -386,7 +386,7 @@ do
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["network"]["bytesOut"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
-		result=0
+		prev=0
 	else
 		result=$(( ($current-$prev) / 300))
 	fi
@@ -397,7 +397,7 @@ do
 	else
 		OUTPUT=" $OUTPUT netOut="$result
 	fi
-	save_value="$save_value netOut "$(echo $result|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value netOut "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 
