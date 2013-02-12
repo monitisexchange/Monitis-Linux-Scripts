@@ -15,7 +15,7 @@ declare -r MON_ACTION="action"
 declare -r MON_GET_DATA="getData"
 declare -r MON_GET_ADATA="getAData"
 
-declare -r RESULT_PARAMS="status:status::3;events:Events_count::2" 		# format of result params - name1:displayName1:uom1:Integer
+declare -r RESULT_PARAMS="status:status::3;events:Events_count::2" 	# format of result params - name1:displayName1:uom1:Integer
 #declare -r ADDITIONAL_PARAMS="details:Errors_detail::3"	# format of additional params - name:displayName:uom:String
 
 declare -r DUMMY_RESULT="events:0;status:NOK"

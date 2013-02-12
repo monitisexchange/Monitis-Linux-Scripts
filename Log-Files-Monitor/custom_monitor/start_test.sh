@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source monitor_constant.sh
+
 # Function returns the full path to the current script.
 currentscriptpath()
 {
@@ -13,11 +15,11 @@ currentscriptpath()
 }
 
 tmp=`currentscriptpath`
-cd $tmp
+cd "$tmp"
 
-./stop.sh
+./stop.sh 1> /dev/null
 
 echo ---------starting test loop--------------
-./log_simulation.sh &
-xterm -hold -sb -e ./monitor.sh &
-xterm -hold -sb -e ./monitor_test.sh "$@"
+xterm -hold -sb -e ./log_simulation.sh "$ERR_FILE" &
+xterm -hold -sb -e ./monitor.sh "$ERR_FILE" &
+xterm -hold -sb -e ./monitor_test.sh "$@" "$ERR_FILE" &
