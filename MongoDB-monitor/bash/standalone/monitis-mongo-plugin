@@ -156,6 +156,10 @@ if [[ -z $BEFORE ]];then
 	BEFORE=0
 fi
 DIFFER=$(( $NOW - $BEFORE ))
+if [[ 0 -eq $DIFFER ]]
+then
+	DIFFER=1
+fi
 save_value="timestamp "$(echo $NOW|sed "s/$/\\`echo -e '\n\r'`/g")
 #
 for metric in $splited_metrics
