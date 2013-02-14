@@ -150,9 +150,18 @@ fi
 #
 #
 splited_metrics=$(echo $METRICS|tr ',' ' ')
+NOW=$(date '+%s')
+BEFORE=$(cat $PREV_FILE|grep 'timestamp'|$AWK '{print $2}')
+if [[ -z $BEFORE ]];then
+	BEFORE=0
+fi
+DIFFER=$(( $NOW - $BEFORE ))
+save_value="timestamp "$(echo $NOW|sed "s/$/\\`echo -e '\n\r'`/g")
+#
 for metric in $splited_metrics
 do
 	case "$metric" in
+
 	"insert")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'insert'|$AWK '{print $2}')
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["insert"]' $DB|$TAIL -1)
@@ -160,7 +169,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -179,7 +188,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -198,7 +207,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -217,7 +226,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -236,7 +245,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -255,7 +264,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -274,7 +283,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -293,7 +302,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -312,7 +321,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -331,7 +340,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -350,7 +359,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -369,7 +378,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -388,7 +397,7 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
