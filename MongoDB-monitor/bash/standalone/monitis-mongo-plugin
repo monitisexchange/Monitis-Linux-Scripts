@@ -150,9 +150,22 @@ fi
 #
 #
 splited_metrics=$(echo $METRICS|tr ',' ' ')
+NOW=$(date '+%s')
+BEFORE=$(cat $PREV_FILE|grep 'timestamp'|$AWK '{print $2}')
+if [[ -z $BEFORE ]];then
+	BEFORE=0
+fi
+DIFFER=$(( $NOW - $BEFORE ))
+if [[ 0 -eq $DIFFER ]]
+then
+	DIFFER=1
+fi
+save_value="timestamp "$(echo $NOW|sed "s/$/\\`echo -e '\n\r'`/g")
+#
 for metric in $splited_metrics
 do
 	case "$metric" in
+
 	"insert")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'insert'|$AWK '{print $2}')
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["insert"]' $DB|$TAIL -1)
@@ -160,13 +173,15 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT insert="$result
 	fi
 	save_value="$save_value insert "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -179,13 +194,15 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT query="$result
 	fi
 	save_value="$save_value query "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -198,13 +215,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT update="$result
 	fi
 	save_value="$save_value update "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -217,13 +237,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT delete="$result
 	fi
 	save_value="$save_value delete "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -236,13 +259,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT getmore="$result
 	fi
 	save_value="$save_value getmore "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -255,13 +281,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT command="$result
 	fi
 	save_value="$save_value command "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -274,13 +303,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT flushes="$result
 	fi
 	save_value="$save_value flushes "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -293,13 +325,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT mapped="$result
 	fi
 	save_value="$save_value mapped "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -312,13 +347,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT vsize="$result
 	fi
 	save_value="$save_value vsize "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -331,13 +369,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT res="$result
 	fi
 	save_value="$save_value res "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -350,13 +391,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT faults="$result
 	fi
 	save_value="$save_value faults "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -369,13 +413,16 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		test -z $result && result=0
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT netIn="$result
 	fi
 	save_value="$save_value netIn "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -388,13 +435,15 @@ do
 	then
 		prev=0
 	else
-		result=$(( ($current-$prev) / 300))
+		result=$(( ($current-$prev) / $DIFFER))
 	fi
 	if [[ $result -lt 0 ]]
 	then
 		echo "wrongResult=true"
+		save "$save_value"
 		exit
 	else
+		test -z $result && result=0
 		OUTPUT=" $OUTPUT netOut="$result
 	fi
 	save_value="$save_value netOut "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -409,6 +458,7 @@ save "$save_value"
 if [[ $empty -eq 1 ]]
 then
 	echo "wrongResult=true"
+	save "$save_value"
 else
 	echo $OUTPUT
 fi
