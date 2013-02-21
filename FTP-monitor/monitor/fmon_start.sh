@@ -120,7 +120,7 @@ do
 	#echo
 
 	# Sending to Monitis
-	add_custom_monitor_data $param $timestamp
+	add_custom_monitor_data "$param" "$timestamp"
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
@@ -159,7 +159,7 @@ do
 #				echo $NAME - DEBUG: Composed additional params is \"$param\" >&2
 #				echo
 				# Sending to Monitis
-				add_custom_monitor_additional_data $param $timestamp
+				add_custom_monitor_additional_data "$param" "$timestamp"
 				ret="$?"
 				if [[ ($ret -ne 0) ]]
 				then
