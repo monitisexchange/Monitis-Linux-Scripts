@@ -185,6 +185,7 @@ do
 	then
 		prev=0
 	else
+		current=$(( $current / 1000000 ))
 		result=$(( $current-$prev ))
 	fi
 	if [[ $result -lt 0 ]]
@@ -199,15 +200,73 @@ do
 	save_value="$save_value globalLock.lockTime "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
+	"globalLock.totalTime")
+	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.totalTime'|$AWK '{print $2}')
+	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["totalTime"]' $DB|$TAIL -1)
+	if [[ -z $prev ]]
+	then
+		prev=0
+	else
+		result=$(( $current-$prev ))
+		totaltime=$result
+	fi
+	if [[ $result -lt 0 ]]
+	then
+		echo "wrongResult=true"
+		save "$save_value"
+		exit
+	else
+		test -z $result && result=0
+		OUTPUT=" $OUTPUT globalLock.totalTime="$result
+	fi
+	save_value="$save_value globalLock.totalTime "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	;;
+##########
 	"globalLock.ratio")
+#
+	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.lockTime'|$AWK '{print $2}')
+	_current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["lockTime"]' $DB|$TAIL -1)
+	if [[ -z $prev ]]
+	then
+		prev=0
+	else
+		current=$(( $_current / 1000000 ))
+		locktime=$(( $current-$prev ))
+	fi
+	if [[ $result -lt 0 ]]
+	then
+		echo "wrongResult=true"
+		save "$save_value"
+		exit
+	else
+		test -z $result && result=0
+	fi
+#
+	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.totalTime'|$AWK '{print $2}')
+	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["totalTime"]' $DB|$TAIL -1)
+	if [[ -z $prev ]]
+	then
+		prev=0
+	else
+		totaltime=$(( $current-$prev ))
+	fi
+	if [[ $result -lt 0 ]]
+	then
+		echo "wrongResult=true"
+		save "$save_value"
+		exit
+	else
+		test -z $result && result=0
+		OUTPUT=" $OUTPUT globalLock.totalTime="$result
+	fi
+#
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.ratio'|$AWK '{print $2}')
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["ratio"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
 		prev=0
 	else
-		# formula ??
-		result=$(( ($current-$prev) / $DIFFER))
+		result=$(( $locktime / $totaltime ))
 	fi
 	if [[ $result -lt 0 ]]
 	then
@@ -236,7 +295,7 @@ do
 		save "$save_value"
 		exit
 	else
-		test -z $result && result=0
+		test -z $result && result=-1
 		OUTPUT=" $OUTPUT mem.resident="$result
 	fi
 	save_value="$save_value mem.resident "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -257,7 +316,7 @@ do
 		save "$save_value"
 		exit
 	else
-		test -z $result && result=0
+		test -z $result && result=-1
 		OUTPUT=" $OUTPUT mem.virtual="$result
 	fi
 	save_value="$save_value mem.virtual "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -278,7 +337,7 @@ do
 		save "$save_value"
 		exit
 	else
-		test -z $result && result=0
+		test -z $result && result=-1
 		OUTPUT=" $OUTPUT mem.mapped="$result
 	fi
 	save_value="$save_value mem.mapped "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
@@ -350,11 +409,12 @@ do
 ##########
 	"backgroundFlushing.total_ms")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.total_ms'|$AWK '{print $2}')
-	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["total_ms"]' $DB|$TAIL -1)
+	_current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["total_ms"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
 		prev=0
 	else
+		current=$(( $_current / 1000 ))
 		result=$(( ($current-$prev) / $DIFFER))
 		totalms=$result
 	fi
@@ -371,6 +431,42 @@ do
 	;;
 ##########
 	"backgroundFlushing.average_ms")
+#
+	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.total_ms'|$AWK '{print $2}')
+	_current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["total_ms"]' $DB|$TAIL -1)
+	if [[ -z $prev ]]
+	then
+		prev=0
+	else
+		current=$(( $_current / 1000 ))
+		totalms=$(( ($current-$prev) / $DIFFER))
+	fi
+	if [[ $result -lt 0 ]]
+	then
+		echo "wrongResult=true"
+		save "$save_value"
+		exit
+	else
+		test -z $result && result=0
+	fi
+#
+	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.flushes'|$AWK '{print $2}')
+	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["flushes"]' $DB|$TAIL -1)
+	if [[ -z $prev ]]
+	then
+		prev=0
+	else
+		flushes=$(( ($current-$prev) / $DIFFER))
+	fi
+	if [[ $result -lt 0 ]]
+	then
+		echo "wrongResult=true"
+		save "$save_value"
+		exit
+	else
+		test -z $result && result=0
+	fi
+#
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.average_ms'|$AWK '{print $2}')
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["average_ms"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
@@ -393,12 +489,12 @@ do
 ##########
 	"backgroundFlushing.last_ms")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.last_ms'|$AWK '{print $2}')
-	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["last_ms"]' $DB|$TAIL -1)
+	_current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["last_ms"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
 		prev=0
 	else
-		result=$current
+		result=$(( $_current / 1000 ))
 	fi
 	if [[ $result -lt 0 ]]
 	then
