@@ -76,10 +76,7 @@ There isn't much of a difference comparing to other perl modules:
 
 	cpan install MonitisMonitorManager
 
-This would install the two relevant Perl modules (Monitis Perl SDK and
-
-MonitisMonitorManager) but without the init.d script.
-
+This would install the two relevant Perl modules (Monitis Perl SDK and MonitisMonitorManager) but without the init.d script.
 
 ### Standalone invocation
 
@@ -107,9 +104,7 @@ The packaged version of M3 provides now an init.d service (/etc/init.d/m3).
 
 Tested on Debian 6.x and RHEL/CentOS 6.x.
 
-M3 service would use the configuration at /etc/m3.d/config.xml and
-
-/etc/m3.d/M3Templates.pm.
+M3 service would use the configuration at /etc/m3.d/config.xml and /etc/m3.d/M3Templates.pm.
 
 M3 log file would reside in /var/log/m3.log.
 
