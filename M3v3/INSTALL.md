@@ -10,18 +10,6 @@ MonitisMonitorManager package is comprised of 3 main components:
 
 M3 depends on the Monitis API Perl module
 
-### CPAN Installation
-
-Installing via CPAN is generic and should work on most GNU/Linux systems.
-
-There isn't much of a difference comparing to other perl modules:
-
- # cpan install MonitisMonitorManager
-
-This would install the two relevant Perl modules (Monitis Perl SDK and
-
-MonitisMonitorManager) but without the init.d script.
-
 ### RHEL 6.x / CentOS 6.x or any other recent RPM based distribution
 
 M3 uses a handful of differnt perl modules, you can either install them
@@ -36,11 +24,9 @@ Provided in the links below are links to RPMs of the 2 packages:
 
 The following should take care of you:
 
- # cd /tmp
-
- # wget -c http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.10-1.noarch.rpm
-
- # yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.10-1.noarch.rpm
+	cd /tmp
+	wget -c http://dir.monitis.com/m3/CentOS6/perl-Monitis-0.92-8.noarch.rpm http://dir.monitis.com/m3/CentOS6/perl-MonitisMonitorManager-3.10-1.noarch.rpm
+	yum localinstall perl-Monitis-0.92-8.noarch.rpm perl-MonitisMonitorManager-3.10-1.noarch.rpm
 
 ### RHEL 5.x / CentOS 5.x
 
@@ -64,27 +50,36 @@ Provided in the links below are links to DEBs of the 2 packages:
 
 The following should take care of you:
 
- # cd /tmp
-
- # wget -c http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.10-1_all.deb
-
- # gdebi libmonitis-perl_0.92_all.deb && gdebi libmonitismonitormanager-perl_3.10-1_all.deb
+	cd /tmp
+	wget -c http://dir.monitis.com/m3/Debian6/libmonitis-perl_0.92_all.deb http://dir.monitis.com/m3/Debian6/libmonitismonitormanager-perl_3.10-1_all.deb
+	gdebi libmonitis-perl_0.92_all.deb && gdebi libmonitismonitormanager-perl_3.10-1_all.deb
 
 Alternatively if you don't have gdebi installed for any reason, just use dpkg:
 
- # dpkg -i libmonitis-perl_0.92_all.deb libmonitismonitormanager-perl_3.10-1_all.deb
+	dpkg -i libmonitis-perl_0.92_all.deb libmonitismonitormanager-perl_3.10-1_all.deb
 
 On Debian/Ubuntu for some reason building packages is not done with dependencies.
 
-Run this to fulfill most of them
+Run this to fulfill most of them:
 
- # apt-get install libxml-simple-perl libjson-perl libdate-manip-perl libsys-statistics-linux-perl libnet-telnet-perl libnet-ssh-perl libsnmp-perl libnet-snmp-perl libdbi-perl
+	apt-get install libxml-simple-perl libjson-perl libdate-manip-perl libsys-statistics-linux-perl libnet-telnet-perl libnet-ssh-perl libsnmp-perl libnet-snmp-perl libdbi-perl
 
-In addition to that, for some reason Net::SSH::Perl is not packaged by
+In addition to that, for some reason Net::SSH::Perl is not packaged by Debian/Ubuntu, so in order to install it via CPAN, run:
 
-Debian/Ubuntu, so in order to install it via CPAN, run:
+	cpan -i Net::SSH::Perl
 
- # cpan -i Net::SSH::Perl
+### CPAN Installation
+
+Installing via CPAN is generic and should work on most GNU/Linux systems, however it should be discouraged if you can install via RPM or DEB.
+
+There isn't much of a difference comparing to other perl modules:
+
+	cpan install MonitisMonitorManager
+
+This would install the two relevant Perl modules (Monitis Perl SDK and
+
+MonitisMonitorManager) but without the init.d script.
+
 
 ### Standalone invocation
 
@@ -96,15 +91,15 @@ Please edit /etc/m3.d/M3Templates.pm and add your API and secret key.
 
 Once this is done, monitis-m3 can be run:
 
- # monitis-m3 --dry-run --once /usr/share/doc/perl-MonitisMonitorManager-3.10/eg/etc_file_monitor.xml
+	monitis-m3 --dry-run --once /usr/share/doc/perl-MonitisMonitorManager-3.10/eg/etc_file_monitor.xml
 
 On Debian/Ubuntu the documentation directory differ slightly:
 
- # monitis-m3 --dry-run --once /usr/share/doc/libmonitismonitormanager-perl/examples/etc_file_monitor.xml
+	monitis-m3 --dry-run --once /usr/share/doc/libmonitismonitormanager-perl/examples/etc_file_monitor.xml
 
 monitis-m3 takes a few parameters, to see them all, run:
 
- # monitis-m3 --help
+	monitis-m3 --help
 
 ### Running as /etc/init.d service
 
@@ -122,20 +117,20 @@ Please edit /etc/m3.d/M3Templates.pm and add your API and secret key.
 
 To start M3, run:
  
- # /etc/init.d/m3 start
+	/etc/init.d/m3 start
 
 To stop M3, run:
 
- # /etc/init.d/m3 stop
+	/etc/init.d/m3 stop
 
 And to restart M3, run:
 
- # /etc/init.d/m3 restart
+	/etc/init.d/m3 restart
 
 ### Net::SSH::Perl Issue
 
 Net::SSH::Perl seems to be a stubborn module. If you are not intending to use
 it and couldn't be bothered to install it, you can just delete it by running:
 
- # rm -f /usr/share/perl5/MonitisMonitorManager/Execution/RemoteCommand.pm 
+	rm -f /usr/share/perl5/MonitisMonitorManager/Execution/RemoteCommand.pm 
 
