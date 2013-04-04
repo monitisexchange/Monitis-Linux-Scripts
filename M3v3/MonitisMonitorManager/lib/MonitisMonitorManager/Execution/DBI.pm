@@ -40,6 +40,8 @@ sub get_config {
 		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "password");
 	${$plugin_parameters}{statistics} =
 		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "statistics");
+	${$plugin_parameters}{delimiter} =
+		MonitisMonitorManager::M3PluginCommon::get_optional_parameter($self, $plugin_xml_base, "delimiter", " ");
 }
 
 # execute a DBI (SQL) query and return the last row fetched
@@ -57,6 +59,7 @@ sub execute {
 	my $username = $plugin_parameters{username};
 	my $password = $plugin_parameters{password};
 	my $statistics = $plugin_parameters{statistics};
+	my $delimiter = $plugin_parameters{delimiter};
 
 	# hostname
 	if (!defined($hostname)) {
@@ -115,7 +118,7 @@ sub execute {
 	my $number_of_rows = 0;
 	my $output;
 	while (my @data = $sth->fetchrow_array()) {
-		$output = $data[0];
+		$output = join($delimiter, @data);
 		$number_of_rows++;
 	}
 
