@@ -1,6 +1,6 @@
 Summary: MonitisMonitorManager Perl module
 Name: perl-MonitisMonitorManager
-Version: 3.11
+Version: 3.12
 Release: 1
 License: GPL or Artistic
 Group: Development/Libraries
@@ -10,6 +10,7 @@ BuildArch: noarch
 BuildRequires: perl
 Requires: perl
 Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+Requires: perl-Monitis >= 0.93
 Source: perl-MonitisMonitorManager.tar.gz
 
 %description
@@ -78,6 +79,11 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/sysconfig/m3
 
 %changelog
+* Fri Apr  5 2013 Dan Fruehauf <malkodan@gmail.com> - 3.12-1
+- Added version switch for invocation
+- Support for multi-column queries in DBI module
+- Depending on perl-Monitis now (Perl-SDK)
+
 * Sat Nov 3 2012 Dan Fruehauf <malkodan@gmail.com> - 3.11-1
 - Added disk usage agent
 - init.d service for RHEL/CentOS is a bit better at stopping the service

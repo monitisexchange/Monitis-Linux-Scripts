@@ -45,7 +45,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '3.11';
+our $VERSION = '3.12';
 
 # use the same constant as in the Perl-SDK
 use constant DEBUG => $ENV{MONITIS_DEBUG} || 0;
