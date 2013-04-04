@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<config>
+	<apicredentials apikey="%API_KEY%" secretkey="%SECRET_KEY%"/>
+	<agent name="MySQL Agent" interval="300">
+		<monitor name="Sample MySQL Monitor">
+			<sql>
+				<query>select column1, column2, column3, column4 from table;</query>
+				<!-- If delimiter is blank, a single space will be used to separate
+				     the columns -->
+				<driver>mysql</driver>
+				<hostname>localhost</hostname>
+				<name>mysql</name>
+				<username>root</username>
+				<password>XXX</password>
+				<statistics>0</statistics>
+				<delimiter>;;;</delimiter>
+			</sql>
+			<metric name="Column1">
+				<type>string</type>
+				<uom>N/A</uom>
+				<regex>^(\S+);;;\S+;;;\S+;;;S+</regex>
+			</metric>
+			<metric name="Column2">
+				<type>string</type>
+				<uom>N/A</uom>
+				<regex>^\S+;;;(\S+);;;\S+;;;\S+</regex>
+			</metric>
+			<metric name="Column3">
+				<type>string</type>
+				<uom>N/A</uom>
+				<regex>^\S+;;;\S+;;;(\S+);;;\S+</regex>
+			</metric>
+			<metric name="Column4">
+				<type>string</type>
+				<uom>N/A</uom>
+				<regex>^\S+;;;\S+;;;\S+;;;(\S+)</regex>
+			</metric>
+		</monitor>
+	</agent>
+</config>
