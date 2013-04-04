@@ -5,14 +5,14 @@
 		<monitor name="Sample MySQL Monitor">
 			<sql>
 				<query>select column1, column2, column3, column4 from table;</query>
-				<!-- If delimiter is blank, a single space will be used to separate
-				     the columns -->
 				<driver>mysql</driver>
 				<hostname>localhost</hostname>
 				<name>mysql</name>
 				<username>root</username>
 				<password>XXX</password>
 				<statistics>0</statistics>
+				<!-- If delimiter is blank, a single space will be used to separate
+				     the columns -->
 				<delimiter>;;;</delimiter>
 			</sql>
 			<metric name="Column1">
