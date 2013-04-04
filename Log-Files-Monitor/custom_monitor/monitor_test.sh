@@ -7,21 +7,25 @@ source monitor_constant.sh || error 2 monitor_constant.sh
 #usage: monitor_test.sh -d <duration in min>
 # default values 
 # 		d = 5 min
-
-while getopts "d:h" opt;
+#parse command line
+while [ $# -gt 0 ]    # Until run out of parameters . . .
 do
-	case $opt in
-	d) dur=$OPTARG 
-		if [[ ($dur -gt 0) ]] ; then
-		    echo Set duration to $dur min
-		    DURATION=$dur
-		fi
-	;;
-	h) echo "Usage: $0 -d <duration in min>" ; exit 0 ;;
-	*) echo "Usage: $0 -d <duration in min>" 
-	   error 4 "invalid parameter(s) while start"
-	   ;;
-	esac
+	case $1 in
+    	-h | --help ) 		echo "Usage: $0 -d <duration in min>" ; exit 0 ;;
+    	-d | --duration )  	dur=$2 
+							if [[ ($dur -gt 0) ]] ; then
+							    echo Set duration to $dur min
+							    DURATION=$dur
+							fi	; 
+							shift	;;
+    	*)  # it can be file path
+    		if [[ !(-r "$1") ]] ; then
+			   echo "Unrecognized parameter $1"
+			   exit 1 
+			fi
+			;; # unknown option		
+  	esac
+  	shift
 done
 
 DURATION=$((60*$DURATION)) #convert to sec

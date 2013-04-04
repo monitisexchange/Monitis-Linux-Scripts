@@ -1,11 +1,10 @@
 #!/bin/bash
 :
-#set -x
 #
 PIDFILE=/tmp/monitis-mongo.pid
 TMP_MONGO=/tmp/mongo.tmp
 REQUEST_TIME_FILE=/tmp/req_time.tmp
-IDLETIME=10
+DEFIDLETIME=10
 xml_output_type="xml"
 AWK=$(which awk)
 TIME=$(which time)
@@ -28,7 +27,6 @@ source monitis_api.sh || exit 1
 #
 monitor_id=$(curl -s "$API_URL?apikey=$API_KEY&output=$xml_output_type&version=$API_VERSION&action=getMonitors&tag=$MONITOR_TAG" | $XPATH \
 /monitors/monitor/id 2> /dev/null | sed -e 's#</\?id>##g')
-
 
 #
 ##################################################################################################
@@ -79,23 +77,34 @@ fi
 # Checking for input parameters
 ###################################################################################################
 
-declare metric
-
-for ((i=1;i<=${#@}+2;i++))
+while [ $# -gt 0 ]    # Until run out of parameters . . .
 do
-    declare params_$1="$2"
-#
-      
-    shift 2
+	case $1 in
+    	-u | --user | -user )  			USERNAME="$2"; shift	;;
+    	-p | --pwd | -pwd ) 			PSWD="$2"; shift	;;
+    	-h | --host | -host )  			HOST="$2"; shift	;;
+    	-t | --port | -port )  			PORT="$2"; shift	;;
+    	-w | --mode | -mode )  			MODE="$2"; shift	;;
+    	-m | --metrics | -metrics )		METRICS="$2"; shift ;;
+    	-i | --idletime | -idletime )  		IDLETIME="$2"; shift	;;
+    	-d | --database | -database )		DATABASE="$2"; shift	;;
+    	-q | --query | -query )  		QUERY="$2"; shift	;;
+
+    	*) ;; # unknown option		
+  	esac
+  	shift
 done
+#cleaning metrics
+METRICS=${METRICS/'['/''}
+METRICS=${METRICS/%']'/''}
 #################################################################################
-	if [ -z "$params_mode" ]; then
-                params_mode="daemon"
-		params_metrics=""
+	if [ -z "$MODE" ]; then
+                MODE="daemon"
+		METRICS=""
         fi
 #################################################################################
-	if [[ -z "$params_metrics" && "$params_mode" != "daemon" ]]; then
-	 if [[ "$params_mode" != "query" ]];then
+	if [[ -z "$METRICS" && "$MODE" != "daemon" ]]; then
+	 if [[ "$MODE" != "query" ]];then
 		echo "$PARAM_ERROR_STRING 'metrics'"
 		RETURN_CODE=1
 		exit $RETURN_CODE
@@ -103,43 +112,43 @@ done
 	fi
 
 #################################################################################
-	if [[ -n $params_user ]]
+	if [[ -n $USERNAME ]]
 	then
 	USE_AUTH=true
-	if [ -z "$params_pwd" ]; then
+	if [ -z "$PSWD" ]; then
                 echo "$PARAM_ERROR_STRING 'pwd'"
                 RETURN_CODE=1
 		exit $RETURN_CODE 
         fi
 	fi
 #################################################################################
-	if [[ -z $params_host ]]
+	if [[ -z $HOST ]]
 	then
-		params_host="localhost"
+		HOST="localhost"
 	fi
-	if [[ -z $params_port ]]
+	if [[ -z $PORT ]]
 	then
-		params_port=27017
+		PORT=27017
 	fi
 #################################################################################
-	if [[ -n "$params_idletime" && $params_idletime -eq $params_idletime ]]; then
-                IDLETIME=$params_idletime
-        fi
+	if [[ -n "$IDLETIME" && $IDLETIME -eq $IDLETIME ]]; then
+                DEFIDLETIME=$IDLETIME
+	fi
 #################################################################################
 if [[ $USE_AUTH == true ]]
 then
-	MONGOSTAT_OPTS=" --host $params_host:$params_port -u $params_user -p $params_pwd"
-	PLUGIN_OPTS="user $params_user pwd $params_pwd  host $params_host port $params_port metrics $params_metrics"
+	MONGOSTAT_OPTS=" --host $HOST:$PORT -u $USERNAME -p $PSWD"
+	PLUGIN_OPTS="-user $USERNAME -pwd $PSWD  -host $HOST -port $PORT -metrics" "$METRICS"
 else
-if [[ -n $params_host && -n $params_port ]]
+if [[ -n $HOST && -n $PORT ]]
 then
-	MONGOSTAT_OPTS=" --host $params_host --port $params_port"
+	MONGOSTAT_OPTS=" --host $HOST --port $PORT"
 fi
 
-	PLUGIN_OPTS="host $params_host port $params_port metrics $params_metrics"
+	PLUGIN_OPTS="-host $HOST -port $PORT -metrics $METRICS"
 fi
 #################################################################################
-if [[ "$params_mode" == "query" && -z "$params_query" ]]; then
+if [[ "$MODE" == "query" && -z "$QUERY" ]]; then
 		echo "$PARAM_ERROR_STRING 'query'"
 		RETURN_CODE=1
 		exit $RETURN_CODE
@@ -155,17 +164,13 @@ result=
 
 	#
 	UOM=
-		if [[ $params_mode == "query" && -n $params_query ]]
+		if [[ $MODE == "query" && -n $QUERY ]]
 		then
-$TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "printjson($params_query)" $params_database|$TAIL -1  > $TMP_MONGO
+$TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "printjson($QUERY)" $DATABASE|$TAIL -1  > $TMP_MONGO
 			$CP $TMP_MONGO $TMP_MONGO.bak
 			#
 			value=$(cat $TMP_MONGO)
-#			g1_r=$(echo $value|grep '^{')
-#			g2_r=$(echo $value|grep '}$')
-#			if [[ $g1_r && $g2_r ]];then
-#				value=$(cat $TMP_MONGO|sed -e 's/[{}]/''/g' | awk -v RS=',' -F: '/"n"/ {print $2}'|tr -d ' ')
-#			fi
+
 			response=$(cat $REQUEST_TIME_FILE|$AWK '{print $1}')
 			if [[ "x${value}" == "x}" ]];then
 				value="No Data"	
@@ -182,11 +187,7 @@ $TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "printjson($pa
 				exit $RETURN_CODE
 			fi
 			value_last=$(cat $TMP_MONGO.bak)
-#			g1_r=$(echo $value_last|grep '^{')
-#			g2_r=$(echo $value_last|grep '}$')
-#			if [[ $g1_r && $g2_r ]];then
-#				value_last=$(cat $TMP_MONGO|sed -e 's/[{}]/''/g' | awk -v RS=',' -F: '/"n"/ {print $2}'|tr -d ' ')
-#			fi
+
 			if [[ "x${value_last}" != "x" ]] ; then
 
 			v1_ret=$(test -n "$value" -a "$value" -ge 0 2>/dev/null)
@@ -206,10 +207,10 @@ $TIME -f "%e" -o $REQUEST_TIME_FILE $MONGO $MONGOSTAT_OPTS --eval "printjson($pa
 
 			postdata=$postdata"ResponseTime:$response;"
 			result=$result"ResponseTime:Query+execution+time:$UOM:4;";
-
+			#
 			postdata=$postdata"Value:${value};"
 			result=$result"Value:Query+result:$UOM:$vartype;";
-
+			#
 			postdata=$postdata"Difference:$differ;"
 			result=$result"Difference:Difference+from+previous+value:$UOM:2;";
 
@@ -367,13 +368,13 @@ while [ true ]
     {
 	get_data
 	monitis_update_custom_monitor_data "$MONITOR_TAG" "$postdata" 2>&1
-    /bin/sleep $IDLETIME
+    /bin/sleep $DEFIDLETIME
     }
 done
 
 }
 ##############################################################################
-if [[ $params_mode == "plugin" ]]
+if [[ $MODE == "plugin" ]]
 then
 /bin/bash $PLUGIN $PLUGIN_OPTS
 exit 0

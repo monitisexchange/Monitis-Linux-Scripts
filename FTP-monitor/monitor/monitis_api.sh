@@ -111,6 +111,7 @@ function add_custom_monitor {
 	local result_params="$3"
 	local additional_params="$4"
 	local monitor_type="$5"
+	local multivalue="$6"
 	MSG=""
 	
 	# check correctness of mandatory parameters
@@ -131,6 +132,9 @@ function add_custom_monitor {
 	postdata=$postdata" -d tag=$monitor_tag "
 	if [[ (-n "$monitor_type") ]] ; then
 		postdata=$postdata" -d type=$monitor_type "
+	fi
+	if [[ (-n "$multivalue") ]] ; then
+		postdata=$postdata" -d multiValue=$multivalue "
 	fi
 	if [[ (-n "$additional_params") ]] ; then
 		postdata=$postdata" -d additionalResultParams=$additional_params "

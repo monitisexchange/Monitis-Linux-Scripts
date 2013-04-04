@@ -315,7 +315,7 @@ function ftp_check(){
 	fi
 	
 	#echo "list of files"
-	res="$(curl -sl -m "$MAX_TIME" --user shunanya:shunanya "ftp://$HOST/$FOLDER/")"
+	res="$(curl -sl -m "$MAX_TIME" --user "$USER":"$PASSWD" "ftp://$HOST/$FOLDER/")"
 	ret="$?"
 	if [[ ( $ret -ne 0 ) ]]
 	then

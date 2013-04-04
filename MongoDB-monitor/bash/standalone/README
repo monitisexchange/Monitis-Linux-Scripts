@@ -28,11 +28,11 @@ UNINSTALL:
 	rm -rf Monitis-Linux-Scripts/MongoDB-monitor/bash/standalone
 
 USAGE: 
-	monitis-mongo-monitor [user <username> pwd <password>] mode <daemon|plugin|query>  host <hostname> port <port> idletime <seconds> query <mongodb query> metrics <metric1,metric2,metricN>
+	monitis-mongo-monitor [-user|--username <username> -pwd|--pwd <password>] -mode|--mode <daemon|plugin|query>  -host|--host <hostname> -port|--port <port> -idletime|--idletime <seconds> -query|--query <mongodb query> -metrics|--metrics <metric1,metric2,metricN>
 
 ARGUMENTS:
 	user - mongodb database user
-	password - mongodb database password
+	pwd - mongodb database password
 	mode - monitor mode
 		daemon -- just sends all metrics available every <idletime> seconds to the monitis server
 		plugin -- works in plugin mode , outputs requested metric's values
@@ -48,17 +48,17 @@ ARGUMENTS:
 EXAMPLES:
 	./monitis-mongo-monitor
 
-	./monitis-mongo-monitor user mongouser \
-				password secret \
-				mode plugin \
-				host mongoserverhost \
-				port portnum \
-				idletime 15 \
-				metrics "Insert",Delete,Update
+	./monitis-mongo-monitor -user mongouser \
+				-pwd secret \
+				-mode plugin \
+				-host mongoserverhost \
+				-port portnum \
+				-idletime 15 \
+				-metrics "Insert",Delete,Update
 
-	./monitis-mongo-monitor mode query \
-				query "db.getCollectionNames()" \
-				database mongodb_name
+	./monitis-mongo-monitor -mode query \
+				-query "db.getCollectionNames()" \
+				-database mongodb_name
 --
 Do not use printjson() in query, it can cause invalid results.
 The 'database' parameter is useless unless mode is not 'query'
