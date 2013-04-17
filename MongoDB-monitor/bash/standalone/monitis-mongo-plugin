@@ -19,7 +19,7 @@ RETURN_CODE=0
 
 #
 save(){
-	echo "$1"|sed -e 's/^[ \r]*//' > $PREV_FILE
+	echo "$1"|$SED -e 's/^[ \r]*//' > $PREV_FILE
 }
 ##############
 usage(){
@@ -168,7 +168,7 @@ if [[ 0 -eq $DIFFER ]]
 then
 	DIFFER=1
 fi
-save_value="timestamp "$(echo $NOW|sed "s/$/\\`echo -e '\n\r'`/g")
+save_value="timestamp "$(echo $NOW|$SED "s/$/\\`echo -e '\n\r'`/g")
 #
 for metric in $splited_metrics
 do
@@ -192,8 +192,17 @@ do
 		save "$save_value"
 		exit
 	fi
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT globalLock.lockTime="$result
-	save_value="$save_value globalLock.lockTime "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value globalLock.lockTime "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"globalLock.totalTime")
@@ -213,8 +222,16 @@ do
 		save "$save_value"
 		exit
 	fi
-
-	save_value="$save_value globalLock.totalTime "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
+	save_value="$save_value globalLock.totalTime "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"globalLock.ratio")
@@ -237,14 +254,30 @@ do
 		save "$save_value"
 		exit
 	fi
-	
+	#
+	if [[ 1 -eq $(echo "$locktime < 0.5 && $locktime > 0"|bc) ]]
+	then
+		  locktime=0
+	elif [[ 1 -eq $(echo "$locktime > 0.5 && $locktime < 1"|bc) ]]
+	then
+		  locktime=1
+	fi
+	#
 	if [[ 1 -eq $(echo "$current < 0"|bc) ]]
 	then
 		echo "wrongResult=true"
 		save "$save_value"
 		exit
 	fi
-#
+#	#
+	if [[ 1 -eq $(echo "$current < 0.5 && $current > 0"|bc) ]]
+	then
+		  current=0
+	elif [[ 1 -eq $(echo "$current > 0.5 && $current < 1"|bc) ]]
+	then
+		  current=1
+	fi
+	#
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.totalTime'| $AWK '{print $2}')
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["totalTime"]' $DB|$TAIL -1| $SED -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
@@ -259,7 +292,15 @@ do
 		save "$save_value"
 		exit
 	fi
-#
+#	#
+	if [[ 1 -eq $(echo "$totaltime < 0.5 && $totaltime > 0"|bc) ]]
+	then
+		  totaltime=0
+	elif [[ 1 -eq $(echo "$totaltime > 0.5 && $totaltime < 1"|bc) ]]
+	then
+		  totaltime=1
+	fi
+	#
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.ratio'| $AWK '{print $2}')
 
 	if [[ -z $prev ]]
@@ -280,8 +321,17 @@ do
 		save "$save_value"
 		exit
 	fi
+		#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT globalLock.ratio="$result
-	save_value="$save_value globalLock.ratio "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value globalLock.ratio "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"mem.resident")
@@ -299,9 +349,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT mem.resident="$result
-	save_value="$save_value mem.resident "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value mem.resident "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"mem.virtual")
@@ -319,8 +377,17 @@ do
 		save "$save_value"
 		exit
 	fi
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT mem.virtual="$result
-	save_value="$save_value mem.virtual "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value mem.virtual "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"mem.mapped")
@@ -339,9 +406,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT mem.mapped="$result
-	save_value="$save_value mem.mapped "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value mem.mapped "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"connections.current")
@@ -360,9 +435,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT connections.current="$result
-	save_value="$save_value connections.current "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value connections.current "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"connections.available")
@@ -380,9 +463,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT connections.available="$result
-	save_value="$save_value connections.available "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value connections.available "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"backgroundFlushing.flushes")
@@ -402,9 +493,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
-	OUTPUT=" $OUTPUT backgroundFlushing="$result
-	save_value="$save_value backgroundFlushing "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
+	OUTPUT=" $OUTPUT backgroundFlushing.flushes="$result
+	save_value="$save_value backgroundFlushing.flushes "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"backgroundFlushing.total_ms")
@@ -424,9 +523,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT backgroundFlushing.total_ms="$result
-	save_value="$save_value backgroundFlushing.total_ms "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value backgroundFlushing.total_ms "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"backgroundFlushing.average_ms")
@@ -456,7 +563,15 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.average_ms'|$AWK '{print $2}')
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["average_ms"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
@@ -473,8 +588,17 @@ do
 		save "$save_value"
 		exit
 	fi
+		#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT backgroundFlushing.average_ms="$result
-	save_value="$save_value backgroundFlushing.average_ms "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value backgroundFlushing.average_ms "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"backgroundFlushing.last_ms")
@@ -492,9 +616,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT backgroundFlushing.last_ms="$result
-	save_value="$save_value backgroundFlushing.last_ms "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value backgroundFlushing.last_ms "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"opcounters.insert")
@@ -513,8 +645,17 @@ do
 		save "$save_value"
 		exit
 	fi
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT opcounters.insert="$result
-	save_value="$save_value opcounters.insert "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value opcounters.insert "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 ##########
@@ -533,9 +674,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT opcounters.query="$result
-	save_value="$save_value opcounters.query "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value opcounters.query "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"opcounters.update")
@@ -553,8 +702,17 @@ do
 		save "$save_value"
 		exit
 	fi
+		#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT opcounters.update="$result
-	save_value="$save_value opcounters.update "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value opcounters.update "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"opcounters.delete")
@@ -565,16 +723,25 @@ do
 		prev=0
 	fi
 		result=$($AWK -vc=$current -vp=$prev -vd=$DIFFER 'BEGIN { print (c - p) / d }'| $SED -e 's/[eE]+*/\*10\^/')
-
+	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
 		echo "wrongResult=true"
 		save "$save_value"
 		exit
 	fi
-	test -z $result && result=0
+
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT opcounters.delete="$result
-	save_value="$save_value opcounters.delete "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value opcounters.delete "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"opcounters.getmore")
@@ -592,8 +759,17 @@ do
 		save "$save_value"
 		exit
 	fi
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT opcounters.getmore="$result
-	save_value="$save_value opcounters.getmore "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value opcounters.getmore "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"opcounters.command")
@@ -611,9 +787,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT opcounters.command="$result
-	save_value="$save_value opcounters.command "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value opcounters.command "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"asserts.regular")
@@ -631,9 +815,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT asserts.regular="$result
-	save_value="$save_value asserts.regular "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value asserts.regular "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"asserts.warning")
@@ -651,9 +843,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT asserts.warning="$result
-	save_value="$save_value asserts.warning "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value asserts.warning "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"asserts.msg")
@@ -671,9 +871,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT asserts.msg="$result
-	save_value="$save_value asserts.msg "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value asserts.msg "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"asserts.user")
@@ -691,8 +899,17 @@ do
 		save "$save_value"
 		exit
 	fi
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT asserts.user="$result
-	save_value="$save_value asserts.user "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value asserts.user "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"asserts.rollovers")
@@ -710,9 +927,17 @@ do
 		save "$save_value"
 		exit
 	fi
-
+	#
+	if [[ 1 -eq $(echo "$result < 0.5 && $result > 0"|bc) ]]
+	then
+		  result=0
+	elif [[ 1 -eq $(echo "$result > 0.5 && $result < 1"|bc) ]]
+	then
+		  result=1
+	fi
+	#
 	OUTPUT=" $OUTPUT asserts.rollovers="$result
-	save_value="$save_value asserts.rollovers "$(echo $current|sed "s/$/\\`echo -e '\n\r'`/g")
+	save_value="$save_value asserts.rollovers "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 esac
