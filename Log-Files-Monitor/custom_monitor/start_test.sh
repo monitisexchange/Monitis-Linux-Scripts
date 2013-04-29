@@ -20,6 +20,6 @@ cd "$tmp"
 ./stop.sh 1> /dev/null
 
 echo ---------starting test loop--------------
-xterm -hold -sb -e ./log_simulation.sh "$ERR_FILE" &
-xterm -hold -sb -e ./monitor.sh "$ERR_FILE" &
-xterm -hold -sb -e ./monitor_test.sh "$@" "$ERR_FILE" &
+xterm -hold -sb -e ./log_simulation.sh "$COUNT_FILE" &
+xterm -hold -sb -e ./monitor.sh "$COUNT_FILE" &
+xterm -hold -sb -e ./monitor_test.sh "$@" "$COUNT_FILE" &

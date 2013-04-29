@@ -20,6 +20,7 @@ cd $tmp
 ./stop.sh 1> /dev/null
 
 echo ---------starting test loop--------------
-./monitor.sh "$ERR_FILE" 1> /dev/null &
-./monitor_test.sh "$@" "$ERR_FILE" 1> /dev/null &
+./monitor.sh "$COUNT_FILE" 1> /dev/null &
+./monitor_test.sh "$@" "$COUNT_FILE" 1> /dev/null &
+
 

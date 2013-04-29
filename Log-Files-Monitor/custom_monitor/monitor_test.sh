@@ -20,8 +20,8 @@ do
 							shift	;;
     	*)  # it can be file path
     		if [[ !(-r "$1") ]] ; then
-			   echo "Unrecognized parameter $1"
-			   exit 1 
+			   echo "Unrecognized parameter $1" >&2
+#			   exit 1 
 			fi
 			;; # unknown option		
   	esac
@@ -29,6 +29,17 @@ do
 done
 
 DURATION=$((60*$DURATION)) #convert to sec
+
+# forms the result params
+RESULT_PARAMS="status:status::3;event0:Line_count::2"
+for (( i=1 ; i<= "${#PATTERNS[@]}" ; i++ )) ; do
+	t=${PATTERNS[$(( i - 1))]}
+	t=`replBlank "$t" `
+	RESULT_PARAMS="$RESULT_PARAMS;event$i:${t}_count::2"
+done
+#calculates checksum and add it to the name
+checksum=`echo "$RESULT_PARAMS" | cksum | awk '{print $1}' `
+MONITOR_NAME="$MONITOR_NAME"_$checksum
 
 echo "***$NAME - Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
@@ -44,34 +55,34 @@ if [[ ($ret -ne 0) ]]
 then
 	error 3 "$MSG"
 else
-	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))`
+	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
 	echo "All is OK for now."
 fi
 
 if [[ ($MONITOR_ID -gt 0) ]]
 then 
-	echo "$NAME - Monitor ID isn't ZERO - try to check correctness."
+	echo "$NAME - Monitor ID \"${MONITOR_ID}\" isn't ZERO - try to check correctness." >&2
 	get_custom_monitor_info "$MONITOR_ID"
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then # not found monitor with given ID
-		echo "$NAME - Monitor ID is incorrect - it cannot be used"
+		echo "$NAME - Monitor ID is incorrect - it cannot be used" >&2
 		MONITOR_ID=0
 	else
-		echo "$NAME - Monitor ID is correct - we will use it"
+		echo "$NAME - Monitor ID is correct - we will use it" >&2
 	fi
 fi
 
 if [[ ($MONITOR_ID -le 0) ]]
 then
-	echo $NAME - Adding custom monitor with parameters name: "$MONITOR_NAME" tag: "$MONITOR_TAG" type: "$MONITOR_TYPE" params: "$RESULT_PARAMS" a_params: "$ADDITIONAL_PARAMS"
+	echo $NAME - Adding custom monitor with parameters name: "$MONITOR_NAME" tag: "$MONITOR_TAG" type: "$MONITOR_TYPE" params: "$RESULT_PARAMS" >&2
 	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then
 		error "$ret" "$NAME - $MSG"
 	else
-		echo $NAME - Custom monitor id = "$MONITOR_ID"
+		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
 	fi
@@ -79,7 +90,7 @@ fi
 
 if [[ ($MONITOR_ID -le 0) ]]
 then 
-	echo $NAME - MonitorId is still zero - try to obtain it from Monitis
+	echo $NAME - MonitorId is still zero - try to obtain it from Monitis >&2
 	
 	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
 	ret="$?"
@@ -87,17 +98,19 @@ then
 	then
 		error "$ret" "$NAME - $MSG"
 	else
-		echo $NAME - Custom monitor id = "$MONITOR_ID"
+		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
 	fi
 fi
 
 # Periodically adding new data
-echo "$NAME - Starting LOOP for adding new data"
-file=$ERR_FILE # errors record file 
-file_=$file"_" # temporary file
-rep_count=3	   # the count of repetitions	
+echo "$NAME - Starting LOOP for adding new data" >&2
+
+declare -a prev_res
+for (( i=0 ; i<= "${#PATTERNS[@]}" ; i++ )) ; do
+  prev_res[$i]=0
+done	
 
 while $(sleep "$DURATION")
 do
@@ -105,107 +118,62 @@ do
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then	# some problems while getting token...
-	    error "$ret" "$NAME - $MSG"
+	    error "$ret" "$MSG"
 #	    continue
 	fi
-	if [[ -e "$file" ]]	# err file must exist!!!
-	then
-		echo 'RENAMING...(for processing)'
-		mv -f "$file" "$file_"
-		if [ "$?" -ne "0" ]
-		then
-			if [[ ($rep_count -gt 0) ]] ; then
-				error 1 "Couldn't rename... "
-				rep_count=$(( rep_count--))
-				continue
-			else
-				error 3 "Couldn't rename after few tries ... "
+	if [[ (-e $COUNT_FILE) ]] ; then		# read counters
+		array=( `cat "$COUNT_FILE" `)
+		# Compose monitor data
+		param=""
+		for (( i=0 ; i<= "${#PATTERNS[@]}" ; i++ )) ; do
+			t=$(( ${array[$i]} - ${prev_res[$i]} ))
+			t=`echo "$t" | awk ' { if($1>=0) { print $1} else {print 0 }}' `
+			if [[ ($i -eq 0) ]] ; then
+			  t0=$t
 			fi
+			param="$param""event$i:$t;"
+			prev_res[$i]=${array[$i]}
+		done
+		if [[ ($t0 -eq 0) ]] ; then
+		  param="$param""$DUMMY_RESULT"
 		else
-			echo -n "" >> $ERR_FILE	#recreate empty temporary file (if not exit yet)
-			rep_count=3
-			#read into array
-			unset array
-			while read line ; do
-				array[${#array[@]}]="$line"
-			done < $file_
-			array_length="${#array[@]}"
-			if [[ ($array_length -gt 0) ]]
-			then
-				# Compose monitor data
-				param="events:$array_length;$OK_RESULT"
-				#echo
-				#echo DEBUG: Composed params is \"$param\" >&2
-				#echo
-				
-				timestamp=`get_timestamp`
-				
-				#echo
-				#echo DEBUG: Timestamp is \"$timestamp\" >&2
-				#echo
-				
-				# Sending to Monitis
-				add_custom_monitor_data $param $timestamp
-				ret="$?"
-				if [[ ($ret -ne 0) ]]
-				then
-					error "$ret" "$MSG"
-					if [[ ( -n ` echo $MSG | grep -asio -m1 "expired" `) ]] ; then
-						get_token $TRUE		# force to get a new token
-					fi
-					continue
-				fi
-				echo $( date +"%D %T" ) - $NAME - The Custom monitor data were successfully added
-
-				# Now create additional data
-				if [[ -z "${ADDITIONAL_PARAMS}" ]] ; then # ADDITIONAL_PARAMS is not set
-					continue
-				fi
-
-				param=`create_additional_param "${array[@]}"`
-				if [[ ($ret -ne 0) ]]
-				then
-					error "$ret" "$param"
-				else
-					#echo
-					#echo DEBUG: Composed additional params is \"$param\" >&2
-					#echo
-					
-					# Sending to Monitis
-					add_custom_monitor_additional_data $param $timestamp
-					ret="$?"
-					if [[ ($ret -ne 0) ]]
-					then
-						error "$ret" "$NAME - $MSG"
-					else
-						echo $( date +"%D %T" ) - $NAME - The Custom monitor additional data were successfully added
-					fi
-				fi				
-			else
-				echo ****No any interesting new records yet - sent "0" as data
-				# Sending DUMMY data to Monitis 
-				add_custom_monitor_data "$DUMMY_RESULT"
-				ret="$?"
-				if [[ ($ret -eq 0) ]]
-				then
-					echo **** "$NAME" - Succesfully added dummy data
-				else
-					error "$ret" "$NAME - $MSG"
-				fi
+		  param="$param""$OK_RESULT"
+		fi
+		if test $DEBUG ; then
+			error 10 "Composed params is \"$param\""
+		fi
+		
+		timestamp=`get_timestamp`
+		
+		# Sending to Monitis
+		add_custom_monitor_data $param $timestamp
+		ret="$?"
+		if [[ ($ret -ne 0) ]]
+		then
+			error "$ret" "$MSG"
+			if [[ ( -n ` echo $MSG | grep -asio -m1 "expired" `) ]] ; then
+				get_token $TRUE		# force to get a new token
 			fi
+			continue
+		fi
+		if test $DEBUG ; then
+			error 10 "$NAME - The Custom monitor data were successfully added"
 		fi
 	else
-		echo **** "$NAME" No any new records yet contain log file \(or not exist\) 
+		if test $DEBUG ; then
+			error 10 "$NAME - No any new records yet"
+		fi	
 		# Sending DUMMY data to Monitis 
-		add_custom_monitor_data "$FAIL_RESULT"
+		add_custom_monitor_data "$DUMMY_RESULT"
 		ret="$?"
 		if [[ ($ret -eq 0) ]]
 		then
-			echo **** "$NAME" Added failed data
+			if test $DEBUG ; then
+				error 10 "$NAME - Succesfully added dummy data"
+			fi			
 		else
-			error "$ret"  "$NAME" - "$MSG"
+			error "$ret" "$NAME - $MSG"
 		fi
 	fi
-
 done
 
