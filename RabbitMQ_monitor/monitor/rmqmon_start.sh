@@ -34,7 +34,7 @@ done
 
 DURATION=$((60*$DURATION)) #convert to sec
 
-MONITOR_NAME="$NAME"_"$HOST_IP-$HOST:$PORT"
+MONITOR_NAME="$NAME"_"$HOST_IP:$PORT"
 
 echo "***$NAME - Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
