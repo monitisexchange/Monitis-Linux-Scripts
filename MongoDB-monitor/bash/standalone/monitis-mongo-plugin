@@ -17,14 +17,11 @@ PARAM_ERROR_STRING="Missing parameter name"
 RETURN_CODE=0
 ##############
 
-#
-save(){
-	echo "$1"|$SED -e 's/^[ \r]*//' > $PREV_FILE
-}
+
 ##############
 usage(){
 
-        echo "Usage: $0 [-user|--user <username> -pwd|--pwd <password>]  -host|--host <hostname> -port|--port <port> -metrics|--metrics <metric1,metric2,metricN>"
+echo "Usage: $0 [-user|--user <username> -pwd|--pwd <password>]  -host|--host <hostname> -port|--port <port> -metrics|--metrics <metric1,metric2,metricN>"
 echo "Supported metrics are: "
 echo "globalLock.lockTime	- The value of lockTime represents the time, in microseconds, since the database last started, that the globalLock has been held. "
 echo "globalLock.ratio		- The value of ratio displays the relationship between lockTime and totalTime."
@@ -88,6 +85,11 @@ then
 echo "grep not found"
 exit 1
 fi
+#
+#
+save(){
+	echo "$1"|$SED -e 's/^[ \r]*//' > $PREV_FILE
+}
 #
 ###################################################################################################
 # Checking for input parameters
@@ -156,6 +158,13 @@ then
 	
 fi
 #
+error=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()' $DB | $GREP -o 'exception')
+if [[ $error == "exception" ]]
+then
+  echo "An error accured while connecting to mongodb"
+  echo "Check host and port parameters"
+  exit 1
+fi
 #
 splited_metrics=$(echo $METRICS|tr ',' ' ')
 NOW=$(date '+%s')
@@ -169,6 +178,14 @@ then
 	DIFFER=1
 fi
 save_value="timestamp "$(echo $NOW|$SED "s/$/\\`echo -e '\n\r'`/g")
+#
+
+mem_supported=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["supported"]' $DB|$TAIL -1)
+if [[ -z $mem_supported ]]
+then
+  mem_supported="false"
+fi
+
 #
 for metric in $splited_metrics
 do
@@ -288,29 +305,36 @@ do
 	;;
 ##########
 	"mem.resident")
-	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'mem.resident'|$AWK '{print $2}')
-	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["resident"]' $DB|$TAIL -1)
-	if [[ -z $prev ]]
+	if [[ $mem_supported == "true" ]]
 	then
-		prev=0
-	fi
-	result=$current
-	test -z $result && result=0
-	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
-	then
-		echo "wrongResult=true"
-		save "$save_value"
-		exit
-	fi
+	  test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'mem.resident'|$AWK '{print $2}')
+	  current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["resident"]' $DB|$TAIL -1)
+	  if [[ -z $prev ]]
+	  then
+		  prev=0
+	  fi
+	  result=$current
+	  test -z $result && result=0
+	  if [[ 1 -eq $(echo "$result < 0"|bc) ]]
+	  then
+		  echo "wrongResult=true"
+		  save "$save_value"
+		  exit
+	  fi
+	  #
 	#
-	#
+	else
+	  result=-1
+	fi
 	result=$(printf %0.3f $result)
 	OUTPUT=" $OUTPUT mem.resident="$result
 	save_value="$save_value mem.resident "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
+
 	;;
 ##########
 	"mem.virtual")
-
+	if [[ $mem_supported == "true" ]]
+	then
 	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["virtual"]' $DB|$TAIL -1)
 	if [[ -z $prev ]]
 	then
@@ -326,29 +350,36 @@ do
 	fi
 	#
 	#
+	else
+	  result=-1
+	fi
 	result=$(printf %0.3f $result)
 	OUTPUT=" $OUTPUT mem.virtual="$result
 	save_value="$save_value mem.virtual "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
 ##########
 	"mem.mapped")
-
-	current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["mapped"]' $DB|$TAIL -1)
-	if [[ -z $prev ]]
+	if [[ $mem_supported == "true" ]]
 	then
-		prev=0
-	fi
-	result=$current
-	test -z $result && result=0
-	
-	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
-	then
-		echo "wrongResult=true"
-		save "$save_value"
-		exit
-	fi
+	  current=$($MONGO $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["mapped"]' $DB|$TAIL -1)
+	  if [[ -z $prev ]]
+	  then
+		  prev=0
+	  fi
+	  result=$current
+	  test -z $result && result=0
+	  
+	  if [[ 1 -eq $(echo "$result < 0"|bc) ]]
+	  then
+		  echo "wrongResult=true"
+		  save "$save_value"
+		  exit
+	  fi
 	#
 	#
+	else
+	  result=-1
+	fi
 	result=$(printf %0.3f $result)
 	OUTPUT=" $OUTPUT mem.mapped="$result
 	save_value="$save_value mem.mapped "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
