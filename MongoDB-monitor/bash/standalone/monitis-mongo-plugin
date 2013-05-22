@@ -323,10 +323,11 @@ do
 	  fi
 	  #
 	#
+	result=$(printf %0.3f $result)
 	else
 	  result=-1
 	fi
-	result=$(printf %0.3f $result)
+
 	OUTPUT=" $OUTPUT mem.resident="$result
 	save_value="$save_value mem.resident "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 
@@ -350,10 +351,11 @@ do
 	fi
 	#
 	#
+	result=$(printf %0.3f $result)
 	else
 	  result=-1
 	fi
-	result=$(printf %0.3f $result)
+
 	OUTPUT=" $OUTPUT mem.virtual="$result
 	save_value="$save_value mem.virtual "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
@@ -377,10 +379,11 @@ do
 	  fi
 	#
 	#
+	result=$(printf %0.3f $result)
 	else
 	  result=-1
 	fi
-	result=$(printf %0.3f $result)
+
 	OUTPUT=" $OUTPUT mem.mapped="$result
 	save_value="$save_value mem.mapped "$(echo $current|$SED "s/$/\\`echo -e '\n\r'`/g")
 	;;
