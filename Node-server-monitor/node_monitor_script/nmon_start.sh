@@ -4,6 +4,26 @@
 source monitis_api.sh  || exit 2
 source monitor_node.sh || error 2 monitor_node.sh
 
+#usage: mmon_start.sh -d <duration in min>
+# default values
+# d = 1
+
+while getopts "d:h" opt;
+do
+	case $opt in
+	d) dur=$OPTARG 
+		if [[ ($dur -gt 0) ]] ; then
+		    echo Set duration to $dur min
+		    DURATION=$dur
+		fi
+	;;
+	h) echo "Usage: $0 -d <duration in min>" ; exit 0 ;;
+	*) echo "Usage: $0 -d <duration in min>" 
+	   error 4 "invalid parameter(s) while start"
+	   ;;
+	esac
+done
+
 DURATION=$((60*$DURATION)) #convert to sec
 
 echo "***$NAME - Monitor start with following parameters***"
@@ -120,7 +140,9 @@ do
 
 		param=$(echo ${result} | awk -F "|" '{print $2}' )
 		param=$(trim "$param")
-		#echo $param
+		#echo
+		#echo Additional param = "$param"
+		#echo
 		isJSON "$param"
 		ret="$?"
 		if [[ ( $ret -ne 0 ) ]]
