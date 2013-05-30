@@ -114,20 +114,38 @@ done
 
 while $(sleep "$DURATION")
 do
+	MSG="???"
 	get_token				# get new token in case of the existing one is too old
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then	# some problems while getting token...
-	    error "$ret" "$MSG"
-#	    continue
+	    error "$ret" "$NAME - $MSG"
+	    continue 
 	fi
 	if [[ (-e $COUNT_FILE) ]] ; then		# read counters
-		array=( `cat "$COUNT_FILE" `)
+		attempt=2
+		ret=1
+		while [[ ($ret -ne 0) && ($attempt -gt 0) ]] ; do
+			array=( `cat "$COUNT_FILE" `)
+			ret="$?"
+			((attempt--))		
+		done
+		if [[ ($ret -ne 0) ]] ; then	# problem with reading
+			for (( i=0 ; i<= "${#PATTERNS[@]}" ; i++ )) ; do
+			  array[$i]=0
+			done			
+			if test $DEBUG ; then
+				error 10 "Problems with reading file \"$ret\""
+			fi
+		fi
 		# Compose monitor data
 		param=""
-		for (( i=0 ; i<= "${#PATTERNS[@]}" ; i++ )) ; do
+		for (( i=0 ; i <= "${#PATTERNS[@]}" ; i++ )) ; do
 			t=$(( ${array[$i]} - ${prev_res[$i]} ))
-			t=`echo "$t" | awk ' { if($1>=0) { print $1} else {print 0 }}' `
+			if [[ ($t -lt 0) ]] ; then
+				t=0
+			fi
+#			t=`echo "$t" | awk ' { if($1>=0) { print $1 } else { print 0 } }' `
 			if [[ ($i -eq 0) ]] ; then
 			  t0=$t
 			fi
@@ -161,7 +179,7 @@ do
 		fi
 	else
 		if test $DEBUG ; then
-			error 10 "$NAME - No any new records yet"
+			error 10 "$NAME - problems with $COUNT_FILE"
 		fi	
 		# Sending DUMMY data to Monitis 
 		add_custom_monitor_data "$DUMMY_RESULT"
