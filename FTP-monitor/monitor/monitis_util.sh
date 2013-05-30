@@ -59,6 +59,11 @@ function trim {
     echo $*
 }
 
+#replace blanks with '_'
+function replBlank {
+	echo -E "$@" | tr -s '[:blank:]' '_'
+}
+
 # Convert json array to set of json objects separated by "|"
 # @param $1 - array string to be transformed
 # returns result into "response" variable
@@ -233,6 +238,11 @@ function error {
 	4)
 	# errors...
 		echo $( date +"%D %T" ) - ERROR: "$2" >&2
+		;;
+	10) 
+	#debug during processing
+		echo $( date +"%D %T" ) - DEBUG: "$2" >&2
+		return 0
 		;;
 	*)
 	# unknown error

@@ -207,7 +207,7 @@ function get_custom_monitor_info() {
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
+	if [[ (${#response} -gt 0) && (${#response} -lt 2000) ]] # Normally, the response text length shouldn't exceed 2000 chars
 	then # Seems, we received correct answer - parsing
 		id=`jsonval "$response" "id" `
 		if [[ (-n $id) && ($id -eq $monitor_id) ]]
@@ -259,7 +259,7 @@ function get_monitors_list() {
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
+	if [[ (${#response} -gt 0) && (${#response} -lt 2000) ]] # Normally, the response text length shouldn't exceed 2000 chars
 	then # Likely, we received correct answer
 		#parsing
 		id=`jsonval "$response" "id" `	
