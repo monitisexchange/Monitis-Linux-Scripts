@@ -2,11 +2,12 @@
 
 # Declaration of monitor constants
 declare    HOST="127.0.0.1"					# replace by your host ip
-declare    PROC_CMD=memcached					# replace by your process command
+declare    PROC_CMD=memcached				# replace by your process command
 declare -i PROC_ID=929						# replace by your process PID (optional)
 
-declare    MONITOR_NAME=Process_"$HOST"_"$PROC_CMD"		# name of custom monitor
-declare -r MONITOR_TAG="Process"				# tag for custom monitor
+declare -r NAME="Proc"
+declare    MONITOR_NAME="$NAME"_"$HOST"_"$PROC_CMD"	# name of custom monitor
+declare -r MONITOR_TAG="Process"					# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"				# type for custom monitor
 
 # format of result params - name1:displayName1:uom1:Integer
