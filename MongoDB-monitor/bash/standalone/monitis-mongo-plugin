@@ -3,7 +3,7 @@
 
 #set -x
 
-PREV_FILE=.mmm_prev
+PREV_FILE="$(dirname $0)"/.mmm_prev
 empty=0
 #
 export PATH=/usr/bin:/usr/local/bin:/bin:/usr/sbin:/usr/local/sbin
