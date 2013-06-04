@@ -7,6 +7,7 @@ source monitor_constant.sh || error 2 monitor_constant.sh
 #usage: fmon_start.sh -d <duration in min>
 # default values d = 5 min
 
+#read argument; in this case the monitoring folders paths
 while getopts "d:h" opt;
 do
 	case $opt in
@@ -172,6 +173,5 @@ do
 			echo "$NAME - ****No any detailed records yet ($array_length)"
 		fi			
 	fi
-
 done
 

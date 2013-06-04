@@ -99,6 +99,7 @@ function get_permanent_get_param {
 # $3 - result parameters* formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $4 - additional result parameters formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $5 - monitor type
+# $6 - multiValue - optional value; true means that monitor can have several results for one check time.
 #
 # Store added monitor ID into MONITOR_ID and returns with return code 0 (success)
 # (exit from application on failure)
