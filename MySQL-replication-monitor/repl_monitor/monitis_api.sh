@@ -100,6 +100,7 @@ function get_permanent_get_param {
 # $3 - result parameters* formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $4 - additional result parameters formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $5 - monitor type
+# $6 - multiValue - optional value; true means that monitor can have several results for one check time.
 #
 # Store added monitor ID into MONITOR_ID and returns with return code 0 (success)
 # (exit from application on failure)
@@ -112,6 +113,7 @@ function add_custom_monitor {
 	local result_params="$3"
 	local additional_params="$4"
 	local monitor_type="$5"
+	local multivalue="$6"
 	MSG=""
 	
 	# check correctness of mandatory parameters
@@ -132,6 +134,9 @@ function add_custom_monitor {
 	postdata=$postdata" -d tag=$monitor_tag "
 	if [[ (-n "$monitor_type") ]] ; then
 		postdata=$postdata" -d type=$monitor_type "
+	fi
+	if [[ (-n "$multivalue") ]] ; then
+		postdata=$postdata" -d multiValue=$multivalue "
 	fi
 	if [[ (-n "$additional_params") ]] ; then
 		postdata=$postdata" -d additionalResultParams=$additional_params "
