@@ -148,11 +148,20 @@ do
 		fi
 
 		param=$(echo ${result} | awk -F "|" '{print $2}' )
-		unset array
-		OIFS=$IFS
-		IFS='+'
-		array=( $param )
-		IFS=$OIFS
+		param=$(trim "$param")
+		#echo
+		#echo Additional param = "$param"
+		#echo
+		isJSON "$param"
+		ret="$?"
+		if [[ ( $ret -ne 0 ) ]]
+		then
+			MSG="Seems, there is incorrect additional data string (no JSON string)"
+			error "$ret" "$MSG - \'$param\'"
+			continue
+		fi
+		# Transforming JSON string to array (first level only)
+		array=`json2array "$param" `
 		array_length="${#array[@]}"
 		if [[ ($array_length -gt 0) ]]
 		then
@@ -176,11 +185,11 @@ do
 					error "$ret" "$NAME - $MSG"
 				else
 					echo $( date +"%D %T" ) - $NAME - The Custom monitor additional data were successfully added
-				fi				
+				fi
 			fi
 		else
 			echo "$NAME - ****No any detailed records yet ($array_length)"
-		fi			
+		fi
 	fi
 done
 

@@ -1,9 +1,9 @@
 ## Monitis Bash API
 
-The current project represents the Bash script implementation of Monitis custom monitor approach.  
+The current project represents the Bash script implementation of Monitis Custom Monitor Approach.  
 Please note that current implementation uses the Monitis latest multi-values approach that allow to send few sets of measurement values at same time.  
 Moreover, this approach allows to apply some simple aggregation functionality like sum, average and even choose one of values set to view on your Monitis dashboard.  
-It wraps the current Monitis Open API functionality that is necessary to build any custom monotor.  
+It wraps the current [Monitis Open API](http://new.monitis.com/api/api.html) functionality that is necessary to build any custom monotor.  
 
 The Repository contains the following files  
 
