@@ -1,16 +1,23 @@
 #!/bin/bash
 :
 
-#set -x
-
 PREV_FILE="$(dirname $0)"/.mmm_prev
 empty=0
 #
 export PATH=/usr/bin:/usr/local/bin:/bin:/usr/sbin:/usr/local/sbin
 #
+declare USER_NAME
+declare PSWD
+declare HOST_NAME
+declare PORT_NO
+declare METRICS
+declare DB_NAME
+declare USE_AUTH
+#
 USE_AUTH=false
 PARAM_ERROR_STRING="Missing parameter name"
 RETURN_CODE=0
+
 ##############
 
 
@@ -68,14 +75,16 @@ do
 	case $1 in
     	-u | --user | -user )  			USER_NAME="$2"; shift	;;
     	-p | --pwd | -pwd ) 			PSWD="$2"; shift	;;
-    	-h | --host | -host )  			HOST="$2"; shift	;;
-    	-t | --port | -port )  			PORT="$2"; shift	;;
+    	-h | --host | -host )  			HOST_NAME="$2"; shift	;;
+    	-t | --port | -port )  			PORT_NO="$2"; shift	;;
     	-m | --metrics | -metrics )		METRICS="$2"; shift ;;
-	-d | --database | -database )		DB="$2"; shift ;;
+	-d | --database | -database )		DB_NAME="$2"; shift ;;
     	*) ;; # unknown option		
   	esac
   	shift
 done
+#
+
 #
 if [[ -z $(which mongo) ]]
 then
@@ -95,13 +104,13 @@ then
 		exit $RETURN_CODE 
         fi
 
-        if [ -z "$HOST" ]; then
+        if [ -z "$HOST_NAME" ]; then
                 echo "$PARAM_ERROR_STRING 'host'"
                 RETURN_CODE=1
 		exit $RETURN_CODE
         fi
 
-        if [ -z "$PORT" ]; then
+        if [ -z "$PORT_NO" ]; then
                 echo "$PARAM_ERROR_STRING 'port'"
                 RETURN_CODE=1
 		exit $RETURN_CODE
@@ -118,9 +127,9 @@ fi
 #
 if [[ $USE_AUTH == true ]]
 then
-	MONGOSTAT_OPTS=" --host $HOST:$PORT -u $USER_NAME -p $PSWD"
+	MONGOSTAT_OPTS=" --host $HOST_NAME:$PORT_NO -u $USER_NAME -p $PSWD"
 else
-	MONGOSTAT_OPTS=" --host $HOST:$PORT"
+	MONGOSTAT_OPTS=" --host $HOST_NAME:$PORT_NO"
 fi
 #
 if [[ ! -f $PREV_FILE || -z $(cat $PREV_FILE) ]]
@@ -129,7 +138,7 @@ then
 fi
 
 #
-error=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()' $DB | grep -o 'exception')
+error=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()' $DB_NAME | grep -o 'exception')
 if [[ $error == "exception" ]]
 then
   echo "An error accured while connecting to mongodb"
@@ -156,7 +165,7 @@ fi
 save_value="timestamp "$(echo $NOW|sed "s/$/\\`echo -e '\n\r'`/g")
 #
 
-mem_supported=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["supported"]' $DB|tail -1)
+mem_supported=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["supported"]' $DB_NAME|tail -1)
 if [[ -z $mem_supported ]]
 then
   mem_supported="false"
@@ -169,7 +178,7 @@ do
 
 	"globalLock.lockTime")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.lockTime'| awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["lockTime"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["lockTime"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -194,7 +203,7 @@ do
 ##########
 	"globalLock.totalTime")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.totalTime'| awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["totalTime"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/' )
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["totalTime"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/' )
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -218,7 +227,7 @@ do
 	"globalLock.ratio")
 #
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.lockTime'| awk '{print $2}')
-	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["lockTime"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/' )
+	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["lockTime"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/' )
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -238,7 +247,7 @@ do
 	fi
 	#
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'globalLock.totalTime'| awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["totalTime"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["globalLock"]["totalTime"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -284,7 +293,7 @@ do
 	if [[ $mem_supported == "true" ]]
 	then
 	  test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'mem.resident'|awk '{print $2}')
-	  current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["resident"]' $DB|tail -1)
+	  current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["resident"]' $DB_NAME|tail -1)
 	  if [[ -z $prev ]]
 	  then
 		  prev=0
@@ -312,7 +321,7 @@ do
 	"mem.virtual")
 	if [[ $mem_supported == "true" ]]
 	then
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["virtual"]' $DB|tail -1)
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["virtual"]' $DB_NAME|tail -1)
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -339,7 +348,7 @@ do
 	"mem.mapped")
 	if [[ $mem_supported == "true" ]]
 	then
-	  current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["mapped"]' $DB|tail -1)
+	  current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["mem"]["mapped"]' $DB_NAME|tail -1)
 	  if [[ -z $prev ]]
 	  then
 		  prev=0
@@ -366,7 +375,7 @@ do
 ##########
 	"connections.current")
 
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["connections"]["current"]' $DB|tail -1)
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["connections"]["current"]' $DB_NAME|tail -1)
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -389,7 +398,7 @@ do
 ##########
 	"connections.available")
 
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["connections"]["available"]' $DB|tail -1)
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["connections"]["available"]' $DB_NAME|tail -1)
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -411,7 +420,7 @@ do
 ##########
 	"backgroundFlushing.flushes")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.flushes'| awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["flushes"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["flushes"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -435,7 +444,7 @@ do
 ##########
 	"backgroundFlushing.total_ms")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.total_ms'|awk '{print $2}')
-	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["total_ms"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["total_ms"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -460,7 +469,7 @@ do
 	"backgroundFlushing.average_ms")
 #
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.total_ms'|awk '{print $2}')
-	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["total_ms"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["total_ms"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -470,7 +479,7 @@ do
 		test -z $totalms && totalms=0
 #
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.flushes'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["flushes"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["flushes"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -488,7 +497,7 @@ do
 	flushes=$(printf %0.3f $flushes)
 	#
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.average_ms'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["average_ms"]' $DB|tail -1)
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["average_ms"]' $DB_NAME|tail -1)
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -512,7 +521,7 @@ do
 ##########
 	"backgroundFlushing.last_ms")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'backgroundFlushing.last_ms'|awk '{print $2}')
-	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["last_ms"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	_current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["backgroundFlushing"]["last_ms"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -534,7 +543,7 @@ do
 ##########
 	"opcounters.insert")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'opcounters.insert'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["insert"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["insert"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -558,7 +567,7 @@ do
 ##########
 	"opcounters.query")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'opcounters.query'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["query"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["query"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -580,7 +589,7 @@ do
 ##########
 	"opcounters.update")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'opcounters.update'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["update"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["update"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -602,7 +611,7 @@ do
 ##########
 	"opcounters.delete")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'opcounters.delete'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["delete"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["delete"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -625,7 +634,7 @@ do
 ##########
 	"opcounters.getmore")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'opcounters.getmore'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["getmore"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["getmore"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -647,7 +656,7 @@ do
 ##########
 	"opcounters.command")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'opcounters.command'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["command"]' $DB|tail -1| sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["opcounters"]["command"]' $DB_NAME|tail -1| sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -669,7 +678,7 @@ do
 ##########
 	"asserts.regular")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'asserts.regular'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["regular"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["regular"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -691,7 +700,7 @@ do
 ##########
 	"asserts.warning")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'asserts.warning'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["warning"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["warning"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -713,7 +722,7 @@ do
 ##########
 	"asserts.msg")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'asserts.msg'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["msg"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["msg"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -735,7 +744,7 @@ do
 ##########
 	"asserts.user")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'asserts.user'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["user"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["user"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
@@ -757,7 +766,7 @@ do
 ##########
 	"asserts.rollovers")
 	test $empty -ne 1 && prev=$(cat $PREV_FILE|grep 'asserts.rollovers'|awk '{print $2}')
-	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["rollovers"]' $DB|tail -1|sed -e 's/[eE]+*/\*10\^/')
+	current=$(mongo $MONGOSTAT_OPTS --eval 'db.serverStatus()["asserts"]["rollovers"]' $DB_NAME|tail -1|sed -e 's/[eE]+*/\*10\^/')
 	if [[ -z $prev ]]
 	then
 		prev=0
