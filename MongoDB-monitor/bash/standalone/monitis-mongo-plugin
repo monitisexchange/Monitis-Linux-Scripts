@@ -1,6 +1,8 @@
 #!/bin/bash
 :
 
+#set -x
+
 PREV_FILE="$(dirname $0)"/.mmm_prev
 empty=0
 #
@@ -190,7 +192,7 @@ do
 
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -213,7 +215,7 @@ do
 
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -241,7 +243,7 @@ do
 	
 	if [[ 1 -eq $(echo "$locktime < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -256,7 +258,7 @@ do
 	
 	if [[ 1 -eq $(echo "$totaltime < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -278,7 +280,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -302,7 +304,7 @@ do
 	  test -z $result && result=0
 	  if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	  then
-		  echo "wrongResult=true"
+		  echo "wrongResult=True"
 		  save "$save_value"
 		  exit
 	  fi
@@ -330,7 +332,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -358,7 +360,7 @@ do
 	  
 	  if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	  then
-		  echo "wrongResult=true"
+		  echo "wrongResult=True"
 		  save "$save_value"
 		  exit
 	  fi
@@ -385,7 +387,7 @@ do
 	
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -407,7 +409,7 @@ do
 	test -z $result && result=0	
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -431,7 +433,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -455,7 +457,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -489,7 +491,7 @@ do
 	
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -508,7 +510,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -530,7 +532,7 @@ do
 		test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -553,7 +555,7 @@ do
 	
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -576,7 +578,7 @@ do
 		test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -598,7 +600,7 @@ do
 		test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -620,7 +622,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -643,7 +645,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -665,7 +667,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -687,7 +689,7 @@ do
 		test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -709,7 +711,7 @@ do
 		test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -731,7 +733,7 @@ do
 		test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -753,7 +755,7 @@ do
 		test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -775,7 +777,7 @@ do
 	test -z $result && result=0
 	if [[ 1 -eq $(echo "$result < 0"|bc) ]]
 	then
-		echo "wrongResult=true"
+		echo "wrongResult=True"
 		save "$save_value"
 		exit
 	fi
@@ -793,7 +795,7 @@ save "$save_value"
 #
 if [[ $empty -eq 1 ]]
 then
-	echo "wrongResult=true"
+	echo "wrongResult=True"
 	save "$save_value"
 else
 	echo $OUTPUT
