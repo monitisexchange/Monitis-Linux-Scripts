@@ -18,5 +18,5 @@ cd $tmp
 ./stop.sh 1> /dev/null
 
 echo ---------starting test loop--------------
-./mymon_start.sh 1> /dev/null &
+./mymon_start.sh "$@" 1> /dev/null &
 

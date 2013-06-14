@@ -79,9 +79,9 @@ function get_measure() {
 	local details="details"
 
 	#echo "********** check MySQL parameters **********"
-	access_MySQL $HOST $USER $PASSWORD  "SHOW GLOBAL STATUS" status
+	access_MySQL $HOST $USER $PASSWORD  "SHOW GLOBAL STATUS" $FILE_STATUS
 	local ret_s="$?"
-	if [[ (ret_s -gt 0) || ($(stat -c%s status) -le 0) ]]
+	if [[ (ret_s -gt 0) || ($(stat -c%s $FILE_STATUS) -le 0) ]]
 	then
 		MSG="Unknown problems while access mysql..."
 		problem="FATAL "+"$MSG"
@@ -90,28 +90,28 @@ function get_measure() {
 		return 1
 	fi
 	
-	access_MySQL $HOST $USER $PASSWORD  "SHOW GLOBAL VARIABLES" variables
+	access_MySQL $HOST $USER $PASSWORD  "SHOW GLOBAL VARIABLES" $FILE_SETTING
 	
 	
 	#echo "*********** Retriving status data ***********"
-	local Bytes_received=$(extract_value status Bytes_received)
-	local Bytes_sent=$(extract_value status Bytes_sent)
-	local Com_insert=$(extract_value status Com_insert)
-	local Com_select=$(extract_value status Com_select)
-	local Com_update=$(extract_value status Com_update)
-	local Com_delete=$(extract_value status Com_delete)
-	local Com_show_status=$(extract_value status Com_show_status)
-	local Com_show_variables=$(extract_value status Com_show_variables)
-	local Connections=$(extract_value status Connections)
-	local Queries=$(extract_value status Queries)
-	local Slow_queries=$(extract_value status Slow_queries)
-	local Threads_connected=$(extract_value status Threads_connected)
-	local Threads_running=$(extract_value status Threads_running)
-	local Uptime=$(extract_value status Uptime)
-	local max_connections=$(extract_value variables max_connections)
-	local slow_query_log=$(extract_value variables slow_query_log)
-	local slow_query_log_file=$(extract_value variables slow_query_log_file)
-	local long_query_time=$(extract_value variables long_query_time)
+	local Bytes_received=$(extract_value $FILE_STATUS Bytes_received)
+	local Bytes_sent=$(extract_value $FILE_STATUS Bytes_sent)
+	local Com_insert=$(extract_value $FILE_STATUS Com_insert)
+	local Com_select=$(extract_value $FILE_STATUS Com_select)
+	local Com_update=$(extract_value $FILE_STATUS Com_update)
+	local Com_delete=$(extract_value $FILE_STATUS Com_delete)
+	local Com_show_status=$(extract_value $FILE_STATUS Com_show_status)
+	local Com_show_variables=$(extract_value $FILE_STATUS Com_show_variables)
+	local Connections=$(extract_value $FILE_STATUS Connections)
+	local Queries=$(extract_value $FILE_STATUS Queries)
+	local Slow_queries=$(extract_value $FILE_STATUS Slow_queries)
+	local Threads_connected=$(extract_value $FILE_STATUS Threads_connected)
+	local Threads_running=$(extract_value $FILE_STATUS Threads_running)
+	local Uptime=$(extract_value $FILE_STATUS Uptime)
+	local max_connections=$(extract_value $FILE_SETTING max_connections)
+	local slow_query_log=$(extract_value $FILE_SETTING slow_query_log)
+	local slow_query_log_file=$(extract_value $FILE_SETTING slow_query_log_file)
+	local long_query_time=$(extract_value $FILE_SETTING long_query_time)
 	
 	local time_stamp=`date -u +%s` 		#current timestamp in sec
 	local dur=$DURATION
@@ -119,7 +119,7 @@ function get_measure() {
 		dur=$(( $time_stamp - $prev_time ))
 	fi
 		
-	if [[ ($prev_time -eq 0) || !(-r pstatus) || ($(stat -c%s pstatus) -le 0) ]] # No yet previous results
+	if [[ ($prev_time -eq 0) || !(-r $FILE_STATUS_PREV) || ($(stat -c%s $FILE_STATUS_PREV) -le 0) ]] # No yet previous results
     then
 	 	local pBytes_received=$Bytes_received
 		local pBytes_sent=$Bytes_sent
@@ -134,23 +134,23 @@ function get_measure() {
 		local pSlow_queries=$Slow_queries
 		local pThreads_connected=$Threads_connected
 	else
-		local pBytes_received=$(extract_value pstatus Bytes_received)
-		local pBytes_sent=$(extract_value pstatus Bytes_sent)
-		local pCom_insert=$(extract_value pstatus Com_insert)
-		local pCom_select=$(extract_value pstatus Com_select)
-		local pCom_update=$(extract_value pstatus Com_update)
-		local pCom_delete=$(extract_value pstatus Com_delete)
-		local pCom_show_status=$(extract_value pstatus Com_show_status)
-		local pCom_show_variables=$(extract_value pstatus Com_show_variables)
-		local pConnections=$(extract_value pstatus Connections)
-		local pQueries=$(extract_value pstatus Queries)
-		local pSlow_queries=$(extract_value pstatus Slow_queries)
-		local pThreads_connected=$(extract_value pstatus Threads_connected)	
+		local pBytes_received=$(extract_value $FILE_STATUS_PREV Bytes_received)
+		local pBytes_sent=$(extract_value $FILE_STATUS_PREV Bytes_sent)
+		local pCom_insert=$(extract_value $FILE_STATUS_PREV Com_insert)
+		local pCom_select=$(extract_value $FILE_STATUS_PREV Com_select)
+		local pCom_update=$(extract_value $FILE_STATUS_PREV Com_update)
+		local pCom_delete=$(extract_value $FILE_STATUS_PREV Com_delete)
+		local pCom_show_status=$(extract_value $FILE_STATUS_PREV Com_show_status)
+		local pCom_show_variables=$(extract_value $FILE_STATUS_PREV Com_show_variables)
+		local pConnections=$(extract_value $FILE_STATUS_PREV Connections)
+		local pQueries=$(extract_value $FILE_STATUS_PREV Queries)
+		local pSlow_queries=$(extract_value $FILE_STATUS_PREV Slow_queries)
+		local pThreads_connected=$(extract_value $FILE_STATUS_PREV Threads_connected)	
     fi
 	
 	
 	# Copy the current result as previous one
-	cp -f status pstatus
+	cp -f $FILE_STATUS $FILE_STATUS_PREV
 	prev_time=$time_stamp
 	
 	local Com_show_status_dif=$(( $Com_show_status - $pCom_show_status ))

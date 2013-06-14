@@ -7,7 +7,7 @@
 # to their hexadecimal character representations (as defined in RFC3986)
 # " " "!"  "#"  "$" "&" "'" "(" ")" ":"  "/"  "?"  "["  "]"  "@" "*" "+" "," ";" "="
 uri_escape(){ 
-	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g'
+	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
 }
 
 # Tests whether *entire string* is alphanumeric.
@@ -57,6 +57,11 @@ function formatTimestamp(){
 # sample: echo "'$(trim "  one   two    three  ")'"
 function trim {
     echo $*
+}
+
+#replace blanks with '_'
+function replBlank {
+	echo -E "$@" | tr -s '[:blank:]' '_'
 }
 
 # Convert json array to set of json objects separated by "|"
@@ -233,6 +238,11 @@ function error {
 	4)
 	# errors...
 		echo $( date +"%D %T" ) - ERROR: "$2" >&2
+		;;
+	10) 
+	#debug during processing
+		echo $( date +"%D %T" ) - DEBUG: "$2" >&2
+		return 0
 		;;
 	*)
 	# unknown error

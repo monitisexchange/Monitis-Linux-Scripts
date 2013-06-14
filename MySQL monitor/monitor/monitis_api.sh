@@ -99,6 +99,7 @@ function get_permanent_get_param {
 # $3 - result parameters* formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $4 - additional result parameters formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $5 - monitor type
+# $6 - multiValue - optional value; true means that monitor can have several results for one check time.
 #
 # Store added monitor ID into MONITOR_ID and returns with return code 0 (success)
 # (exit from application on failure)
@@ -111,6 +112,7 @@ function add_custom_monitor {
 	local result_params="$3"
 	local additional_params="$4"
 	local monitor_type="$5"
+	local multivalue="$6"
 	MSG=""
 	
 	# check correctness of mandatory parameters
@@ -131,6 +133,9 @@ function add_custom_monitor {
 	postdata=$postdata" -d tag=$monitor_tag "
 	if [[ (-n "$monitor_type") ]] ; then
 		postdata=$postdata" -d type=$monitor_type "
+	fi
+	if [[ (-n "$multivalue") ]] ; then
+		postdata=$postdata" -d multiValue=$multivalue "
 	fi
 	if [[ (-n "$additional_params") ]] ; then
 		postdata=$postdata" -d additionalResultParams=$additional_params "
@@ -185,6 +190,39 @@ function add_custom_monitor {
 	return 0
 }
 
+# Check existence of monitor
+# @param $1 - monitor ID 
+function check_custom_monitor_existence() {
+	local monitor_id=$1
+	MSG=""
+	
+	# GET request permanent paramenters 
+	local permdata=`get_permanent_get_param`
+	
+	# monitor parameters
+	local postdata=" -d action=$API_GET_MONITOR_INFO "
+	postdata=$postdata" -d monitorId=$monitor_id "
+	postdata=$postdata" -d excludeHidden=true "
+	
+	req="$SERVER""$API_PATH"
+	
+	response="$(curl -Gs $permdata $postdata $req)"
+	
+	if [[ (${#response} -gt 0) ]] # Normally, the response text should exist 
+	then # Seems, we received correct answer - check
+		if [[ ( -n ` echo $response | grep -aswi "error" | grep -aswio -m1 "monitorId" `) ]] ; then
+			MSG="Monitor with ID \"$monitor_id\" is not exist"
+			return 3
+		else
+			MSG="OK"
+		fi
+	else
+		MSG="No response received while getting monitor info..."
+		return 3
+	fi
+	return 0
+}
+
 # Returns the specified custom monitor info in JSON form (if exist)
 # @param $1 - monitor ID 
 function get_custom_monitor_info() {
@@ -203,24 +241,11 @@ function get_custom_monitor_info() {
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
-	then # Seems, we received correct answer - parsing
-		id=`jsonval "$response" "id" `
-		if [[ (-n $id) && ($id -eq $monitor_id) ]]
-		then
+	if [[ (${#response} -gt 0) ]] ; then # Normally, the response text should exist 
 			MSG=$response
 		else
-			MSG="Monitor with ID \"$monitor_id\" is not exist"
-			return 3
-		fi
-	else
-		if [[ (${#response} -le 0) ]]
-		then
 			MSG="No response received while getting monitor info..."
 			return 1
-		else
-			MSG="Response is too long while getting monitor info..."
-		fi
 	fi
 	return 0
 }
@@ -259,14 +284,12 @@ function get_monitors_list() {
 	then # Likely, we received correct answer
 		#parsing
 		id=`jsonval "$response" "id" `	
-		if [[ (-z $id) ]]
-		then
+		if [[ (-z $id) ]] ; then
 			MSG="get_monitors_list - Response contains no any ID: \"$response\""
 			return 3
 		fi
 	else
-		if [[ (${#response} -le 0) ]]
-		then
+		if [[ (${#response} -le 0) ]] ; then
 			MSG="get_monitors_list - No response received..."
 			return 1
 		else
@@ -285,23 +308,19 @@ function get_monitorID {
 	local tag=${2:-""}
 	local type=${3:-""}
 	
-    if [[ (-n $name) && (-n $tag) && (-n $type) ]]
-    then
+    if [[ (-n $name) && (-n $tag) && (-n $type) ]] ; then
 		get_monitors_list "$tag" "$type"
 		ret="$?"
-		if [[ ($ret -ne 0) ]]
-		then
+		if [[ ($ret -ne 0) ]] ; then
 			return $ret
 		else
 			isJSONarray "$response"
 			ret="$?"
-			if [[ ($ret -ne 0) ]]
-			then # not array
+			if [[ ($ret -ne 0) ]] ; then # not array
 				MSG="get_monitorID - Not an array"
 				isJSON "$response"
 				ret="$?"
-				if [[ ($ret -ne 0) ]]
-				then
+				if [[ ($ret -ne 0) ]] ; then
 					MSG="get_monitorID - Not a Json"
 				fi
 			else #array
@@ -315,8 +334,7 @@ function get_monitorID {
 				for (( i=0 ; i< "${#Array[@]}" ; i++ ))
 				do
 					value=`jsonval "${Array[$i]}" "name" `
-					if [[ ("$?" -eq 0) ]]
-					then # Found name
+					if [[ ("$?" -eq 0) ]] ; then # Found name
 						if [[ (${value#"name:"} == $name) ]]
 						then
 							value=`jsonval "${Array[$i]}" "id" `

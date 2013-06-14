@@ -2,13 +2,17 @@
 
 # Declaration of monitor constants
 declare -r HOST="127.0.0.1"			# host where located MySQL server
-declare -r USER="root"				# MySQL server user name
-declare -r PASSWORD="r00t"			# MySQL server user password
+declare -r USER="user"				# MySQL server user name (replace by correct name)
+declare -r PASSWORD="password"		# MySQL server user password (replace by correct value)
 
 declare -r NAME="MySQL"
 declare -r MONITOR_NAME="$NAME"_"$HOST"		# name of custom monitor
 declare -r MONITOR_TAG="MySQL"				# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"		# type for custom monitor
+
+declare -r FILE_SETTING="variables"			# MySQL Setting file 
+declare -r FILE_STATUS="status"				# MySQL Status file
+declare -r FILE_STATUS_PREV="pstatus"		# Previous MySQL status file
 
 # monitor commands
 declare -r MON_ACTION="action"
