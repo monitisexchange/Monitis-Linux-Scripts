@@ -39,6 +39,7 @@ echo "***$NAME - Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
 echo "Monitor tag = $MONITOR_TAG"
 echo "Monitor type = $MONITOR_TYPE"
+echo "Monitor ID = $MONITOR_ID"
 echo "Duration for sending info = $DURATION sec"
 
 echo obtaining TOKEN
