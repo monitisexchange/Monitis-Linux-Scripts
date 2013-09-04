@@ -34,6 +34,7 @@ echo "***$NAME - Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
 echo "Monitor tag = $MONITOR_TAG"
 echo "Monitor type = $MONITOR_TYPE"
+echo "Monitor ID = $MONITOR_ID"
 echo "Setting file = $FILE_SETTING"
 echo "Status file = $FILE_STATUS"
 echo "Previous status file = $FILE_STATUS_PREV"
@@ -54,7 +55,7 @@ fi
 if [[ ($MONITOR_ID -gt 0) ]]
 then 
 	echo "$NAME - Monitor ID \"${MONITOR_ID}\" isn't ZERO - try to check correctness." >&2
-	check_custom_monitor_existence "$MONITOR_ID"
+	get_custom_monitor_info "$MONITOR_ID"
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
 	then # not found monitor with given ID
@@ -163,6 +164,7 @@ do
 				echo
 				echo $NAME - DEBUG: Composed additional params is \"$param\" >&2
 				echo
+
 				# Sending to Monitis
 				add_custom_monitor_additional_data "$param" "$timestamp"
 				ret="$?"
