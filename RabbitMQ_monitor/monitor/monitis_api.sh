@@ -99,6 +99,7 @@ function get_permanent_get_param {
 # $3 - result parameters* formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $4 - additional result parameters formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $5 - monitor type
+# $6 - multiValue - optional value; true means that monitor can have several results for one check time.
 #
 # Store added monitor ID into MONITOR_ID and returns with return code 0 (success)
 # (exit from application on failure)
@@ -111,6 +112,7 @@ function add_custom_monitor {
 	local result_params="$3"
 	local additional_params="$4"
 	local monitor_type="$5"
+	local multivalue="$6"
 	MSG=""
 	
 	# check correctness of mandatory parameters
@@ -131,6 +133,9 @@ function add_custom_monitor {
 	postdata=$postdata" -d tag=$monitor_tag "
 	if [[ (-n "$monitor_type") ]] ; then
 		postdata=$postdata" -d type=$monitor_type "
+	fi
+	if [[ (-n "$multivalue") ]] ; then
+		postdata=$postdata" -d multiValue=$multivalue "
 	fi
 	if [[ (-n "$additional_params") ]] ; then
 		postdata=$postdata" -d additionalResultParams=$additional_params "
@@ -167,7 +172,7 @@ function add_custom_monitor {
 					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
 		else
-			MSG='add_custom_monitor - NO RESPONSE STATUS??'
+			MSG='add_custom_monitor - $response'
 			return 3
 		fi	
 	else
@@ -203,7 +208,7 @@ function get_custom_monitor_info() {
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 2000) ]] # Normally, the response text length shouldn't exceed 2000 chars
+	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
 	then # Seems, we received correct answer - parsing
 		id=`jsonval "$response" "id" `
 		if [[ (-n $id) && ($id -eq $monitor_id) ]]
@@ -255,7 +260,7 @@ function get_monitors_list() {
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 2000) ]] # Normally, the response text length shouldn't exceed 2000 chars
+	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
 	then # Likely, we received correct answer
 		#parsing
 		id=`jsonval "$response" "id" `	
