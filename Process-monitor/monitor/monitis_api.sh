@@ -158,7 +158,7 @@ function add_custom_monitor {
 				# status is ok - checking data...
 				data=`jsonval "$json" "$RES_DATA" `
 			else
-				if [[ (-n `echo "$status" | grep -asio -m1 "exists"`) ]]
+				if [[ (-n `echo "$status" | grep -asio -m1 "exist"`) ]]
 				then
 					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
@@ -172,7 +172,7 @@ function add_custom_monitor {
 					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
 		else
-			MSG='add_custom_monitor - NO RESPONSE STATUS??'
+			MSG="add_custom_monitor - $response"
 			return 3
 		fi	
 	else
