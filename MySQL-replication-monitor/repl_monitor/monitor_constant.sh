@@ -30,7 +30,3 @@ declare -r RESP_DOWN="alive:no"
 declare -r ADDITIONAL_PARAMS="details:Details::3"
 	
 declare    DURATION=5	 		# information sending duration [min] (REPLACE by any desired value)
-
-# working parameters	
-declare -i INITIALIZED=0	# indicator of master variables initializing
-

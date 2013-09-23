@@ -3,6 +3,7 @@
 # sorces included
 source monitor_constant.sh    || exit 2
 
+declare -i initialized=0	# indicator of master variables initializing
 #previous measurement data
 declare -i prev_Slave_read_binlog_num=0
 declare -i prev_Slave_read_binlog_pos=0
@@ -103,10 +104,10 @@ function get_measure() {
 		return 1
 	fi
 	#****Still OK****
-	if [ $INITIALIZED -eq 0 ]
+	if [ $initialized -eq 0 ]
 	then
 	  access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW VARIABLES" mvariables
-	  INITIALIZED=1
+	  initialized=1
 	fi
 	
 	
@@ -212,6 +213,7 @@ function get_measure() {
 	    errors=$(($errors+1))
 	fi
 	
+	local details="details"
 	if [ $errors -gt 0 ]
 	then
 	    problem="Problems in replication"
