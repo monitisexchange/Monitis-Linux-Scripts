@@ -53,42 +53,23 @@ else
 	echo "All is OK for now."
 fi
 
-if [[ ($MONITOR_ID -gt 0) ]]
-then 
-	echo "$NAME - Monitor ID \"${MONITOR_ID}\" isn't ZERO - try to check correctness." >&2
-	get_custom_monitor_info "$MONITOR_ID"
+#trying to get monitor id
+id=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
+ret="$?"
+if [[ ($ret -ne 0) ]] ; then
+	error 1 "$NAME - $MSG ( $ret )"
+	#try to add new monitor
+	echo $NAME - Adding custom monitor >&2
+	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 	ret="$?"
 	if [[ ($ret -ne 0) ]]
-	then # not found monitor with given ID
-		echo "$NAME - Monitor ID is incorrect - it cannot be used" >&2
-		MONITOR_ID=0
-	else
-		echo "$NAME - Monitor ID is correct - we will use it" >&2
-	fi
-fi
-
-if [[ ($MONITOR_ID -le 0) ]]
 then
-	echo $NAME - Adding custom monitor with parameters name: "$MONITOR_NAME" tag: "$MONITOR_TAG" type: "$MONITOR_TYPE" params: "$RESULT_PARAMS" a_params: "$ADDITIONAL_PARAMS" multiValue: "$MULTIVALUE" >&2
-	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE" "$MULTIVALUE"
-	ret="$?"
-	if [[ ($ret -ne 0) ]] ; then
 		error "$ret" "$NAME - $MSG"
 	else
 		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
 	fi
-fi
-
-if [[ ($MONITOR_ID -le 0) ]] ; then 
-	echo $NAME - MonitorId is still zero - try to obtain it from Monitis >&2
-	
-	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
-	ret="$?"
-	if [[ ($ret -ne 0) ]]
-	then
-		error "$ret" "$NAME - $MSG"
 	else
 		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
@@ -175,6 +156,5 @@ do
 			echo "$NAME - ****No any detailed records yet ($array_length)"
 		fi
 	fi
-
 done
 
