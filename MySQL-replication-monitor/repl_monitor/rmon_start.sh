@@ -37,43 +37,42 @@ echo "Monitor type = $MONITOR_TYPE"
 echo "Monitor ID = $MONITOR_ID"
 echo "Duration for sending info = $DURATION sec"
 
-echo obtaining TOKEN
-get_token
-ret="$?"
-if [[ ($ret -ne 0) ]]
-then
-	error 3 "$MSG"
-else
-	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
-	echo "All is OK for now."
-fi
+ret=1
+while [ $ret -ne 0 ] ; do
+	echo obtaining TOKEN
+	get_token
+	ret="$?"
+	if [[ ($ret -ne 0) ]] ; then
+		error "$ret" "$NAME - $MSG"
+	fi
+done
+echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
+echo "All is OK for now."
 
 #trying to get monitor id
 id=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
-	ret="$?"
+ret="$?"
 if [[ ($ret -ne 0) ]] ; then
 	error 1 "$NAME - $MSG ( $ret )"
 	#try to add new monitor
 	echo $NAME - Adding custom monitor >&2
 	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 	ret="$?"
-	if [[ ($ret -ne 0) ]]
-	then
+	if [[ ($ret -ne 0) ]] ; then
 		error "$ret" "$NAME - $MSG"
 	else
 		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
 	fi
-	else
-	if [[ ($MONITOR_ID -le 0) || ($MONITOR_ID -ne $id) ]] ; then
-		MONITOR_ID=$id
-		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+else
+    if [[ ($MONITOR_ID -le 0) || ($MONITOR_ID -ne $id) ]] ; then
+	MONITOR_ID=$id
+	replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+    fi
+    echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+    echo "All is OK for now."
 fi
-		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
-		echo "All is OK for now."
-	fi
-
 
 # Periodically adding new data
 echo "$NAME - Starting LOOP for adding new data" >&2
