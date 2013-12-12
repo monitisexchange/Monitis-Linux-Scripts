@@ -17,7 +17,7 @@ do
         r) range=$OPTARG ;;
         t) threshold="$OPTARG" ;;
         h) echo "Usage: $0 -d <duration in min> -r <range of random> -t <threshold value>" ; exit 0 ;;
-        *) error 4 "Wrong parameter received" ;;
+        *) error 4 "$NAME - invalid parameter(s) while start" ;;
         esac
 done
 
@@ -45,8 +45,7 @@ echo "Duration for sending info = $DURATION sec"
 echo obtaining TOKEN
 get_token
 ret="$?"
-if [[ ($ret -ne 0) ]]
-then
+if [[ ($ret -ne 0) ]] ; then
 	error 3 "$MSG"
 else
 	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
@@ -62,19 +61,20 @@ if [[ ($ret -ne 0) ]] ; then
 	echo $NAME - Adding custom monitor >&2
 	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 	ret="$?"
-	if [[ ($ret -ne 0) ]]
-then
+if [[ ($ret -ne 0) ]] ; then
 		error "$ret" "$NAME - $MSG"
-	else
+else
 		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
-	fi
-	else
-		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+fi
+else
+	if [[ ($MONITOR_ID -le 0) || ($MONITOR_ID -ne $id) ]] ; then
+		MONITOR_ID=$id
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
-		echo "All is OK for now."
 	fi
+	echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+	echo "All is OK for now."
 fi
 
 # Periodically adding new data
