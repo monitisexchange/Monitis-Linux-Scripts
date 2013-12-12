@@ -19,7 +19,7 @@ source monitis_constant.sh || error 2 monitis_const
 # http://monitis.som/api?action=authToken&apikey=[yourAPIKey]&secretkey=[yourSecretKey]
 #
 function get_token() {
-	force=${1:-$FALSE}
+	local force=${1:-$FALSE}
 	local val="."
 	MSG=""
 	
@@ -28,7 +28,7 @@ function get_token() {
 	then
 		local action="api?action=$API_GET_TOKEN_ACTION&apikey=$APIKEY&secretkey=$SECRETKEY&version=$APIVERSION"
 		local req="$SERVER$action"
-		local response="$(curl -Gs $req)"
+		response="$(curl -Gs $req)"
 		if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
 		then # Likely, we received correct answer - parsing
 			val=`jsonval $response $API_GET_TOKEN_ACTION `
@@ -99,6 +99,7 @@ function get_permanent_get_param {
 # $3 - result parameters* formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $4 - additional result parameters formatted as stated in API (name1:displayName1:uom1:dataType1[;name2:displayName2:uom2:dataType2...])
 # $5 - monitor type
+# $6 - multiValue - optional value; true means that monitor can have several results for one check time.
 #
 # Store added monitor ID into MONITOR_ID and returns with return code 0 (success)
 # (exit from application on failure)
@@ -111,6 +112,7 @@ function add_custom_monitor {
 	local result_params="$3"
 	local additional_params="$4"
 	local monitor_type="$5"
+	local multivalue="$6"
 	MSG=""
 	
 	# check correctness of mandatory parameters
@@ -131,6 +133,9 @@ function add_custom_monitor {
 	postdata=$postdata" -d tag=$monitor_tag "
 	if [[ (-n "$monitor_type") ]] ; then
 		postdata=$postdata" -d type=$monitor_type "
+	fi
+	if [[ (-n "$multivalue") ]] ; then
+		postdata=$postdata" -d multiValue=$multivalue "
 	fi
 	if [[ (-n "$additional_params") ]] ; then
 		postdata=$postdata" -d additionalResultParams=$additional_params "
@@ -153,21 +158,21 @@ function add_custom_monitor {
 				# status is ok - checking data...
 				data=`jsonval "$json" "$RES_DATA" `
 			else
-				if [[ (-n `echo "$status" | grep -asio -m1 "exists"`) ]]
+				if [[ (-n `echo "$status" | grep -asio -m1 "exist"`) ]]
 				then
 					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
 				else
-					MSG='add_custom_monitor: Response - '$response
+					MSG="add_custom_monitor: Response - $response"
 					return 3
 				fi
 			fi
-		elif [[ (-n "$error") && (-n `echo "$error" | grep -asio -m1 "exists"`) ]]
+		elif [[ (-n "$error") && (-n `echo "$error" | grep -asio -m1 "exist"`) ]]
 			then
 					MSG="monitor with specified parameters ( $monitor_name ; $monitor_tag ; $monitor_type ) already exists"
 					return 1
 		else
-			MSG='add_custom_monitor - NO RESPONSE STATUS??'
+			MSG="add_custom_monitor - $response"
 			return 3
 		fi	
 	else
@@ -177,7 +182,7 @@ function add_custom_monitor {
 	
 	if [[ ( -z "$data") ]]
 	then
-		MSG='add_custom_monitor - NO RESPONSE DATA??'
+		MSG="add_custom_monitor - NO RESPONSE DATA??"
 		return 3
 	fi	
 		
@@ -203,12 +208,12 @@ function get_custom_monitor_info() {
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 2000) ]] # Normally, the response text length shouldn't exceed 2000 chars
+	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
 	then # Seems, we received correct answer - parsing
 		id=`jsonval "$response" "id" `
 		if [[ (-n $id) && ($id -eq $monitor_id) ]]
 		then
-			MSG=$response
+			MSG="$response"
 		else
 			MSG="Monitor with ID \"$monitor_id\" is not exist"
 			return 3
@@ -226,8 +231,9 @@ function get_custom_monitor_info() {
 }
 
 # Returns the specified custom monitors list
-# @param $1 - tag to get monitors for
-# @param $2 - type of the monitor
+# @param $1 - monitor name
+# @param $2 - monitor tag
+# @param $3 - monitor type
 #
 # return result in 'response' global variables
 # exit codes:
@@ -235,9 +241,11 @@ function get_custom_monitor_info() {
 #	1 - response contain more than 1000 chars
 #	3 - response contains no any monitor id
 function get_monitors_list() {
-	local monitor_tag=${1:-""}
-	local monitor_type=${2:-""}
-	MSG=""
+	local monitor_name=${1:-""}
+	local monitor_tag=${2:-""}
+	local monitor_type=${3:-""}
+	
+	local ret=0
 	
 	# GET request permanent paramenters 
 	local permdata=`get_permanent_get_param`
@@ -250,30 +258,34 @@ function get_monitors_list() {
 	if [[ (-n "$monitor_type") ]] ; then
 		postdata=$postdata" -d type=$monitor_type "
 	fi
+	if [[ (-n "$monitor_name") ]] ; then
+		postdata=$postdata" -d name=$monitor_name "
+	fi
 	
 	req="$SERVER""$API_PATH"
 	
 	response="$(curl -Gs $permdata $postdata $req)"
 	
-	if [[ (${#response} -gt 0) && (${#response} -lt 2000) ]] # Normally, the response text length shouldn't exceed 2000 chars
+	if [[ (${#response} -gt 10) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
 	then # Likely, we received correct answer
 		#parsing
-		id=`jsonval "$response" "id" `	
-		if [[ (-z $id) ]]
-		then
-			MSG="get_monitors_list - Response contains no any ID: \"$response\""
-			return 3
+		isJSONarray "$response"
+		ret="$?"
+		if [[ ($ret -ne 0) ]] ; then # not array
+				MSG="get_monitors_list - response is not an array"
+				ret=3
 		fi
 	else
 		if [[ (${#response} -le 0) ]]
 		then
 			MSG="get_monitors_list - No response received..."
-			return 1
+			ret=3
 		else
-			MSG="get_monitors_list - Response is too long..."
+			MSG="get_monitors_list - Unclear response..."
+			ret=1
 		fi
 	fi	
-	return 0
+	return $ret
 }
 
 # Returns the specified custom monitor ID (if exist)
@@ -285,52 +297,32 @@ function get_monitorID {
 	local tag=${2:-""}
 	local type=${3:-""}
 	
-    if [[ (-n $name) && (-n $tag) && (-n $type) ]]
-    then
-		get_monitors_list "$tag" "$type"
+	local ret=0
+	
+    if [[ (-n $name) && (-n $tag) && (-n $type) ]] ; then
+		get_monitors_list "$name" "$tag" "$type"
 		ret="$?"
-		if [[ ($ret -ne 0) ]]
-		then
-			return $ret
+		if [[ ($ret -ne 0) ]] ; then
+			ret=$ret
 		else
-			isJSONarray "$response"
-			ret="$?"
-			if [[ ($ret -ne 0) ]]
-			then # not array
-				MSG="get_monitorID - Not an array"
-				isJSON "$response"
-				ret="$?"
-				if [[ ($ret -ne 0) ]]
-				then
-					MSG="get_monitorID - Not a Json"
-				fi
-			else #array
-				#tmp=$(echo $response | replace "[{" "{" | replace "}]" "}" | replace "}," "} | " | replace "{" " {" | replace "})" "} )" )
-				tmp=`jsonArray2ss "${response}" `
+			tmp=`jsonArray2ss "${response}" ` #convert json array to set of json objects separated by "|"
 				set -- "$tmp" 				
 					OIFS=$IFS
 					IFS="|"
 					declare -a Array=($*) 
 					IFS=$OIFS			
-				for (( i=0 ; i< "${#Array[@]}" ; i++ ))
-				do
-					value=`jsonval "${Array[$i]}" "name" `
-					if [[ ("$?" -eq 0) ]]
-					then # Found name
-						if [[ (${value#"name:"} == $name) ]]
-						then
-							value=`jsonval "${Array[$i]}" "id" `
+			if [[ (	${#Array[@]} -eq 1 ) ]] ; then	
+				value=`jsonval "${Array[0]}" "id" `
+				MSG="OK"
 							ret="$?"
 							echo $value
-							return $ret
+				ret=$ret
+			else 
+				MSG="get_monitorID - Monitor not found in response list"		
 						fi
-					fi
-				done
-				MSG="get_monitorID - Monitor not found in response list"
 			fi
 		fi
-	fi
-	return 1
+	return $ret
 }
 
 # adds data for a custom monitor
@@ -341,6 +333,7 @@ function get_monitorID {
 function add_custom_monitor_data() {
 	local results=${1:-""}
 	local timestamp=${2:-$(get_timestamp)}
+	local ret=0
 	MSG=""
 	
 	# POST request permanent paramenters	
@@ -363,19 +356,20 @@ function add_custom_monitor_data() {
 		then	# status is ok
 			MSG="$TRUE"
 		else
-			MSG='add_custom_monitor_data: response - '$response
-			return 1
+			MSG="add_custom_monitor_data: response - $response"
+			ret=1
 		fi
 	else
 		if [[ (${#response} -le 0) ]]
 		then
 			MSG="add_custom_monitor_data: No response received.."
-			return 1
+			ret=3
 		else
 			MSG="add_custom_monitor_data: Response is too long..."
+			ret=3
 		fi
 	fi
-	return 0
+	return $ret
 }
 
 # adds additional data for a custom monitor
@@ -409,7 +403,7 @@ function add_custom_monitor_additional_data() {
 		then	# status is ok
 			MSG="$TRUE"
 		else
-			MSG='add_custom_monitor_additional_data. Response - '$response
+			MSG="add_custom_monitor_additional_data. Response - $response"
 			return 1
 		fi
 	else

@@ -23,7 +23,7 @@ do
 		fi
 	;;
 	*) echo "Usage: $0 -h <host_addres> -m <memcached access aIP> -p <memcached access port> -d <duration in min>" 
-	   error 4 "invalid parameter(s) while start"
+	   error 4 "Wrong parameter received"
 	   ;;
 	esac
 done
@@ -37,7 +37,7 @@ fi
 
 DURATION=$((60*$DURATION)) #convert to sec
 
-MONITOR_NAME="Memcached"_"$HOST_IP:$MEMCACHED_PORT"
+MONITOR_NAME="$NAME"_"$HOST_IP:$MEMCACHED_PORT"
 FILE_SETTING="$FILE_SETTING$MEMCACHED_PORT"
 FILE_STATUS="$FILE_STATUS$MEMCACHED_PORT"
 FILE_STATUS_PREV="$FILE_STATUS_PREV$MEMCACHED_PORT"
@@ -46,67 +46,68 @@ echo "***$NAME - Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
 echo "Monitor tag = $MONITOR_TAG"
 echo "Monitor type = $MONITOR_TYPE"
+echo "Monitor ID = $MONITOR_ID"
 echo "Setting file = $FILE_SETTING"
 echo "Status file = $FILE_STATUS"
 echo "Previous status file = $FILE_STATUS_PREV"
 echo "Duration for sending info = $DURATION sec"
 echo "Sending into $SERVER"
 
-echo obtaining TOKEN
-get_token
-ret="$?"
-if [[ ($ret -ne 0) ]]
-then
-	error 3 "$MSG"
-else
-	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))`
-	echo "All is OK for now."
-fi
-
-echo $NAME - Adding custom monitor
-add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
-ret="$?"
-if [[ ($ret -ne 0) ]]
-then
-	error "$ret" "$NAME - $MSG"
-else
-	echo $NAME - Custom monitor id = "$MONITOR_ID"
-	echo "All is OK for now."
-fi
-
-if [[ ($MONITOR_ID -le 0) ]]
-then 
-	echo $NAME - MonitorId is still zero - try to obtain it from Monitis
-	
-	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
+ret=1
+while [ $ret -ne 0 ] ; do
+	echo obtaining TOKEN
+	get_token
 	ret="$?"
-	if [[ ($ret -ne 0) ]]
-	then
+	if [[ ($ret -ne 0) ]] ; then
 		error "$ret" "$NAME - $MSG"
-	else
-		echo $NAME - Custom monitor id = "$MONITOR_ID"
-		echo "All is OK for now."
 	fi
+done
+echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
+echo "All is OK for now."
+
+#trying to get monitor id
+id=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
+ret="$?"
+if [[ ($ret -ne 0) ]] ; then
+    error 1 "$NAME - $MSG ( $ret )"
+    #try to add new monitor
+    echo $NAME - Adding custom monitor >&2
+    add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
+    ret="$?"
+    if [[ ($ret -ne 0) ]] ; then
+	    error "$ret" "$NAME - $MSG"
+    else
+	    echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+	    replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+	    echo "All is OK for now."
+    fi
+else
+    if [[ ($MONITOR_ID -le 0) || ($MONITOR_ID -ne $id) ]] ; then
+	MONITOR_ID=$id
+	replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+    fi
+    echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+    echo "All is OK for now."
 fi
 
-echo "$NAME - Starting LOOP for adding new data"
+# Periodically adding new data
+echo "$NAME - Starting LOOP for adding new data" >&2
 file=$ERR_FILE # errors record file 
 file_=$file"_" # temporary file
 
 while $(sleep "$DURATION")
 do
+	MSG="???"
 	get_token				# get new token in case of the existing one is too old
 	ret="$?"
-	if [[ ($ret -ne 0) ]]
-	then	# some problems while getting token...
+	if [[ ($ret -ne 0) ]] ; then	# some problems while getting token...
 		error "$ret" "$NAME - $MSG"
 		continue
 	fi
 	get_measure				# call measure function
 	ret="$?"
 	echo $NAME - DEBUG ret = "$ret"  return_value = "$return_value"
-	if [[ ($ret -ne 0) ]]
-	then
+	if [[ ($ret -ne 0) ]] ; then
 	    error "$ret" "$NAME - $MSG"
 #	    continue
 	fi
@@ -116,19 +117,15 @@ do
 	param=$(echo ${result} | awk -F "|" '{print $1}')
 	param=` trim $param `
 	param=` uri_escape $param `
-	#echo
-	#echo $NAME - DEBUG: Composed params is \"$param\" >&2
-	#echo
+	echo
+	echo $NAME - DEBUG: Composed params is \"$param\"
+	echo
 	timestamp=`get_timestamp`
-	#echo
-	#echo $NAME - DEBUG: Timestamp is \"$timestamp\" >&2
-	#echo
 
 	# Sending to Monitis
-	add_custom_monitor_data $param $timestamp
+	add_custom_monitor_data "$param" "$timestamp"
 	ret="$?"
-	if [[ ($ret -ne 0) ]]
-	then
+	if [[ ($ret -ne 0) ]] ; then
 		error "$ret" "$NAME - $MSG"
 		if [[ ( -n ` echo $MSG | grep -asio -m1 "expired" `) ]] ; then
 			get_token $TRUE		# force to get a new token
@@ -149,22 +146,23 @@ do
 		array=( $param )
 		IFS=$OIFS
 		array_length="${#array[@]}"
-		if [[ ($array_length -gt 0) ]]
-		then
-			param=`create_additional_param "${array[@]}" `
+		if [[ ($array_length -gt 0) ]] ; then
+			echo 
+			echo $NAME - DEBUG: Composed additional params from \"${array[@]}\"
+			echo
+			param=`create_additional_param array[@] `
 			ret="$?"
-			if [[ ($ret -ne 0) ]]
-			then
+			if [[ ($ret -ne 0) ]] ; then
 				error "$ret" "$param"
 			else
-				#echo
-				#echo $NAME - DEBUG: Composed additional params is \"$param\" >&2
-				#echo
+				echo
+				echo $NAME - DEBUG: Composed additional params is \"$param\"
+				echo
+
 				# Sending to Monitis
-				add_custom_monitor_additional_data $param $timestamp
+				add_custom_monitor_additional_data "$param" "$timestamp"
 				ret="$?"
-				if [[ ($ret -ne 0) ]]
-				then
+				if [[ ($ret -ne 0) ]] ; then
 					error "$ret" "$NAME - $MSG"
 				else
 					echo $( date +"%D %T" ) - $NAME - The Custom monitor additional data were successfully added
@@ -174,6 +172,5 @@ do
 			echo "$NAME - ****No any detailed records yet ($array_length)"
 		fi			
 	fi
-
 done
 
