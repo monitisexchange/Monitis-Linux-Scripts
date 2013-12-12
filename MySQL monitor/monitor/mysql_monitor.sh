@@ -118,9 +118,9 @@ function get_measure() {
 	if [[ ($prev_time -gt 0) ]] ; then
 		dur=$(( $time_stamp - $prev_time ))
 	fi
-		
+	
 	if [[ ($prev_time -eq 0) || !(-r $FILE_STATUS_PREV) || ($(stat -c%s $FILE_STATUS_PREV) -le 0) ]] # No yet previous results
-    then
+	then
 	 	local pBytes_received=$Bytes_received
 		local pBytes_sent=$Bytes_sent
 		local pCom_insert=$Com_insert
@@ -146,7 +146,7 @@ function get_measure() {
 		local pQueries=$(extract_value $FILE_STATUS_PREV Queries)
 		local pSlow_queries=$(extract_value $FILE_STATUS_PREV Slow_queries)
 		local pThreads_connected=$(extract_value $FILE_STATUS_PREV Threads_connected)	
-    fi
+	fi
 	
 	
 	# Copy the current result as previous one

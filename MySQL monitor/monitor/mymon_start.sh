@@ -28,8 +28,6 @@ do
   	shift
 done
 
-DURATION=$((60*$DURATION)) #convert to sec
-
 echo "***$NAME - Monitor start with following parameters***"
 echo "Monitor name = $MONITOR_NAME"
 echo "Monitor tag = $MONITOR_TAG"
@@ -41,58 +39,43 @@ echo "Previous status file = $FILE_STATUS_PREV"
 echo "Duration for sending info = $DURATION sec"
 echo "Sending into $SERVER"
 
-echo obtaining TOKEN
-get_token
-ret="$?"
-if [[ ($ret -ne 0) ]]
-then
-	error 3 "$MSG"
-else
-	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
-	echo "All is OK for now."
-fi
-
-if [[ ($MONITOR_ID -gt 0) ]]
-then 
-	echo "$NAME - Monitor ID \"${MONITOR_ID}\" isn't ZERO - try to check correctness." >&2
-	get_custom_monitor_info "$MONITOR_ID"
-	ret="$?"
-	if [[ ($ret -ne 0) ]]
-	then # not found monitor with given ID
-		echo "$NAME - Monitor ID is incorrect - it cannot be used" >&2
-		MONITOR_ID=0
-	else
-		echo "$NAME - Monitor ID is correct - we will use it" >&2
-	fi
-fi
-
-if [[ ($MONITOR_ID -le 0) ]]
-then
-	echo $NAME - Adding custom monitor with parameters name: "$MONITOR_NAME" tag: "$MONITOR_TAG" type: "$MONITOR_TYPE" params: "$RESULT_PARAMS" >&2
-	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
+ret=1
+while [ $ret -ne 0 ] ; do
+	echo obtaining TOKEN
+	get_token
 	ret="$?"
 	if [[ ($ret -ne 0) ]] ; then
 		error "$ret" "$NAME - $MSG"
-	else
-		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
-		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
-		echo "All is OK for now."
 	fi
-fi
+done
+echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
+echo "All is OK for now."
 
-if [[ ($MONITOR_ID -le 0) ]] ; then 
-	echo $NAME - MonitorId is still zero - try to obtain it from Monitis >&2
-	
-	MONITOR_ID=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
-	ret="$?"
-	if [[ ($ret -ne 0) ]]
-	then
-		error "$ret" "$NAME - $MSG"
-	else
-		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
-		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
-		echo "All is OK for now."
-	fi
+DURATION=$((60*$DURATION)) #convert to sec
+
+#trying to get monitor id
+id=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
+ret="$?"
+if [[ ($ret -ne 0) ]] ; then
+    error 1 "$NAME - $MSG ( $ret )"
+    #try to add new monitor
+    echo $NAME - Adding custom monitor >&2
+    add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
+    ret="$?"
+    if [[ ($ret -ne 0) ]] ; then
+	    error "$ret" "$NAME - $MSG"
+    else
+	    echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+	    replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+	    echo "All is OK for now."
+    fi
+else
+    if [[ ($MONITOR_ID -le 0) || ($MONITOR_ID -ne $id) ]] ; then
+	MONITOR_ID=$id
+	replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+    fi
+    echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+    echo "All is OK for now."
 fi
 
 # Periodically adding new data
@@ -120,7 +103,7 @@ do
 	param=` trim $param `
 	param=` uri_escape $param `
 	echo
-	echo $NAME - DEBUG: Composed params is \"$param\" >&2
+	echo $NAME - DEBUG: Composed params is \"$param\"
 	echo
 	timestamp=`get_timestamp`
 
@@ -142,10 +125,6 @@ do
 		fi
 
 		param=$(echo ${result} | awk -F "|" '{print $2}' )
-		param=$(trim "$param")
-		#echo
-		#echo Additional param = "$param"
-		#echo
 		unset array
 		OIFS=$IFS
 		IFS='+'
@@ -154,7 +133,7 @@ do
 		array_length="${#array[@]}"
 		if [[ ($array_length -gt 0) ]] ; then
 			echo 
-			echo $NAME - DEBUG: Composed additional params from \"${array[@]}\" >&2
+			echo $NAME - DEBUG: Composed additional params from \"${array[@]}\"
 			echo
 			param=`create_additional_param array[@] `
 			ret="$?"
@@ -162,7 +141,7 @@ do
 				error "$ret" "$param"
 			else
 				echo
-				echo $NAME - DEBUG: Composed additional params is \"$param\" >&2
+				echo $NAME - DEBUG: Composed additional params is \"$param\"
 				echo
 
 				# Sending to Monitis
@@ -178,6 +157,5 @@ do
 			echo "$NAME - ****No any detailed records yet ($array_length)"
 		fi			
 	fi
-
 done
 
