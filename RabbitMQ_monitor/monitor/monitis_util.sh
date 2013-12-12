@@ -7,6 +7,7 @@
 # to their hexadecimal character representations (as defined in RFC3986)
 # " " "!"  "#"  "$" "&" "'" "(" ")" ":"  "/"  "?"  "["  "]"  "@" "*" "+" "," ";" "="
 uri_escape(){ 
+#	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g;s/\./%2E/g'
 	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
 }
 
@@ -113,9 +114,12 @@ function jsonval() {
     local prop=${2:-""}
     if [[ (-n $json) && (-n $prop) ]]
     then
-	    temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w -m1 $prop`
-    	echo ${temp#*:}
+	    local temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w -m1 $prop`
+	    temp="${temp#*:}"
+	    if [[ (-n "$temp") ]] ; then
+    		echo "$temp"
     	return 0
+    fi
     fi
     return 1
 }
