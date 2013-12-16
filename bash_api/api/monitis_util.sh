@@ -118,8 +118,8 @@ function jsonval() {
 	    temp="${temp#*:}"
 	    if [[ (-n "$temp") ]] ; then
     		echo "$temp"
-    	return 0
-    fi
+    		return 0
+    	fi
     fi
     return 1
 }

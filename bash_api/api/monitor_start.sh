@@ -42,15 +42,17 @@ echo "Monitor type = $MONITOR_TYPE"
 echo "Monitor ID = $MONITOR_ID"
 echo "Duration for sending info = $DURATION sec"
 
-echo obtaining TOKEN
-get_token
-ret="$?"
-if [[ ($ret -ne 0) ]] ; then
-	error 3 "$MSG"
-else
-	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
-	echo "All is OK for now."
-fi
+ret=1
+while [ $ret -ne 0 ] ; do
+	echo obtaining TOKEN
+	get_token
+	ret="$?"
+	if [[ ($ret -ne 0) ]] ; then
+		error "$ret" "$NAME - $MSG"
+	fi
+done
+echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
+echo "All is OK for now."
 
 #trying to get monitor id
 id=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
@@ -61,20 +63,20 @@ if [[ ($ret -ne 0) ]] ; then
 	echo $NAME - Adding custom monitor >&2
 	add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
 	ret="$?"
-if [[ ($ret -ne 0) ]] ; then
+	if [[ ($ret -ne 0) ]] ; then
 		error "$ret" "$NAME - $MSG"
-else
+	else
 		echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
 		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 		echo "All is OK for now."
-fi
-else
-	if [[ ($MONITOR_ID -le 0) || ($MONITOR_ID -ne $id) ]] ; then
-		MONITOR_ID=$id
-		replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
 	fi
-	echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
-	echo "All is OK for now."
+else
+    if [[ ($MONITOR_ID -le 0) || ($MONITOR_ID -ne $id) ]] ; then
+	MONITOR_ID=$id
+	replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+    fi
+    echo $NAME - Custom monitor id = "$MONITOR_ID" >&2
+    echo "All is OK for now."
 fi
 
 # Periodically adding new data
@@ -102,7 +104,7 @@ do
 	param=` trim $param `
 	param=` uri_escape $param `
 	echo
-	echo $NAME - DEBUG: Composed params is \"$param\" >&2
+	echo $NAME - DEBUG: Composed params is \"$param\"
 	echo
 	timestamp=`get_timestamp`
 
@@ -132,7 +134,7 @@ do
 		array_length="${#array[@]}"
 		if [[ ($array_length -gt 0) ]] ; then
 			echo 
-			echo $NAME - DEBUG: Composed additional params from \"${array[@]}\" >&2
+			echo $NAME - DEBUG: Composed additional params from \"${array[@]}\"
 			echo
 			param=`create_additional_param array[@] `
 			ret="$?"
@@ -140,7 +142,7 @@ do
 				error "$ret" "$param"
 			else
 				echo
-				echo $NAME - DEBUG: Composed additional params is \"$param\" >&2
+				echo $NAME - DEBUG: Composed additional params is \"$param\"
 				echo
 
 				# Sending to Monitis

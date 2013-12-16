@@ -8,7 +8,7 @@ declare    THRESHOLD=600
 declare -r NAME="Monitor"
 declare    MONITOR_NAME="$NAME"_"$RANGE" # name of custom monitor
 declare -r MONITOR_TAG="BASH_Monitor"	 # tag for custom monitor
-declare -r MONITOR_TYPE="Custom"	     # type for custom monitor
+declare -r MONITOR_TYPE="BASH_Monitor"	 # type for custom monitor
 
 # format of result params - name1:displayName1:uom1:Integer
 # name, displayName, uom and value should be URL encoded.
