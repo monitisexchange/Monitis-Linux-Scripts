@@ -32,4 +32,5 @@ declare -r RES_DATA="data"
 declare -r TRUE=true
 declare -r FALSE=false
 
+declare -r CURL_PARAMS="--connect-timeout 10"
 
