@@ -32,3 +32,5 @@ declare -r FAIL_STATE="NOK"
 declare -r UNAC_STATE="status:FAIL | details + Cannot access to the rabbitmq engine"
 
 declare    DURATION=5	 				# information sending duration [min] (REPLACE by any desired value)
+
+declare    return_value			# working parameter

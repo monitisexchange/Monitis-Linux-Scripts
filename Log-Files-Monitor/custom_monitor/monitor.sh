@@ -11,17 +11,22 @@ for (( i=0 ; i<= "${#PATTERNS[@]}" ; i++ )) ; do
   arr[$i]=0
 done	
 			
+t=`date -u +%s `
 
 # Listens for log-file changes, extracts PATTERNs defined lines
 # and store them into temporary file (by adding timestamp)
 tail -n0 -q -F --pid=$PID $LOG_FILE | while read line ; do
 	((arr[0]++))
-	echo counters "${arr[@]}"
+#	echo counters "${arr[@]}"
 	for (( i=1 ; i<= "${#PATTERNS[@]}" ; i++ )) ; do
         echo "$line" | grep -i -E "${PATTERNS[$(( i - 1))]}" > /dev/null
         if [[ $? -eq 0 ]] ; then
         	((arr[$i]++))
         fi					
 	done
-	echo "${arr[@]}" >$COUNT_FILE
+	tt=`date -u +%s `
+	if [[ $(($tt - $t)) -gt 5 ]] ; then
+		echo "${arr[@]}" >$COUNT_FILE
+		t=$tt
+	fi
 done

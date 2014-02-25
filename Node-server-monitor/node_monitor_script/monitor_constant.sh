@@ -34,3 +34,5 @@ declare -r RESP_DOWN="listen:NONE"
 declare -r ADDITIONAL_PARAMS="details:Details::3"
 
 declare    DURATION=5 						# information sending duration [min] (REPLACE by any desired value)
+
+declare    return_value			# working parameter

@@ -36,3 +36,5 @@ declare    FILE_STATUS="status"
 declare    FILE_STATUS_PREV="status_"
 
 declare    DURATION=5	 							# information sending duration [min] (REPLACE by any desired value)
+
+declare    return_value			# working parameter

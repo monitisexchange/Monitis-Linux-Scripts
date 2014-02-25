@@ -3,7 +3,8 @@
 # Declaration of constants used by Monitis API
 
 #declare -r SERVER="http://www.monitis.com/"	# Monitis server
-declare -r SERVER="http://new.monitis.com/"		# Monitis new server
+#declare -r SERVER="http://new.monitis.com/"	# Monitis new server
+declare -r SERVER="http://api.monitis.com/"		# Monitis api server
 #declare -r SERVER="http://www.monitor.us/"		# Monitor.us server
 declare -r API_PATH="customMonitorApi"			# Custom API path
 
@@ -31,4 +32,5 @@ declare -r RES_DATA="data"
 declare -r TRUE=true
 declare -r FALSE=false
 
+declare -r CURL_PARAMS="--connect-timeout 10"
 
