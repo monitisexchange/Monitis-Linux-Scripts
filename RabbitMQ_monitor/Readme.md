@@ -93,7 +93,7 @@ To use existing scripts you need to do some changes that will correspond your ac
         - you may do also definition of DURATION between measurements and sending results (currently it is declared as 60 sec)
         
 That's all. Now you can run __rmqmon_start.sh__ and monitoring process will be started.  
-Note:to demonize use the foloowing command  
+Note: to demonize use the foloowing command  
 
         nohup ./rmqmon_start.sh &
 
