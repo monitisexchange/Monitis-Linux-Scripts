@@ -11,24 +11,21 @@ The Repository contains the following files
           monitis_util.sh        Utilities function set
           monitis_global.sh      Monitis API wrapper global variables
           monitis_constant.sh    Monitis API constants
-          rabbitmq_monitor.sh    RabbitMQ custom monitor implementation
+          rabbitmq_monitor.py    RabbitMQ custom monitor implementation
           monitor_constant.sh    RabbitMQ monitor constants
           rmqmon_start.sh        Main executable script
-          rmqmon_getdata.sh      Separate script for retrieving data from Monitis
-          ticktick.sh            Bash JSON parser
-
+ 
 #### Dependencies
 The current version of RabbitMQ monitor provide TCP access to the RabbitMQ server so you have to have installed the __cUrl__ on Linux  machine where monitor will be run.  
 Besides, the monitor uses Linux calculator (named '__bc__') to provide floating points calculations. Thus, you have to have installed Linux calculator too.  
-Notice that we use the third party open source [JSON parser](https://github.com/kristopolous/TickTick) that allow to processing JSON in bash script.
 
 #### RabbitMQ preparation
 First you have to install RabbitMQ server. Easiest way is to install it from __dep__ package by following command
 
-        sudo dpkg -i rabbitmq-server_2.8.6-1_all.deb
+        sudo dpkg -i rabbitmq-server_3.3.0-1_all.deb
 
 The latest version can be downloaded from [original RabbitMQ site](http://www.rabbitmq.com/install-debian.html)  
-Please NOTE that RabbitMQ requires the latest version of Erlang (at least version R12B-3).  
+Please NOTE that RabbitMQ requires the latest version of Erlang (at least version R14).  
 Thus, during install of RabbitMQ you can get warning message about unresolved dependencies.  
 Try to use the following command to resolve this issue   
 
@@ -95,25 +92,10 @@ To use existing scripts you need to do some changes that will correspond your ac
           (not recommended because you will be needed to correct correspondingly the 'get_measure' function body)
         - you may do also definition of DURATION between measurements and sending results (currently it is declared as 60 sec)
         
-That's all. Now you can run __rmqmon_start.sh__ and monitoring process will be started.
+That's all. Now you can run __rmqmon_start.sh__ and monitoring process will be started.  
+Note:to demonize use the foloowing command  
 
-#### You able also to getting monitoring data from Monitis  
-To do so you should use __rmqmon_getdata.sh__ script by using the following pattern  
-
-        rmqmon_getdata.sh -d <number of days to get data for> -p <directory path to storing data-files> -f <file name prefix> -m <monitor id> 
-
-        where
-            -d parameter specifies how many days data do you want to get (default value is 1 day)
-               NOTE: each day's data will be stored in the separate files
-            -p parameter specifies the directory which will keep the data-files to (by default it is current directory)
-            -f parameter specifies the prefix for file name which will contain data (by default it is monitor name defined in monitor_constats.sh)
-            -m monitor registration ID 
-
-Notice that all parameters are optional.  
-The monitor registration ID should be specified in extreme situation only, e.g. if you have several monitors with same name or some monitor was deleted by accidentally but its data is very important.  
-After finishing you will see few files named like "_RabbitMQ_127.0.0.1-127.0.0.1:55672_2012-09-26.log_"  
-
-Please note that retrieve the monitored data can be done from Monitis dashboard as well.  
+        nohup ./rmqmon_start.sh &
 
 #### Testing 
 To check the correctness of monitor workability, some tests was done on working RabbitMQ server (2.8.1) which was under real load.  
