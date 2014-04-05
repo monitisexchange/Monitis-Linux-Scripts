@@ -34,7 +34,10 @@ done
 
 DURATION=$((60*$DURATION)) #convert to sec
 
-MONITOR_NAME="$NAME"_"$HOST_IP:$PORT"
+MONITOR_NAME="$HOST_IP:$PORT"
+if [[ -n $NAME ]] ; then
+	MONITOR_NAME="$NAME"_"$MONITOR_NAME"
+fi
 
 while true ; do
 	echo "***$NAME - Monitor start with following parameters***" >&2
@@ -76,6 +79,7 @@ while true ; do
 			fi	
 		else
 			MONITOR_ID="$id"
+			echo $NAME - The custom monitor id = "$MONITOR_ID" >&2
 			replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"	
 		fi
 	else
@@ -83,8 +87,17 @@ while true ; do
 		get_custom_monitor_info "$MONITOR_ID"
 		ret="$?"
 		if [[ ($ret -eq 0) ]] ; then
-			echo $NAME - Correct custom monitor id = "$MONITOR_ID" >&2
-			echo "All is OK for now."
+			isContains "$MSG" "\"$MONITOR_NAME\""
+			ret="$?"
+			if [[ ($ret -eq 0) ]] ; then
+				echo $NAME - Correct custom monitor id = "$MONITOR_ID" >&2
+				echo "All is OK for now."
+			else 
+				echo $NAME - Incorrect monitor ID, trying to get a correct one >&2
+				MONITOR_ID=0
+				replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+				continue			
+			fi
 		else #perhaps incorrect ID
 			echo $NAME - $MSG >&2
 			MONITOR_ID=0
@@ -95,18 +108,19 @@ while true ; do
 
 	# Periodically adding new data
 	echo "$NAME - Starting LOOP for adding new data" >&2
-	while $(sleep "$DURATION")
-	do
+	while $(sleep "$DURATION") ; do
 		MSG="???"
+		ret=1
+		while [ $ret -ne 0 ] ; do
 		get_token				# get new token in case of the existing one is too old
 		ret="$?"
 		if [[ ($ret -ne 0) ]] ; then	# some problems while getting token...
 			error "$ret" "$NAME - $MSG"
-			continue
 		fi
-		return_value=$(./rabbitmq_monitor.sh)	# call measure function
+		done
+		return_value=$(./rabbitmq_monitor.py)	# call measure function
 		ret="$?"
-		echo $NAME - DEBUG ret = "$ret"  return_value = "$return_value"
+#		echo $NAME - DEBUG ret = "$ret"  return_value = "$return_value"
 		if [[ ($ret -ne 0) ]] ; then
 		    error "$ret" "$NAME - $MSG"
 	#	    continue
@@ -117,9 +131,9 @@ while true ; do
 		param=$(echo ${result} | awk -F "|" '{print $1}')
 		param=` trim $param `
 		param=` uri_escape $param `
-		echo
-		echo $NAME - DEBUG: Composed params is \"$param\"
-		echo
+#		echo
+#		echo $NAME - DEBUG: Composed params is \"$param\"
+#		echo
 		timestamp=`get_timestamp`
 	
 		# Sending to Monitis
@@ -133,6 +147,8 @@ while true ; do
 					ret="$?"
 				elif [[ ( -n ` echo $MSG | grep -asio -m1 "Invalid" `) ]] ; then
 					break;
+			else
+				continue
 			fi
 		#		continue
 		else
@@ -144,6 +160,7 @@ while true ; do
 			fi
 	
 			param=$(echo ${result} | awk -F "|" '{print $2}' )
+			param=$(trim "$param")
 			unset array
 			OIFS=$IFS
 			IFS='+'
@@ -151,17 +168,17 @@ while true ; do
 			IFS=$OIFS
 			array_length="${#array[@]}"
 			if [[ ($array_length -gt 0) ]] ; then
-				echo 
-				echo $NAME - DEBUG: Composed additional params from \"${array[@]}\"
-				echo
-				param=`create_additional_param array[@] `
+#				echo 
+#				echo $NAME - DEBUG: Composed additional params from "${array[@]}"
+#				echo
+				param=`create_additional_param "${array[@]}" `
 				ret="$?"
 				if [[ ($ret -ne 0) ]] ; then
 					error "$ret" "$param"
 				else
-					echo
-					echo $NAME - DEBUG: Composed additional params is \"$param\"
-					echo
+#					echo
+#					echo $NAME - DEBUG: Composed additional params is "$param"
+#					echo
 	
 					# Sending to Monitis
 					add_custom_monitor_additional_data "$param" "$timestamp"
