@@ -5,8 +5,8 @@ declare -r SERVER_HOST="10.37.125.65:80"				# host address of reverse-proxy (REP
 declare -r DEST_HOST_1="195.12.12.1:80"					# target host 1 (REPLACE it by yours)
 declare -r DEST_HOST_2="12.13.11.12:80"					# target host 2 (REPLACE it by yours)
 
-declare -r SERVER_NAME="Nginx"
-declare -r MONITOR_NAME=$SERVER_NAME"RP-"$SERVER_HOST 	# name of custom monitor
+declare -r NAME="Nginx"
+declare -r MONITOR_NAME=$NAME"RP_"$SERVER_HOST 	# name of custom monitor
 declare -r MONITOR_TAG="nginx"							# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 
@@ -35,3 +35,5 @@ declare -r c4xx="4xx"
 declare -r c5xx="5xx"
 	
 declare    DURATION=5	 							# information sending duration [min] (REPLACE by any desired value)
+
+declare    return_value			# working parameter

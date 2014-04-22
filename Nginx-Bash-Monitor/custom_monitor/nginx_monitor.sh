@@ -4,8 +4,6 @@
 source monitis_api.sh      || exit 2
 source monitor_constant.sh || error 2 monitor_constant.sh
 
-declare    return_value
-
 function isLiveProcess() {
 	name=$1
 	pid=`ps -efw | grep -i "$name" | grep -v grep | awk '{print $2} ' `

@@ -1,9 +1,9 @@
 ## The Nginx Bash monitor
 
-This project presents the Linux Bash-script application that monitors the Nginx reverse proxy (NRP) health status.  
-Please note that the same approach can be easily used for monitoring of any Nginx instance independently on role it plays (balancer, HTTP server, etc.).  
-It is implemeted as Monitis custom monitor and uses the Monitis Open API.  
-This project is based on Bash 4.x+ and requires the Linux kernel 2.6.x or higher.
+This project presents the Linux Bash-script application that monitoring the Nginx reverse proxy (NRP) health status.  
+Please note that the same approach can be easily used for monitoring of any Nginx instance independently on role it play (balancer, HTTP server, etc.).  
+It is implemeted as Monitis custom monitor and use the Monitis Open API.  
+This project is based on Bash 4.x+ and require the Linux kernel 2.6.x or higher.
 
 #### Content  
 
@@ -27,14 +27,14 @@ This project is based on Bash 4.x+ and requires the Linux kernel 2.6.x or higher
 
 #### Dependencies  
 
-The current version of NRP monitor provides HTTP access to the Monitis main server so you have to have installed the __CURL__ library on Linux  machine where monitor will be run.  
+The current version of NRP monitor provide HTTP access to the Monitis main server so you have to have installed the __CURL__ library on Linux  machine where monitor will be run.  
 Besides, the monitor uses Linux calculator (named '__bc__') to provide floating points calculations. Thus, you have to have installed Linux calculator too.  
  
 #### Used approach
 
 The possibilities for getting statistics from Nginx are very limited, but fortunately, it has a powerful feature to configure a log file.  
 This makes it possible to create necessary statistics by configuring the log file and then watching and grabbing the monitoring data from it.  
-The presented monitor in fact is devided on two parts  
+The presented monitor in fact devided on two parts  
 
    - watching part
    - processing part
@@ -83,7 +83,7 @@ and provides its watching on the fly to be grabbing of necessary monitoring stat
 To do so, you have to add 2 additional lines in "/etc/ngnix/sites-available/default" config file near the definition of Nginx standard log files  
 in the Ngnix server block to define a new log file "monitor.log" like the following  
 
-        log_format main '#$upstream_status#;$upstream_addr';    <- definision of new log file format
+        log_format main '$upstream_status#;$upstream_addr';    <- definision of new log file format
         access_log /var/log/nginx/monitor.log main;             <- specification of location for new log file
 
 
@@ -93,7 +93,7 @@ For example, it could be look like this
                 listen       80;
                 server_name 10.137.25.110;
 
-                log_format main '#$upstream_status#;$upstream_addr';
+                log_format main '$upstream_status#;$upstream_addr';
                 access_log /var/log/nginx/monitor.log main;
                 access_log  /var/log/nginx/access.log;
                 error_log  /var/log/nginx/error.log;
@@ -142,12 +142,11 @@ As result we got the following monitoring table in our Monitis account:
 
 <a href="http://blog.monitis.com/"><img src="http://blog.monitis.com/wp-content/uploads/2012/06/NRP_Monitoring2.png" title="Nginx monitoring" /></a>
 
-
+Notice that during the test the NRP was restarted. The monitor detected this and marked it as NRP DEAD status.  
 Double-clicking on any line will show more detailed additional information:  
 
 <a href="http://blog.monitis.com/"><img src="http://blog.monitis.com/wp-content/uploads/2012/06/NRP_Monitoring3.png" title="Nginx monitoring" /></a>
 
-Notice that during the test the NRP was restarted. The monitor detected this and marked it as DEAD status.  
 Double-clicking on the DEAD status line shows the following:
 
 <a href="http://blog.monitis.com/"><img src="http://blog.monitis.com/wp-content/uploads/2012/06/NRP_Monitoring4.png" title="Nginx monitoring" /></a>
