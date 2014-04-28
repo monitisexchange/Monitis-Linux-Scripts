@@ -20,6 +20,25 @@ function isAlphaNum ()
   esac
 }
 
+# Checks if the first string contains the second string.
+# @param $1 - entire string
+# @param $2 - test string
+function isContains(){
+	local txt=${1:-""}
+	local chk=${2:-""}
+	
+	if [[ (-n "$txt") && (-n "$chk") ]] ; then
+		local req="^.*$chk.*$"
+		res=`echo $txt | grep -e "$req"`
+		if [[ (-z "$res") ]] ; then
+			return 1
+		fi
+	else
+		return 2
+	fi
+	return 0
+}
+
 # returns the formated UTC date and time URL encoded string
 # sample: 2011-08-09 09:41:44
 function get_date_time() {
@@ -110,8 +129,7 @@ function isJSONarray(){
 function jsonval() {
     local json=${1:-""}
     local prop=${2:-""}
-    if [[ (-n $json) && (-n $prop) ]]
-    then
+    if [[ (-n $json) && (-n $prop) ]] ; then
 	    local temp=`echo $json | sed 's/\\\\\//\//g' | sed -e 's/[{}]//g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | sed 's/[\,]/ /g' | sed 's/\"//g' | grep -w -m1 $prop`
 	    temp="${temp#*:}"
 	    if [[ (-n "$temp") ]] ; then
@@ -130,7 +148,7 @@ function jsonval() {
 function create_additional_param() {
 	if [[ (-n $1) ]]
 	then
-		local array=($1)
+		array=("${@}")
 		if [[ (${#array[*]} -gt 0) ]]
 		then
 			array_length=${#array[*]}
@@ -159,7 +177,7 @@ function create_additional_param() {
 # Transforming JSON string to array (first level only)
 #
 # @param $1 - json string that contains the data to be transforming
-# @return Strings array
+# @return Strings separated by '+'
 function json2array(){
 	local param="$1"
 	local details=""
@@ -171,19 +189,13 @@ function json2array(){
 		details=${details//'},'/'} + '}
 		details=${details//'],'/'] + '}
 		details=${details//'"'/''}	
-		details=${details//' '/'_'}
+#		details=${details//' '/''}
 				
 		param="details + $details"	
-		
-		unset array
-		OIFS=$IFS
-		IFS='+'
-		array=($param)
-		IFS=$OIFS	
 	else
 		return 1	
 	fi
-	echo "${array[@]}"
+	echo "$param"
 	return 0
 }
 

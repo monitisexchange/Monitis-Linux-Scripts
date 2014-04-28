@@ -5,21 +5,11 @@ source monitor_constant.sh    || exit 2
 
 declare return_value
 
-# generate access code 
-#
-function getAccessCode() {
-	MSG=$(( `date -u +%s` / 60 ))	# curent timestamp in minutes
-	echo -n $MSG | md5sum - | tr -d ' -'
-	return 0
-}
-
 # Get monitor data
-#
-# @param $1 - string (optional) that contains the current access code
 #
 # @return Mesuared data
 function get_measure() {
-	local code=${1:-$(getAccessCode)}
+	local code=$ACCESS_CODE
 	local action="$MON_ACTION=$MON_GET_DATA&$MON_ACCESS=$code"
 	local req="$NODE_MONITOR$MON_PATHNAME?$action"
 	local response="$(curl -Gs $req)"

@@ -67,6 +67,7 @@ while true ; do
 			fi	
 		else
 			MONITOR_ID="$id"
+			echo $NAME - The custom monitor id = "$MONITOR_ID" >&2
 			replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"	
 		fi
 	else
@@ -74,8 +75,17 @@ while true ; do
 		get_custom_monitor_info "$MONITOR_ID"
 		ret="$?"
 		if [[ ($ret -eq 0) ]] ; then
+			isContains "$MSG" "\"$MONITOR_NAME\""
+			ret="$?"
+			if [[ ($ret -eq 0) ]] ; then
 			echo $NAME - Correct custom monitor id = "$MONITOR_ID" >&2
 			echo "All is OK for now."
+			else 
+				echo $NAME - Incorrect monitor ID, trying to get a correct one >&2
+				MONITOR_ID=0
+				replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+				continue			
+			fi
 		else #perhaps incorrect ID
 			echo $NAME - $MSG >&2
 			MONITOR_ID=0
@@ -147,7 +157,18 @@ while true ; do
 				continue
 			fi
 			# Converts JSON string into additional params
-			array=`json2array "$param" `
+			param=`json2array "$param" `
+			param=$(trim "$param")
+			unset array
+			OIFS=$IFS
+			IFS='+'
+			array=( $param )
+			IFS=$OIFS
+			array_length="${#array[@]}"
+			if [[ ($array_length -gt 0) ]] ; then
+				echo 
+				echo $NAME - DEBUG: Composed additional params from \( ${array[@]} \)
+				echo
 			param=`create_additional_param "${array[@]}" `
 			ret="$?"
 			if [[ ($ret -ne 0) ]] ; then
@@ -166,6 +187,9 @@ while true ; do
 					echo $( date +"%D %T" ) - $NAME - The Custom monitor additional data were successfully added
 				fi
 			fi
+			else
+				echo "$NAME - ****No any detailed records yet ($array_length)"
+			fi			
 		fi
 	done
 done
