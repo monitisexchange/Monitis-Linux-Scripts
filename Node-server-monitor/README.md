@@ -25,7 +25,7 @@ Generally, this monitor architecture can be depicted as the following
 
 The whole set of measured parameters divided on two parts  
 
-- fixed that can be defined beforehand  
+- fixed part that can be defined beforehand  
 
     1. Status - the evaluation of monitored server health (OK|DOWN|IDLE)
     1. Uptime - measure of time from a last server restarting without any downtime.  
@@ -41,12 +41,6 @@ The whole set of measured parameters divided on two parts
           - the output throughput (out_kbps)
     1. The server processing time (active) - the percentage of busy time of server (real processing time) during monitoring time
     1. The server load (load) - the evaluation of number of requests per second during monitoring time.  
-    
-    1. The Requests count (reqs) - the quantity of requsts which are receiving server during monitoring time.  
-    1. The response time of server for requests during monitoring time
-          - the average response time 
-          - the maximum response time
-  
 
 - flexible part that mostly has not so fixed format and can be changing time by time  
 
