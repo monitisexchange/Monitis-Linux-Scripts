@@ -12,10 +12,8 @@ declare -A hash
 #temporary file format
 #<count of reqs to reverse proxy>|<count of reqs to dest host 1>|<count 1xx>|<count 2xx>|<count 3xx>|<count 4xx>|<count 5xx>|<count of reqs to dest host 2>|<count 1xx>|<count 2xx>|<count 3xx>|<count 4xx>|<count 5xx>
 
-tail -Fn0 $LOG_FILE | while read line ;  #read line from lod file
-do
-	if [[ !(-e $RES_FILE) ]]
-    then # initializing
+tail -Fn0 $LOG_FILE | while read line ;  do #read line from log file
+	if [[ !(-e $RES_FILE) ]] ; then # initializing
 		hash[$tot]=0
 		hash[$successful]=0
 		hash[${dir[0]}]=0
@@ -36,8 +34,7 @@ do
 	for z in ${dir[@]} # for every defined ip
 	do
 		echo "$line" | grep -i -E "$z" > /dev/null
-    	if [[ $? -eq 0 ]]
-        then #check whether the line contains the specified ip
+	    if [[ $? -eq 0 ]] ; then #check whether the line contains the specified ip
 			
 			hash[$z]=$((${hash[$z]}+1))  # increment the number of requests of specified ip 
 			code=`echo "$line" | awk -F "#" '{print $1}'`
@@ -45,7 +42,7 @@ do
 				hash["$z""$c1xx"]=$((${hash["$z""$c1xx"]} + 1 ))
 			elif [[ (code -lt 300) ]] ; then
 				hash["$z""$c2xx"]=$((${hash["$z""$c2xx"]} + 1 ))
-				hash[$successful]=$((${hash[$successful]} + 1 )) #incrament the total number of  successful requests
+			hash[$successful]=$((${hash[$successful]} + 1 )) #increment the total number of  successful requests
 				#echo hash["$z""$c2xx"] = ${hash["$z""$c2xx"]}
 			elif [[ (code -lt 400) ]] ; then
 				hash["$z""$c3xx"]=$((${hash["$z""$c3xx"]} + 1 ))

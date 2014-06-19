@@ -17,19 +17,16 @@ function get_measure() {
 	local file=$RES_FILE # records file 
 	local file_=$file"_" # temporary file
 
-	if [[ !( -e $file ) ]]
-	then	# resulting file is not created yet
+	if [[ !( -e $file ) ]] ; then	# resulting file is not created yet
 		# check the existence of process
-		isLiveProcess $SERVER_NAME
+	    isLiveProcess $NAME
 		ret="$?"
-		if [[ ($ret -ne 0) ]]
-		then  # not found running process
+	    if [[ ($ret -ne 0) ]] ; then  # not found running process
 		   return_value="$DEAD_RESULT"
         else  # process is running (probably don't have any load)
 		   return_value="$DUMMY_RESULT"
 		fi
 	else
-		
 		#echo 'RENAMING...(for processing)'
 		`mv -f "$file" "$file_" `
 		#local tmp=`cat $file_ `
