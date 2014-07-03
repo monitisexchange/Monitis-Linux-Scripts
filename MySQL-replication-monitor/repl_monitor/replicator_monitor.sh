@@ -209,7 +209,7 @@ function get_measure() {
 	
 	if [ $(echo "$discord > 5 || $discord < -5" | bc ) -ne 0 ]
 	then
-	    MSG[$errors]="WARNING - Inconsistency in replication has reached to $discord percent \(master - $Master_load; slave - $Slave_load \)"
+	    MSG[$errors]="WARNING - Inconsistency in replication has reached to $discord percent (master - $Master_load; slave - $Slave_load )"
 	    errors=$(($errors+1))
 	fi
 	
