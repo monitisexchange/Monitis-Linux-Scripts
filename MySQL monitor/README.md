@@ -29,8 +29,6 @@ Naturally, a different variations of the presented code can be made in accordanc
  
     Additional part  
 
-          monitor_getdata.sh    module for getting data from Monitis
-          ticktick.sh           JSON engine for bash
           start.sh              Starts process-monitor as a daemon
           stop.sh               Stops daemon process-monitor
 

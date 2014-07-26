@@ -67,12 +67,42 @@ function extract_value() {
     fi
 }
 
+#function get_slow_queries(){
+#	slow=$(mysqldumpslow -s c -t 5 )
+#	local pattern="Count:"
+#	local replaser=' + '${pattern}
+#	slow=${slow//$pattern/$replaser}
+#	echo $slow
+#}
+
 function get_slow_queries(){
-	slow=$(mysqldumpslow -s c -t 5 )
-	local pattern="Count:"
-	local replaser=' + '${pattern}
-	slow=${slow//$pattern/$replaser}
-	echo $slow
+	local log=$1
+	local num=${2:-5}
+	if [[ (-r "$log") ]] ; then
+	  local slow=$(mysqldumpslow -a -s c -t "$num" "$log")
+	  if [[ (${#slow} -gt 0) ]] ; then
+	      OIFS=$IFS
+	      IFS='
+'
+	      array=( $slow )
+	      IFS=$OIFS
+	      array_length="${#array[@]}"
+	      if [[ ($array_length -gt 0) ]] ; then
+		s=""
+		for i in "${array[@]}"
+		do
+		  s=$s" + $i"
+		done
+		echo "$s"
+	      else
+		echo ""
+	      fi
+	  else
+	    echo ""
+	  fi
+	else
+	  echo ""
+	fi
 }
 
 function get_measure() {
@@ -182,12 +212,11 @@ function get_measure() {
 	
 	if [[ $Slow_queries_dif -gt 0 ]]
 	then
-	    MSG[$errors]="Warning - the slow queries detected \(processing longer than $long_query_time sec\)"
+	    MSG[$errors]="Warning - the slow queries detected (processing longer than $long_query_time sec)"
 	    if [[ ("$slow_query_log" != "OFF") && ( ("$HOST" == "localhost") || ("$HOST" == "127.0.0.1") ) ]]
 	    then
-	    	local slow=$(get_slow_queries)
-	    	`>$slow_query_log_file`
-	    	MSG[$errors]=${MSG[$errors]}$slow
+	    	local slow=$(get_slow_queries "$slow_query_log_file" "$MAX_QUERIES")
+	    	MSG[$errors]="${MSG[$errors]} $slow"
 	    fi
 	    errors=$(($errors+1))
 	    status="SLOW_QUERY"

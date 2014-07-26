@@ -28,12 +28,13 @@ function get_token() {
 	then
 		local action="api?action=$API_GET_TOKEN_ACTION&apikey=$APIKEY&secretkey=$SECRETKEY&version=$APIVERSION"
 		local req="$SERVER$action"
-		response="$(curl -Gs $req)"
-		if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
+		response="$(curl -Gs $CURL_PARAMS $req)"
+		local res="$?"
+		if [[ ($res -eq 0) && (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
 		then # Likely, we received correct answer - parsing
 			val=`jsonval $response $API_GET_TOKEN_ACTION `
 		else
-			MSG="Incorrect response while obtaining token..."
+			MSG="Incorrect response while obtaining token... `curlError $res` "
 			TOKEN=""
 			TOKEN_OBTAIN_TIME=0
 			return 1
@@ -49,7 +50,7 @@ function get_token() {
 		TOKEN_OBTAIN_TIME=`get_timestamp`
 	else
 		MSG="received "$TOKEN" is WRONG"
-		return 3
+		return 1
 	fi
 	return 0
 }
@@ -143,9 +144,9 @@ function add_custom_monitor {
 	
 	local req="$SERVER""$API_PATH"
 	
-	response="$(curl -s $permdata $postdata	 $req)"
-	
-	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
+	response="$(curl -s $CURL_PARAMS $permdata $postdata	 $req)"
+	local res="$?"
+	if [[ ($res -eq 0) && (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
 	then # Likely, we received correct answer - parsing
 		json="$response"
 		data=""
@@ -176,7 +177,7 @@ function add_custom_monitor {
 			return 3
 		fi	
 	else
-		MSG="Unknown problem while adding monitor..."
+		MSG="Problem while adding monitor... `curlError $res` "
 		return 3
 	fi
 	
@@ -204,24 +205,25 @@ function get_custom_monitor_info() {
 	postdata=$postdata" -d monitorId=$monitor_id "
 	postdata=$postdata" -d excludeHidden=true "
 	
-	req="$SERVER""$API_PATH"
+	local req="$SERVER""$API_PATH"
 	
-	response="$(curl -Gs $permdata $postdata $req)"
-	
-	if [[ (${#response} -gt 0) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
+	response="$(curl -Gs $CURL_PARAMS $permdata $postdata $req)"
+	local res="$?"
+	if [[ ($res -eq 0) && (${#response} -gt 0) && (${#response} -lt 3000) ]] # Normally, the response text length shouldn't exceed 3000 chars
 	then # Seems, we received correct answer - parsing
-		id=`jsonval "$response" "id" `
-		if [[ (-n $id) && ($id -eq $monitor_id) ]]
-		then
+		 # We expect that specified monitor_id should be in the response (json)
+		req="^{.*\"id\":\"$monitor_id\".*}$"
+		res=`echo $response | grep -e "$req"`
+		if [[ (-n "$res") ]] ; then
 			MSG="$response"
 		else
-			MSG="Monitor with ID \"$monitor_id\" is not exist"
+			MSG="Monitor with ID \"$monitor_id\" does not exist"
 			return 3
 		fi
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="No response received while getting monitor info..."
+			MSG="No response received while getting monitor info... `curlError $res` "
 			return 1
 		else
 			MSG="Response is too long while getting monitor info..."
@@ -264,9 +266,9 @@ function get_monitors_list() {
 	
 	req="$SERVER""$API_PATH"
 	
-	response="$(curl -Gs $permdata $postdata $req)"
-	
-	if [[ (${#response} -gt 10) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
+	response="$(curl -Gs $CURL_PARAMS $permdata $postdata $req)"
+	local res="$?"
+	if [[ ($res -eq 0) && (${#response} -gt 10) && (${#response} -lt 1000) ]] # Normally, the response text length shouldn't exceed 1000 chars
 	then # Likely, we received correct answer
 		#parsing
 		isJSONarray "$response"
@@ -278,7 +280,7 @@ function get_monitors_list() {
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="get_monitors_list - No response received..."
+			MSG="get_monitors_list - No response received... `curlError $res` "
 			ret=3
 		else
 			MSG="get_monitors_list - Unclear response..."
@@ -347,9 +349,9 @@ function add_custom_monitor_data() {
 	
 	req="$SERVER""$API_PATH"
 	
-	response="$(curl -s $permdata $postdata	 $req)"
-	
-	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]] # Normally, the response text length shouldn't exceed 200 chars
+	response="$(curl -s $CURL_PARAMS $permdata $postdata	 $req)"
+	local res="$?"
+	if [[ ($res -eq 0) && (${#response} -gt 0) && (${#response} -lt 200) ]] # Normally, the response text length shouldn't exceed 200 chars
 	then # Likely, we received correct answer - parsing
 		status=`jsonval $response $RES_STATUS `
 		if [[ (-n $status) && (($status = "ok") || ($status = "OK")) ]]	# status should be OK
@@ -362,7 +364,7 @@ function add_custom_monitor_data() {
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="add_custom_monitor_data: No response received.."
+			MSG="add_custom_monitor_data: No response received.. `curlError $res` "
 			ret=3
 		else
 			MSG="add_custom_monitor_data: Response is too long..."
@@ -393,9 +395,9 @@ function add_custom_monitor_additional_data() {
 	
 	req="$SERVER""$API_PATH"
 	
-	response="$(curl -s $permdata $postdata	 $req)"
-	
-	if [[ (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
+	response="$(curl -s $CURL_PARAMS $permdata $postdata	 $req)"
+	local res="$?"
+	if [[ ($res -eq 0) && (${#response} -gt 0) && (${#response} -lt 200) ]]	# Normally, the response text length shouldn't exceed 200 chars
 	then # Likely, we received correct answer
 		#parsing
 		status=`jsonval $response $RES_STATUS `
@@ -409,7 +411,7 @@ function add_custom_monitor_additional_data() {
 	else
 		if [[ (${#response} -le 0) ]]
 		then
-			MSG="No response received while adding aditional data..."
+			MSG="No response received while adding aditional data... `curlError $res` "
 			return 1
 		else
 			MSG="Response is too long while adding aditional data..."
@@ -451,13 +453,13 @@ function get_custom_monitor_data(){
 	
 	req="$SERVER""$API_PATH"
 	
-	response="$(curl -Gs $permdata $postdata $req)"
-	
-	if [[ (${#response} -gt 0) ]]	# Normally, the response received
+	response="$(curl -Gs $CURL_PARAMS $permdata $postdata $req)"
+	local res="$?"
+	if [[ ($res -eq 0) && (${#response} -gt 0) ]]	# Normally, the response received
 	then # Likely, we received correct answer
 		MSG="OK"
 	else
-		MSG="NO RESPONSE"
+		MSG="NO RESPONSE `curlError $res` "
 		return 1
 	fi
 	
