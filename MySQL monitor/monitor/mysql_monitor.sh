@@ -203,27 +203,25 @@ function get_measure() {
 	local status="OK"
 	
 	errors=0
-	if [[ $(($Bytes_received_dif + $Bytes_sent_dif)) -le 0 ]]
-	then
+	if [[ $(($Bytes_received_dif + $Bytes_sent_dif)) -le 0 ]] ; then
 	    MSG[$errors]="WARNING - MySQL is in IDLE state"
 	    errors=$(($errors+1))
 	    status="IDLE"
 	fi
 	
-	if [[ $Slow_queries_dif -gt 0 ]]
-	then
+	if [[ ($Slow_queries_dif -gt 0) ]] ; then
 	    MSG[$errors]="Warning - the slow queries detected (processing longer than $long_query_time sec)"
-	    if [[ ("$slow_query_log" != "OFF") && ( ("$HOST" == "localhost") || ("$HOST" == "127.0.0.1") ) ]]
-	    then
+	    if [[ ("$slow_query_log" != "OFF") && ( ("$HOST" == "localhost") || ("$HOST" == "127.0.0.1") ) ]] ; then
 	    	local slow=$(get_slow_queries "$slow_query_log_file" "$MAX_QUERIES")
 	    	MSG[$errors]="${MSG[$errors]} $slow"
+		    status="SLOW_QUERY"
+		else
+			MSG[$errors]="${MSG[$errors]} log_slow_queries is $slow_query_log"
 	    fi
 	    errors=$(($errors+1))
-	    status="SLOW_QUERY"
 	fi
 		
-	if [ $errors -gt 0 ]
-	then
+	if [ $errors -gt 0 ] ; then
 	    problem="Problems detected"
 	    CNT=0
 	    while [ "$CNT" != "$errors" ]
