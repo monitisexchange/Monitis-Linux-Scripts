@@ -102,8 +102,7 @@ while true ; do
 
 	# Periodically adding new data
 	echo "$NAME - Starting LOOP for adding new data" >&2
-	while $(sleep "$DURATION")
-	do
+	while $(sleep "$DURATION") ; do
 		MSG="???"
 		get_token				# get new token in case of the existing one is too old
 		ret="$?"
