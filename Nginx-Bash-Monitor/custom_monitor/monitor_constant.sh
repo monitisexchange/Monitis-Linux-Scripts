@@ -18,7 +18,7 @@ declare -r DEAD_RESULT="status:DEAD | details + Nginx process not found"
 declare -r OK_STATUS="status:OK"
 
 declare -r LOG_FILE=~/monitor.log				# Monitored server (Nginx) textual log file path (REPLACE by your file path)
-declare -r RES_FILE=~/tmp.txt				    # temporary file
+#declare -r NGINX_PID="/var/run/nginx.pid"		# nginx pid file
 
 # declaration of pattern-strings for finding in log file
 # The string of any number of extended patterns can be defined in conform to format of "Linux grep tool"

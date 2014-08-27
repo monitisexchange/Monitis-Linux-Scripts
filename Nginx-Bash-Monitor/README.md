@@ -16,7 +16,6 @@ This project is based on Bash 4.x+ and require the Linux kernel 2.6.x or higher.
 
    Custom NRP monitor  
 
-          monitor.sh            custom monitor main part  
           monitor_constant.sh   custom monitor constants (and configuration)  
           nginx_monitor.sh      custom monitor main executor  
 

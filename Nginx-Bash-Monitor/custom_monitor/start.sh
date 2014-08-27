@@ -18,6 +18,5 @@ cd $tmp
 ./stop.sh
 
 echo ---------starting test loop--------------
-./monitor.sh &
-./nginx_monitor.sh &
+./nginx_monitor.sh "$@" 1> /dev/null &
 
