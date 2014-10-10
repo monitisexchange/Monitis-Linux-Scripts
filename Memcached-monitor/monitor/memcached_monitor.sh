@@ -2,6 +2,7 @@
 
 # sorces included
 source monitor_constant.sh    || exit 2
+source monitis_util.sh		  || exit 2
 
 declare -i initialized=0	# indicator of master variables initializing
 #previous measurement data
@@ -45,10 +46,10 @@ function formatTimestamp(){
 	local min=$(( ($time/60)%60 ))
 	local hr=$(( ($time/3600)%24 ))
 	local da=$(( $time/86400 ))
-	local str=$(echo `printf "%02u.%02u.%02u" $hr $min $sec`)
+	local str=$(echo `printf "%02u:%02u:%02u" $hr $min $sec`)
 	if [[ ($da -gt 0) ]]
 	then
-		str="$da""-""$str" 
+		str="$da-$str" 
 	fi
 	echo $str
 }
@@ -67,10 +68,11 @@ function extract_value() {
     DELIMITER=$3
     if [ $DELIMITER ]
     then
-	    grep -w $VAR $FILENAME | tr '\r' ' ' | awk -F $DELIMITER '{print $3}'    
+	    ret=`grep -w $VAR $FILENAME | tr '\r' ' ' | awk -F $DELIMITER '{print $3}' `
     else
-	    grep -w $VAR $FILENAME | tr '\r' ' ' | awk '{print $3}'
+	    ret=`grep -w $VAR $FILENAME | tr '\r' ' ' | awk '{print $3}' `
     fi
+    echo `trim "$ret"`
 }
 
 function get_measure() {
@@ -83,7 +85,8 @@ function get_measure() {
 	  access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "$CMD_SETTING" "$FILE_SETTING"
 	  if [[ ("$?" -gt 0) ]]
 	  then
-	    return_value=$UNAC_STATE
+	  	details="$(uri_escape \"details\":\"Cannot access to the memcached engine\")"
+	    return_value="$UNAC_STATE;additionalResults:[{$details}]"
 	    return 0
 	  else
 	  	initialized=1
@@ -262,40 +265,37 @@ function get_measure() {
 	local upt=`formatTimestamp $uptime`
 	if [[ -n "$upt" ]]
 	then
-		. monitis_util.sh
 		upt=`uri_escape "$upt"`
 	fi
 	
 	`mv $FILE_STATUS $FILE_STATUS_PREV `
 		
-	local details="details"
-	if [[ ($errors -gt 0) ]]
-	then
-	    problem="Problems in memcached"
+	if [[ ($errors -gt 0) ]] ; then
+	    details={"$(uri_escape \"details\":\"Problems in memcached\")"}
 	    CNT=0
-	    while [ "$CNT" != "$errors" ]
-	    do
-	        problem="$problem + ${MSG[$CNT]}"
+	    while [[ ("$CNT" != "$errors") ]] ; do
+	        details=$details,{"$(uri_escape \"details\":\"${MSG[$CNT]}\")"}
 	        CNT=$(($CNT+1))
 	    done
-	    details="$details+${problem}"
 	    status="$FAIL_STATE"
 	else
-	    details="$details + Memcached OK"
 	    lres=$(( ($get_hits +  $get_misses)-($get_hits_ +  $get_misses_) ))
-	    details="$details + Memcached receive  $lres requests during $DURATION sec"
-	    details="$details + Memcached use $curr_connections connections from available $maxconns"
-	    details="$details + Memcached use $bytes bytes from available $limit_maxbytes"
+	    details={"$(uri_escape \"details\":\"Memcached OK\")"}
+	    details=$details,{"$(uri_escape \"details\":\"Memcached receive  $lres requests during $DURATION sec\")"}
+	    details=$details,{"$(uri_escape \"details\":\"Memcached use $curr_connections connections from available $maxconns\")"}
+	    details=$details,{"$(uri_escape \"details\":\"Memcached use $bytes bytes from available $limit_maxbytes\")"}
 	    if [[ ($lres -eq 0) ]]
 	    then
 	    	status="$IDLE_STATE"
 	    else
-	    	status="$NORM_STATE"
+		    status="$NORM_STATE"
 		fi
 	fi
 
-	param="status:$status;conn:$conn;get_miss:$get_miss;delete_miss:$delete_miss;incr_miss:$incr_miss;decr_miss:$decr_miss;mem_usage:$mem_usage;evictions:$evictions;reqs:$reqs;in_kbps:$inbound;out_kbps:$outbound;uptime:$upt"
-	return_value="$param | $details"
+	param="status:$status;conn:$conn;get_miss:$get_miss;delete_miss:$delete_miss;incr_miss:$incr_miss;decr_miss:$decr_miss;mem_usage:$mem_usage;evictions:$evictions;reqs:$reqs;in_kbps:$inbound;out_kbps:$outbound;uptime:$upt;additionalResults:[$details]"
+	return_value="$param"
 	return 0
 }
 
+#get_measure
+#echo $return_value

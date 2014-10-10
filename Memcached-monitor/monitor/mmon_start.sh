@@ -74,7 +74,7 @@ while true ; do
 			error 1 "$NAME - $MSG ( $ret )"
 			#trying to add new monitor
 			echo $NAME - Adding custom monitor >&2
-			add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
+			add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE" "$MULTIVALUE"
 			ret="$?"
 			if [[ ($ret -ne 0) ]] ; then
 				error "$ret" "$NAME - $MSG"
@@ -85,6 +85,7 @@ while true ; do
 			fi	
 		else
 			MONITOR_ID="$id"
+			echo $NAME - The custom monitor id = "$MONITOR_ID" >&2
 			replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"	
 		fi
 	else
@@ -92,8 +93,17 @@ while true ; do
 		get_custom_monitor_info "$MONITOR_ID"
 		ret="$?"
 		if [[ ($ret -eq 0) ]] ; then
-			echo $NAME - Correct custom monitor id = "$MONITOR_ID" >&2
-			echo "All is OK for now."
+			isContains "$MSG" "\"$MONITOR_NAME\""
+			ret="$?"
+			if [[ ($ret -eq 0) ]] ; then
+				echo $NAME - Correct custom monitor id = "$MONITOR_ID" >&2
+				echo "All is OK for now."
+			else 
+				echo $NAME - Incorrect monitor ID, trying to get a correct one >&2
+				MONITOR_ID=0
+				replaceInFile "monitis_global.sh" "MONITOR_ID" "$MONITOR_ID"
+				continue			
+			fi
 		else #perhaps incorrect ID
 			echo $NAME - $MSG >&2
 			MONITOR_ID=0
@@ -107,15 +117,16 @@ while true ; do
 	file=$ERR_FILE # errors record file 
 	file_=$file"_" # temporary file
 	
-	while $(sleep "$DURATION")
-	do
+	while $(sleep "$DURATION") ; do
 		MSG="???"
-		get_token				# get new token in case of the existing one is too old
-		ret="$?"
-		if [[ ($ret -ne 0) ]] ; then	# some problems while getting token...
-			error "$ret" "$NAME - $MSG"
-			continue
-		fi
+		ret=1
+		while [ $ret -ne 0 ] ; do
+			get_token				# get new token in case of the existing one is too old
+			ret="$?"
+			if [[ ($ret -ne 0) ]] ; then	# some problems while getting token...
+				error "$ret" "$NAME - $MSG"
+			fi
+		done
 		get_measure				# call measure function
 		ret="$?"
 		echo $NAME - DEBUG ret = "$ret"  return_value = "$return_value"
@@ -139,17 +150,19 @@ while true ; do
 		ret="$?"
 		if [[ ($ret -ne 0) ]] ; then
 			error "$ret" "$NAME - $MSG"
-				if [[ ( -n ` echo $MSG | grep -asio -m1 "expire" `) ]] ; then
+			if [[ ( -n ` echo $MSG | grep -asio -m1 "expire" `) ]] ; then
 				get_token $TRUE		# force to get a new token
-					add_custom_monitor_data "$param" "$timestamp"
-					ret="$?"
-				elif [[ ( -n ` echo $MSG | grep -asio -m1 "Invalid" `) ]] ; then
-					break;
+				add_custom_monitor_data "$param" "$timestamp"
+				ret="$?"
+			elif [[ ( -n ` echo $MSG | grep -asio -m1 "Invalid" `) ]] ; then
+				break;
+			else
+				continue
 			fi
-		#		continue
+	#		continue
 		else
-				echo $( date +"%D %T" ) - $NAME - The Custom monitor data were added \($ret\)
-	
+			echo $( date +"%D %T" ) - $NAME - The Custom monitor data were added \($ret\)
+			continue # don't send additional data separately
 			# Now create additional data
 			if [[ -z "${ADDITIONAL_PARAMS}" ]] ; then # ADDITIONAL_PARAMS is not set
 				continue
@@ -165,9 +178,9 @@ while true ; do
 			array_length="${#array[@]}"
 			if [[ ($array_length -gt 0) ]] ; then
 				echo 
-				echo $NAME - DEBUG: Composed additional params from \"${array[@]}\"
+				echo $NAME - DEBUG: Composed additional params from \( ${array[@]} \)
 				echo
-				param=`create_additional_param array[@] `
+				param=`create_additional_param "${array[@]}" `
 				ret="$?"
 				if [[ ($ret -ne 0) ]] ; then
 					error "$ret" "$param"
@@ -191,4 +204,3 @@ while true ; do
 		fi
 	done
 done
-

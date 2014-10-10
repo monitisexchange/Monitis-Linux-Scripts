@@ -320,10 +320,10 @@ function get_monitorID {
 							echo $value
 				ret=$ret
 			else 
-				MSG="get_monitorID - Monitor not found in response list"		
-						fi
+				MSG="get_monitorID - Monitor not found in response list"
 			fi
 		fi
+	fi
 	return $ret
 }
 
@@ -365,10 +365,10 @@ function add_custom_monitor_data() {
 		if [[ (${#response} -le 0) ]]
 		then
 			MSG="add_custom_monitor_data: No response received.. `curlError $res` "
-			ret=3
+			ret=1
 		else
 			MSG="add_custom_monitor_data: Response is too long..."
-			ret=3
+			ret=1
 		fi
 	fi
 	return $ret
