@@ -30,8 +30,7 @@ done
 
 echo check memcached accessible
 access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "get 0"
-if [[ ("$?" -gt 0) ]]
-then
+if [[ ("$?" -gt 0) ]] ; then
     error 1 "The specified memcached \( $MEMCACHED_IP:$MEMCACHED_PORT \) is not accessible!!!"
 fi
 
@@ -140,6 +139,7 @@ while true ; do
 		param=$(echo ${result} | awk -F "|" '{print $1}')
 		param=` trim $param `
 		param=` uri_escape $param `
+#		param=` urlencode $param `
 		echo
 		echo $NAME - DEBUG: Composed params is \"$param\"
 		echo
@@ -156,13 +156,12 @@ while true ; do
 				ret="$?"
 			elif [[ ( -n ` echo $MSG | grep -asio -m1 "Invalid" `) ]] ; then
 				break;
-			else
-				continue
 			fi
 	#		continue
 		else
 			echo $( date +"%D %T" ) - $NAME - The Custom monitor data were added \($ret\)
 			continue # don't send additional data separately
+
 			# Now create additional data
 			if [[ -z "${ADDITIONAL_PARAMS}" ]] ; then # ADDITIONAL_PARAMS is not set
 				continue

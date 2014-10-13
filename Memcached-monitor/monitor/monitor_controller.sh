@@ -3,12 +3,11 @@
 #usage: monitor_controller.sh [command]
 #allowed commands: start (default); stop; restart
 
-declare -r MEMCACHED_PORT_1=11211
-declare -r MEMCACHED_PORT_2=11212
-
-
 cmd=0
 param="$*" #input parameters
+
+declare -a ports=(11211)
+errors=0
 
 if [[ ($# -gt 0) ]] ; then
   stop_="stop"
@@ -25,32 +24,25 @@ if [[ ($# -gt 0) ]] ; then
   fi
 fi
 
-declare -a ports=($MEMCACHED_PORT_1 $MEMCACHED_PORT_2)
-errors=0
-
 for p in ${ports[@]}; do
 	pid=`ps -efw | grep -i 'mmon_start.sh' | grep "$p" | awk '{print $2} ' `
-	if [[ "$pid" ]]  
-	then
+	if [[ "$pid" ]] ; then
 		echo "---Memcached Monitor \( $p \) is running with pid = $pid"
 		if [[ ($cmd -eq 0) ]] #start monitor
 		then
 			echo "---Memcached Monitor \( $p \)  is already running - couldn't start a new one!!!"
 			errors=$((errors++))
 			continue
-		elif [[ ($cmd -ge 1) ]] #stop monitor
-		then
+		elif [[ ($cmd -ge 1) ]] ; then #stop monitor
 			echo "---Memcached Monitor \( $p \) stopping... ($pid)"
 			kill -SIGTERM $pid
-			if [[ ($cmd -le 1) ]]
-			then
+			if [[ ($cmd -le 1) ]] ; then
 				continue
 			else
 				sleep 5
 			fi
 		fi
-	elif [[ ($cmd -eq 1) ]]
-	then
+	elif [[ ($cmd -eq 1) ]] ; then
 		echo "Memcached Monitor \( $p \) isn't running!!!"
 		continue
 	fi
@@ -72,7 +64,7 @@ for p in ${ports[@]}; do
 
 	tmp=`currentscriptpath`
 
-	cd $tmp/../MemcachedMonitor
+	cd $tmp
 	echo switching to ` pwd ` and start - memcached monitors
 
 	./mmon_start.sh -p $p $param 1> /dev/null &

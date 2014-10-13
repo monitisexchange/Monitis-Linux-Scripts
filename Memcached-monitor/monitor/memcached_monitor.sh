@@ -22,7 +22,7 @@ function access_memcached {
 	local c=$3
 	local f=$4
 	if [[ ("x$f" != "x") ]] #file specified
-	then	
+	then
 		echo -e "$c" | nc -q 1 $h $p | tee $f > /dev/null
 		ret="$?"
 		if [[ ($ret -gt 0) || !(-r $f) || ($(stat -c%s $f) -le 0) ]]
@@ -37,9 +37,9 @@ function access_memcached {
 }
 
 #  Format a timestamp into the form 'x day hh:mm:ss'
-#  
+#
 #  @param TIMESTAMP {NUMBER} the timestamp in sec
-# 
+#
 function formatTimestamp(){
 	local time="$1"
 	local sec=$(( $time%60 ))
@@ -83,8 +83,7 @@ function get_measure() {
 	then
 	  `rm -f $FILE_STATUS $FILE_STATUS_PREV $FILE_SETTING`
 	  access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "$CMD_SETTING" "$FILE_SETTING"
-	  if [[ ("$?" -gt 0) ]]
-	  then
+	  if [[ ("$?" -gt 0) ]] ; then
 	  	details="$(uri_escape \"details\":\"Cannot access to the memcached engine\")"
 	    return_value="$UNAC_STATE;additionalResults:[{$details}]"
 	    return 0
@@ -95,9 +94,9 @@ function get_measure() {
 
 	#Current results
     access_memcached "$MEMCACHED_IP" "$MEMCACHED_PORT" "$CMD_STATUS" "$FILE_STATUS"
-	if [[ ("$?" -gt 0) ]]
-	then
-	    return_value=$UNAC_STATE
+	if [[ ("$?" -gt 0) ]] ; then
+	  	details="$(uri_escape \"details\":\"Cannot access to the memcached engine\")"
+	    return_value="$UNAC_STATE;additionalResults:[{$details}]"
 	    initialized=0
     	return 0
     fi
