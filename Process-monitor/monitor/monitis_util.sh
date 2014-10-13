@@ -7,8 +7,24 @@
 # to their hexadecimal character representations (as defined in RFC3986)
 # " " "!"  "#"  "$" "&" "'" "(" ")" ":"  "/"  "?"  "["  "]"  "@" "*" "+" "," ";" "="
 uri_escape(){ 
-#	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g;s/\./%2E/g'
-	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
+	echo -E "$@" | sed 's/%/%25/g;s/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
+#	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
+}
+
+urlencode() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}"
 }
 
 # Tests whether *entire string* is alphanumeric.
@@ -18,6 +34,25 @@ function isAlphaNum ()
   *[!a-zA-Z0-9]*|"") echo $FALSE;;
                   *) echo $TRUE;;
   esac
+}
+
+# Checks if the first string contains the second string.
+# @param $1 - entire string
+# @param $2 - test string
+function isContains(){
+	local txt=${1:-""}
+	local chk=${2:-""}
+	
+	if [[ (-n "$txt") && (-n "$chk") ]] ; then
+		local req="^.*$chk.*$"
+		res=`echo $txt | grep -e "$req"`
+		if [[ (-z "$res") ]] ; then
+			return 1
+		fi
+	else
+		return 2
+	fi
+	return 0
 }
 
 # returns the formated UTC date and time URL encoded string
@@ -91,7 +126,7 @@ function isJSONarray(){
 	local str=${1:-""}
 	if [[ ( "x$str" != "x" ) && ( ${str:0:1} == "[" ) && ( ${str: -1} == "]" ) ]] ; then 
 		return 0
-	fi	
+	fi
 	return 1
 }
 
@@ -115,8 +150,8 @@ function jsonval() {
 	    temp="${temp#*:}"
 	    if [[ (-n "$temp") ]] ; then
     		echo "$temp"
-    	return 0
-    fi
+    		return 0
+    	fi
     fi
     return 1
 }
@@ -129,7 +164,7 @@ function jsonval() {
 function create_additional_param() {
 	if [[ (-n $1) ]]
 	then
-		local array=($1)
+		array=("${@}")
 		if [[ (${#array[*]} -gt 0) ]]
 		then
 			array_length=${#array[*]}
@@ -158,7 +193,7 @@ function create_additional_param() {
 # Transforming JSON string to array (first level only)
 #
 # @param $1 - json string that contains the data to be transforming
-# @return Strings array
+# @return Strings separated by '+'
 function json2array(){
 	local param="$1"
 	local details=""
@@ -170,19 +205,13 @@ function json2array(){
 		details=${details//'},'/'} + '}
 		details=${details//'],'/'] + '}
 		details=${details//'"'/''}	
-		details=${details//' '/'_'}
+#		details=${details//' '/''}
 				
 		param="details + $details"	
-		
-		unset array
-		OIFS=$IFS
-		IFS='+'
-		array=($param)
-		IFS=$OIFS	
 	else
 		return 1	
 	fi
-	echo "${array[@]}"
+	echo "$param"
 	return 0
 }
 
