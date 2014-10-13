@@ -3,7 +3,7 @@
 The current project represents the Bash script implementation of Monitis Custom Monitor Approach.  
 Please note that current implementation uses the Monitis latest multi-values approach that allow to send few sets of measurement values at same time.  
 Moreover, this approach allows to apply some simple aggregation functionality like sum, average and even choose one of values set to view on your Monitis dashboard.  
-It wraps the current [Monitis Open API](http://new.monitis.com/api/api.html) functionality that is necessary to build any custom monotor.  
+It wraps the current [Monitis Open API](http://new.monitis.com/api/api.html) functionality which is necessary to build any custom monitor.  
 
 The Repository contains the following files  
 
@@ -43,11 +43,14 @@ To use existing scripts you need to do some additions and changes that will corr
         
   - replace _monitor.sh_ by your measuring script. Please take into account the following  
       - script should contain function named _get_measure()_
-      - the _get_measure()_ will be called periodically. It should fill _return_value_ parameter which consists of two parts:  
+      - the _get_measure()_ will be called periodically. It should fill _return_value_ parameter which consists of two parts:
           - fixed part that should correspond to definition for  RESULT_PARAMS in the _monitor_constants.sh_ 
           - dynamic part that should correspond to definition for ADDITIONAL_PARAMS in the _monitor_constants.sh_ 
-      - both parts should be joined by | symbol (e.g. return_value="$param | $details" )
-      - besides, this script should returning standard _return code_. As usually, 0 mean successful processing.
+              - both parts should be joined into one sending bunch and so the ADDITIONAL_PARAMS should have a key _additionalResults_
+              - please note also that _additionalResults_ value should be in form JSONArray with values as JSONObject like __{key:value}__  
+          where definition of _key_ is given in monitor_constant.sh as ADDITIONAL_PARAMS variable.  
+          you can add so many members in the JSONArray as you wish. Every member will be shown as a new row in the Dashboard view.
+       - besides, this script should returning standard _return code_. As usually, 0 mean successful processing.
 
 
 That's all. Now you can run __monitor_start.sh__ and monitoring process will be started.  
