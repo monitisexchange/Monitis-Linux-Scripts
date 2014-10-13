@@ -6,6 +6,8 @@
 cmd=0
 param="$*" #input parameters
 
+echo Controller: got input "$*"
+
 if [[ ($# -gt 0) ]] ; then
   stop_="stop"
   start_="start"
@@ -26,26 +28,21 @@ esac
 
 
 	pid=`ps -efw | grep -i 'monitor_start.sh' | grep -v grep | awk '{print $2} ' `
-	if [[ "$pid" ]]  
-	then
+	if [[ "$pid" ]] ; then
 		echo "---Monitor is running with pid = $pid"
-		if [[ ($cmd -eq 0) ]] #start monitor
-		then
+		if [[ ($cmd -eq 0) ]] ; then #start monitor
 			echo "---Monitor is already running - couldn't start a new one!!!"
 			exit 1
-		elif [[ ($cmd -ge 1) ]] #stop monitor
-		then
+		elif [[ ($cmd -ge 1) ]] ; then #stop monitor
 			echo "---Monitor stopping... ($pid)"
 			kill -SIGTERM $pid
-			if [[ ($cmd -le 1) ]]
-			then
+			if [[ ($cmd -le 1) ]] ; then
 				exit 0
 			else
 				sleep 5
 			fi
 		fi
-	elif [[ ($cmd -eq 1) ]]
-	then
+	elif [[ ($cmd -eq 1) ]] ; then
 		echo "Monitor isn't running!!!"
 		exit 0
 	fi

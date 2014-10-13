@@ -20,22 +20,22 @@ function get_measure() {
 	then
 	    MSG[$errors]="WARNING - too big test number"
 	    errors=$(($errors+1))
-	    status="NOK"
 	fi
 	
-	if [ $errors -gt 0 ]
-	then
-	    problem="Problems detected"
+	if [[ ($errors -gt 0) ]] ; then
+	    details={"$(uri_escape \"details\":\"Problems detected\")"}
 	    CNT=0
-	    while [[ ("$CNT" != "$errors") ]]
-	    do
-	        problem="$problem + ${MSG[$CNT]}"
+	    while [[ ("$CNT" != "$errors") ]] ; do
+	        details=$details,{"$(uri_escape \"details\":\"${MSG[$CNT]}\")"}
 	        CNT=$(($CNT+1))
 	    done
-	    details="$details+${problem}"
+	    status="NOK"
+	else
+		details={"$(uri_escape \"details\":\"OK\")"}
+		status="OK"		
 	fi
-	local param="status:$status;test:$test"
+	local param="status:$status;test:$test;additionalResults:[$details]"
 
-	return_value="$param | $details"
+	return_value="$param"
 	return 0
 }
