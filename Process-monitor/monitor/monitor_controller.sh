@@ -95,6 +95,7 @@ fi
 
 echo ---------starting monitor \( "$param" \)--------------
 	./monitor_start.sh $param 1> /dev/null &
+
 	echo "monitor ran with status code $?" >&2
 
 	cd $PWD

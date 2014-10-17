@@ -6,7 +6,7 @@ source proc_monitor.sh || error 2 proc_monitor.sh
 
 echo Input params is "$*"
 
-#read argument; in this case the monitoring folders paths
+#read arguments; in this case the monitoring folders paths
 while getopts ":d:p:c:s:h" opt;
 do
         case $opt in
