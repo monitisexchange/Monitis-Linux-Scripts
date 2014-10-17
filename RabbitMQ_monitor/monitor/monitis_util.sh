@@ -7,8 +7,24 @@
 # to their hexadecimal character representations (as defined in RFC3986)
 # " " "!"  "#"  "$" "&" "'" "(" ")" ":"  "/"  "?"  "["  "]"  "@" "*" "+" "," ";" "="
 uri_escape(){ 
-#	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g;s/\./%2E/g'
-	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
+	echo -E "$@" | sed 's/%/%25/g;s/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
+#	echo -E "$@" | sed 's/ /%20/g;s/!/%21/g;s/"/%22/g;s/#/%23/g;s/\$/%24/g;s/\&/%26/g;s/'\''/%27/g;s/(/%28/g;s/)/%29/g;s/:/%3A/g;s/\[/%5B/g;s/\]/%5D/g;s/,/%2C/g;s/;/%3B/g'
+}
+
+urlencode() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}"
 }
 
 # Tests whether *entire string* is alphanumeric.
@@ -110,7 +126,7 @@ function isJSONarray(){
 	local str=${1:-""}
 	if [[ ( "x$str" != "x" ) && ( ${str:0:1} == "[" ) && ( ${str: -1} == "]" ) ]] ; then 
 		return 0
-	fi	
+	fi
 	return 1
 }
 
@@ -134,8 +150,8 @@ function jsonval() {
 	    temp="${temp#*:}"
 	    if [[ (-n "$temp") ]] ; then
     		echo "$temp"
-    	return 0
-    fi
+    		return 0
+    	fi
     fi
     return 1
 }

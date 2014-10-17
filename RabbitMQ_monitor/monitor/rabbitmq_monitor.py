@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json
+import json, urllib
 import commands
 import httplib, base64
 
@@ -9,13 +9,14 @@ import httplib, base64
 rmqHost = '127.0.0.1'
 rmqPort = 15672
 rmqPath = '/api/'
-rmqName = 'admin'
-rmqPswd = 'Access4Rabbit'
+#rmqName = 'admin'
+#rmqPswd = 'Access4Rabbit'
+rmqName = 'guest'
+rmqPswd = 'guest'
 NORM_STATE="OK"
 IDLE_STATE="IDLE"
 FAIL_STATE="NOK"
-UNAC_STATE="status:FAIL | details + Cannot access to the rabbitmq engine"
-
+UNAC_STATE="DOWN"
 #Access to the RabbitMQ Management HTTP API, 
 # execute command and keep the result in the "result" variable
 #
@@ -49,9 +50,15 @@ def formatTimestamp(time):
         s=str(da)+'-'+str(s) 
     return s
 
-#def getValue(): 
+def addAdditionalData(data, res_array): 
+    if isinstance(data, basestring) and isinstance(res_array, list):
+        details={'details':data}
+        details = urllib.quote(json.dumps(details), '{}')
+        res_array.append(details)
+
     
 errors=0
+ad_res = []
 MSG = {}
 # get nodes info
 #print('*** nodes ***')
@@ -104,8 +111,11 @@ try:
             MSG[errors]="WARN - CPU usage is critically big"
             errors+=1         
 except Exception as e:
-    print(UNAC_STATE+' - '+str(e))
-
+    addAdditionalData('Cannot access to the rabbitmq engine - '+str(e), ad_res)
+    status = UNAC_STATE
+    param='status:'+str(status)+';additionalResults:'+str(ad_res).replace("'","")
+    print param
+    exit()
 # # get overview info    
 # access_rabbitmq "overview"
 #print('*** overview ***')
@@ -143,7 +153,11 @@ try:
             errors+=1
 
 except Exception as e:
-    print(UNAC_STATE+' - '+str(e))
+    addAdditionalData('Cannot access to the rabbitmq engine - '+str(e), ad_res)
+    status = UNAC_STATE
+    param='status:'+str(status)+';additionalResults:'+str(ad_res).replace("'","")
+    print param
+    exit()
 
 # # get connections info
 # access_rabbitmq "connections"
@@ -174,7 +188,7 @@ try:
                     elif client.find(client_) < 0:
                         client+=';'+client_
         else:
-          client="No any client establish connections yet" 
+            client="No any client establish connections yet" 
         recv_rate='%.2f' % (r_rate/1024.0)
         sent_rate='%.2f' % (w_rate/1024.0)
          
@@ -182,12 +196,18 @@ try:
 #        print('recv_rate=%s, sent_rate=%s' % (recv_rate, sent_rate))
 #        print(client)
 except Exception as e:
-    print(UNAC_STATE+' - '+str(e))
+    addAdditionalData('Cannot access to the rabbitmq engine - '+str(e), ad_res)
+    status = UNAC_STATE
+    param='status:'+str(status)+';additionalResults:'+str(ad_res).replace("'","")
+    print param
+    exit()
 
 # # get queue info
 # access_rabbitmq "queues"
 #print('*** queues ***')
 queue_count = 0
+consumers_count = 0
+queue_without_consumer = []
 queue=''
 try:
     result = access_rabbitmq('queues')
@@ -197,6 +217,10 @@ try:
         if queue_count > 0:
             for i in range(queue_count):
                 message_stats=queues[i]['message_stats'] if queues[i].has_key('message_stats') else {}
+                consumers_count += queues[i]['consumers']
+                if queues[i]['consumers'] == 0 :
+                    queue_without_consumer.append(queues[i]['name'])
+
                 if len(message_stats) > 0:
                     v=message_stats['publish_details'] if message_stats.has_key('publish_details') else {}
                     r_rate=v['rate'] if 'rate' in v else 0
@@ -210,33 +234,45 @@ try:
                 elif queue.find(queue_) < 0:
                     queue+='; '+queue_
         else:
-           queue="No any queues are created yet" 
+            queue="No any queues are created yet" 
 except Exception as e:
-    print(UNAC_STATE+' - '+str(e))
+    addAdditionalData('Cannot access to the rabbitmq engine - '+str(e), ad_res)
+    status = UNAC_STATE
+    param='status:'+str(status)+';additionalResults:'+str(ad_res).replace("'","")
+    print param
+    exit()
 #print(queue)
 
-details='details'
 if errors > 0:
-    details+=' + Problems in rabbitmq ('+pid+') '+FAIL_STATE
+    addAdditionalData('Problems in rabbitmq ('+str(pid)+') '+FAIL_STATE, ad_res)
     for CNT in range(errors):
-        details+=' + '+ MSG[CNT]
+        addAdditionalData(str(MSG[CNT]), ad_res)
     status=FAIL_STATE
 elif  (conn <= 0) or (queue_count <= 0):
-    details+=' + RabbitMQ ('+pid+') '+IDLE_STATE
+    addAdditionalData('RabbitMQ ('+str(pid)+') '+IDLE_STATE, ad_res)   
     status=IDLE_STATE
 else:
-    details+=' + RabbitMQ ('+pid+') '+NORM_STATE
-    details+=' + '+str(conn)+' connections are established'
-    details+=' + '+str(queue_count)+' queues are created'
+    addAdditionalData('RabbitMQ ('+str(pid)+') '+NORM_STATE, ad_res)
+    addAdditionalData(str(conn)+' connections are established', ad_res)
+
+    if len(queue_without_consumer) > 0 :
+        addAdditionalData('queues without consumers: '+str(queue_without_consumer), ad_res)
+    addAdditionalData(str(queue_count)+' queues are created', ad_res)
+    addAdditionalData('clients: '+client, ad_res)
+    addAdditionalData('queues: '+queue, ad_res)
     status=NORM_STATE
 
-details+=' + clients: '+client
-details+=' + queues: '+queue
- 
+
+# details = {'details':details}
+# details = urllib.quote(json.dumps(details), '{}')
+# ad_res.append(details)
+
 param='status:'+str(status)+';osd:'+str(osdp)+';ofd:'+str(ofdp)+';cpu_usage:'+str(cpu_pr)+';mem_usage:'+str(mem_pr) \
     +';recv_mps:'+str(deliver_get_rate)+';sent_mps:'+str(pub_rate)+';msg_queue:'+str(msg_in_queues) \
-    +';timeout:'+str(timeout)+';recv_kbps:'+str(recv_rate)+';sent_kbps:'+str(sent_rate)+';uptime:'+str(upt)
-return_value=param+' | '+details
-print(return_value)
+    +';consumers:'+str(consumers_count)+';recv_kbps:'+str(recv_rate)+';sent_kbps:'+str(sent_rate)+';uptime:'+str(upt) \
+    +';additionalResults:'+str(ad_res).replace("'","")
+#return_value=param+' | '+details
+#print(return_value)
+print param
 
 

@@ -19,16 +19,16 @@ declare -r MON_GET_ADATA="getAData"
 
 # format of result params - name1:displayName1:uom1:Integer
 declare -r P1="status:status::3;uptime:uptime::3"
-declare -r P2="osd:osd_pr::4;ofd:ofd_pr::4;cpu_usage:cpu_usage::4;mem_usage:mem_usage::4;msg_queue:msg_in_queue::2;timeout:timeout:s:2"
+declare -r P2="osd:osd_pr::4;ofd:ofd_pr::4;cpu_usage:cpu_usage::4;mem_usage:mem_usage::4;msg_queue:msg_in_queue::2;consumers:consumers::2"
 declare -r P3="sent_mps:pub_rate:mps:4;recv_kbps:from_client_rate:kbps:4;sent_kbps:to_client_rate:kbps:4;recv_mps:get_rate:mps:4"
 declare -r RESULT_PARAMS="$P1;$P2;$P3"
 
 # format of additional params - name:displayName:uom:String
-declare -r ADDITIONAL_PARAMS="details:Details::3"	
+declare -r ADDITIONAL_PARAMS="details:Details::3"
 
 declare -r NORM_STATE="OK"
 declare -r IDLE_STATE="IDLE"
-declare -r FAIL_STATE="NOK"	
+declare -r FAIL_STATE="NOK"
 declare -r UNAC_STATE="status:FAIL | details + Cannot access to the rabbitmq engine"
 
 declare    DURATION=5	 				# information sending duration [min] (REPLACE by any desired value)
