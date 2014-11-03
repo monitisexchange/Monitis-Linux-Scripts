@@ -143,6 +143,7 @@ function get_measure() {
 		
 		local uptm=$( ps -o etime $pid | grep -v ELAPSED )
 		uptm=` trim "$uptm" `
+		uptm=${uptm//:/.}
 		uptm=$(uri_escape "$uptm")
 
 		#echo "*********** Analizing ****************"

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Declaration of monitor constants
-declare    HOST="173.192.34.112"					# replace by your host ip
-declare    PROC_CMD='python.*mail_manager.py'				# replace by your process command
+declare    HOST="host address"					# replace by your host ip
+declare    PROC_CMD='unique command/regex'		# replace by your process command
 declare    PROC_ID=0							# replace by your process PID (optional)
 
 declare -r NAME="Process"
