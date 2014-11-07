@@ -15,6 +15,7 @@ declare -r NAME="MySQL_replication"
 declare -r MONITOR_NAME="$NAME"_"$MASTER_HOST->$SLAVE_HOST" 	# name of custom monitor
 declare -r MONITOR_TAG="replication"					# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
+declare -r MULTIVALUE="false"
 
 # format of result params - name1:displayName1:uom1:Integer
 # name, displayName, uom and value should be URL encoded.
@@ -30,3 +31,5 @@ declare -r RESP_DOWN="alive:no"
 declare -r ADDITIONAL_PARAMS="details:Details::3"
 
 declare    DURATION=5	 		# information sending duration [min] (REPLACE by any desired value)
+
+declare    return_value			# working parameter

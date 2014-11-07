@@ -2,6 +2,7 @@
 
 # sorces included
 source monitor_constant.sh    || exit 2
+source monitis_util.sh		  || exit 2
 
 declare -i initialized=0	# indicator of master variables initializing
 #previous measurement data
@@ -49,10 +50,9 @@ function formatTimestamp(){
 	local min=$(( ($time/60)%60 ))
 	local hr=$(( ($time/3600)%24 ))
 	local da=$(( $time/86400 ))
-	local str=$(echo `printf "%u.%02u.%02u" $hr $min $sec`)
-	if [[ ($da -gt 0) ]]
-	then
-		str="$da day $str" 
+	local str=$(echo `printf "%02u:%02u:%02u" $hr $min $sec`)
+	if [[ ($da -gt 0) ]] ; then
+		str="$da-$str" 
 	fi
 	echo $str
 }
@@ -69,26 +69,25 @@ function extract_value() {
     FILENAME=$1
     VAR=$2
     DELIMITER=$3
-    if [ $DELIMITER ]
-    then
-	    grep -w $VAR $FILENAME | awk -F $DELIMITER '{print $2 $3}'    
+    if [ $DELIMITER ] ; then
+	    ret=`grep -w $VAR $FILENAME | awk -F $DELIMITER '{print $2 $3} ' `
     else
-	    grep -w $VAR $FILENAME | awk '{print $2 $3}'
+	    ret=`grep -w $VAR $FILENAME | awk '{print $2 $3} ' `
     fi
+    echo `trim "$ret"`
 }
 
 function get_measure() {
-	local details="details"
+	MSG="OK"
+	local errors=0
 
 	#echo "********** check Slave parameters **********"
 	access_remout_MySQL $SLAVE_HOST $SLAVE_PORT $SLAVE_USER $SLAVE_PASSWORD  "SHOW SLAVE STATUS\G" sstatus
 	local ret_s="$?"
-	if [[ (ret_s -gt 0) || ($(stat -c%s sstatus) -le 0) ]]
-	then
+	if [[ (ret_s -gt 0) || ($(stat -c%s sstatus) -le 0) ]] ; then
 		MSG="Unknown problems while access SLAVE mysql..."
-		problem="Problems in replication"+"$MSG"
-		details="$details+${problem}"
-		return_value="$RESP_DOWN | $details"
+	  	details="$(uri_escape \"details\":\"Problems in replication - $MSG\")"
+	    return_value="$RESP_DOWN;additionalResults:[{$details}]"
 		return 1
 	fi
 	
@@ -98,11 +97,11 @@ function get_measure() {
 	if [[ (ret_m -gt 0) || ($(stat -c%s mstatus) -le 0) ]]
 	then
 		MSG="Unknown problems while access MASTER mysql..."
-		problem="Problems in replication"+"$MSG"
-		details="$details+${problem}"
-		return_value="$RESP_DOWN | $details"
+	  	details="$(uri_escape \"details\":\"Problems in replication - $MSG\")"
+	    return_value="$RESP_DOWN;additionalResults:[{$details}]"
 		return 1
 	fi
+
 	#****Still OK****
 	if [ $initialized -eq 0 ]
 	then
@@ -134,11 +133,12 @@ function get_measure() {
 	local Master_load=0
 	local Slave_load=0
 	local discord=0
-	if [ $prev_time -gt 0 ]
-	then
+	if [ $prev_time -gt 0 ] ; then
 		local Master_load=$(echo "scale=2;($Master_binlog_pos-$prev_Master_binlog_pos+$Max_binlog_size*($Master_binlog_num-$prev_Master_binlog_num))/($time_stamp-$prev_time)" | bc )
 		local Slave_load=$(echo "scale=2;($Slave_read_binlog_pos-$prev_Slave_read_binlog_pos+$Max_binlog_size*($Slave_read_binlog_num-$prev_Slave_read_binlog_num))/($time_stamp-$prev_time)" | bc )
-		local discord=$(echo "scale=2;100*(1 - $Slave_load / $Master_load)" | bc )
+		if [ $(echo "$Master_load > 0" | bc ) -ne 0 ] ; then			
+			local discord=$(echo "scale=2;100*(1 - $Slave_load / $Master_load)" | bc )
+		fi
 	fi
 	
 	prev_Master_binlog_num=$Master_binlog_num
@@ -149,8 +149,7 @@ function get_measure() {
 	prev_time=$time_stamp
 	
 	local dev=$(( $Master_binlog_pos + $Max_binlog_size *($Master_binlog_num -  $Slave_read_binlog_num) ))
-	if [ $dev -ne 0 ]
-	then
+	if [ $dev -ne 0 ] ; then
 		local Desynch_percent=$(echo "scale=2;100*(1 - $Slave_read_binlog_pos / $dev)" | bc ) 
 	else
 		local Desynch_percent=$dev
@@ -159,7 +158,6 @@ function get_measure() {
 	#echo "*********** Analizing ****************"
 	local alive=yes;
 	
-	errors=0
 	if [ "$Master_Host" != "$MASTER_HOST" ]
 	then
 	    MSG[$errors]="ERROR - the slave is replicating not from the defined host"
@@ -209,28 +207,26 @@ function get_measure() {
 	
 	if [ $(echo "$discord > 5 || $discord < -5" | bc ) -ne 0 ]
 	then
-	    MSG[$errors]="WARNING - Inconsistency in replication has reached to $discord percent (master - $Master_load; slave - $Slave_load )"
+	    MSG[$errors]="WARNING - Inconsistency in replication has reached to $discord percent \(master - $Master_load; slave - $Slave_load \)"
 	    errors=$(($errors+1))
 	fi
 	
-	local details="details"
-	if [ $errors -gt 0 ]
-	then
-	    problem="Problems in replication"
+	if [[ ($errors -gt 0) ]] ; then
+	    details={"$(uri_escape \"details\":\"Problems in replication\")"}
 	    CNT=0
-	    while [ "$CNT" != "$errors" ]
-	    do
-	        problem="$problem + ${MSG[$CNT]}"
+	    while [[ ("$CNT" != "$errors") ]] ; do
+	        details=$details,{"$(uri_escape \"details\":\"${MSG[$CNT]}\")"}
 	        CNT=$(($CNT+1))
 	    done
-	    details="$details+${problem}"
 	else
-	    details="$details + Replication OK"
-	    details="$details + Master writes to $Master_binlog_file ($Master_binlog_pos) with rate $Master_load pos/sec"
-	    details="$details + Slave reads from $Slave_read_binlog_file ($Slave_read_binlog_pos) with rate $Slave_load pos/sec"	
+	    details={"$(uri_escape \"details\":\"Replication OK\")"}
+	    details=$details,{"$(uri_escape \"details\":\"Master writes to $Master_binlog_file \($Master_binlog_pos\) with rate $Master_load pos/sec\")"}
+	    details=$details,{"$(uri_escape \"details\":\"Slave reads from $Slave_read_binlog_file \($Slave_read_binlog_pos\) with rate $Slave_load pos/sec\")"}
 	fi
-	local param="alive:$alive;late:$Slave_seconds_behind_master;desynch:$Desynch_percent;last_errno:$Slave_last_errno;discord:$discord"
-	return_value="$param | $details"
+	local param="alive:$alive;late:$Slave_seconds_behind_master;desynch:$Desynch_percent;last_errno:$Slave_last_errno;discord:$discord;additionalResults:[$details]"
+	return_value="$param"
 	return 0
 }
 
+#get_measure
+#echo $return_value
