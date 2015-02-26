@@ -4,7 +4,7 @@
 source monitis_api.sh        || exit 2
 source replicator_monitor.sh || error 2 replicator_monitor.sh
 
-#usage: monitor_test.sh -d <duration in min>
+#usage: monitor_start.sh -d <duration in min>
 # default values 
 # 		d = 5 min
 #parse command line
@@ -50,7 +50,7 @@ while true ; do
 	done
 	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
 	echo "All is OK for now."
-	
+
 	if [[ ($MONITOR_ID -le 0) ]] ; then
 		#trying to get monitor id
 		id=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
@@ -120,7 +120,7 @@ while true ; do
 		result=$return_value	# retrieve measure values
 	
 		# Compose monitor data
-		param=$(echo ${result} | awk -F "|" '{print $1}')
+		param=$(echo ${result} | awk -F "|" '{print $1}' )
 		param=` trim $param `
 		param=` uri_escape $param `
 #		param=` urlencode $param `
@@ -161,7 +161,7 @@ while true ; do
 			array_length="${#array[@]}"
 			if [[ ($array_length -gt 0) ]] ; then
 				echo 
-				echo $NAME - DEBUG: Composed additional params from \( ${array[@]} \)
+				echo "$NAME - DEBUG: Composed additional params from ( ${array[@]} )"
 				echo
 				param=`create_additional_param "${array[@]}" `
 				ret="$?"

@@ -79,6 +79,7 @@ function extract_value() {
 
 function get_measure() {
 	MSG="OK"
+	local details="details"
 	local errors=0
 
 	#echo "********** check Slave parameters **********"
@@ -108,7 +109,6 @@ function get_measure() {
 	  access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW VARIABLES" mvariables
 	  initialized=1
 	fi
-	
 	
 	#echo "*********** Retriving data for Master ***********"
 	local Max_binlog_size=$(extract_value mvariables max_binlog_size )
@@ -156,45 +156,50 @@ function get_measure() {
 	fi
 	
 	#echo "*********** Analizing ****************"
-	local alive=yes;
+	local alive=OK;
 	
 	if [ "$Master_Host" != "$MASTER_HOST" ]
 	then
 	    MSG[$errors]="ERROR - the slave is replicating not from the defined host"
 	    errors=$(($errors+1))
-	    alive=no
+	    alive=NOK
 	fi
 	
 	if [ "$Master_Port" != "$MASTER_PORT" ]
 	then
 	    MSG[$errors]="ERROR - the slave listen not the defined host port"
 	    errors=$(($errors+1))
-	    alive=no
+	    alive=NOK
 	fi
 	
 	if [ "$Master_binlog_file" != "$Slave_read_binlog_file" ]
 	then
 	    MSG[$errors]="CRITICAL - master binlog ($Master_binlog_file) and slave read binlog ($Slave_read_binlog_file) files differ"
 	    errors=$(($errors+1))
-	    alive=no
+	    alive=NOK
 	fi
 	
 	if [ "$Slave_IO_Running" == "No" ]
 	then
 	    MSG[$errors]="CRITICAL - Replication is stopped (IO_Thread is down)"
 	    errors=$(($errors+1))
-	    alive=no
+	    alive=NOK
 	fi
 	
 	if [ "$Slave_SQL_Running" == "No" ]
 	then
 	    MSG[$errors]="CRITICAL - Replication is stopped (SQL_THread is down) "
 	    errors=$(($errors+1))
-	    alive=no
+	    alive=NOK
 	fi
 	
-	if [ $Slave_seconds_behind_master -gt 0 ]
-	then
+	isNumeric "$Slave_seconds_behind_master" 
+	if [[ ("$?" -ne 0) ]] ; then	# Not numeric?
+	    MSG[$errors]="ERROR - Slave_seconds_behind_master is not numeric $Slave_seconds_behind_master"
+	    errors=$(($errors+1))
+	    alive=NOK
+#		Slave_seconds_behind_master=-1
+	elif [ $Slave_seconds_behind_master -gt 0 ] ; then
 	    MSG[$errors]="WARNING - Slave is behind of Master at about $Slave_seconds_behind_master seconds"
 	    errors=$(($errors+1))
 	fi

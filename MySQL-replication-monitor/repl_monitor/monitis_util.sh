@@ -27,6 +27,16 @@ urlencode() {
   echo "${encoded}"
 }
 
+#check for variable is numeric
+function isNumeric ()
+{
+	if [[ $1 = *[[:digit:]]* ]]; then
+	 return 0
+	else
+	 return 1
+	fi
+}
+
 # Tests whether *entire string* is alphanumeric.
 function isAlphaNum ()   
 {

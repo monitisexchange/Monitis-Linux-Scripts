@@ -320,7 +320,7 @@ function get_monitorID {
 				echo $value
 				ret=$ret
 			else 
-				MSG="get_monitorID - Monitor not found in response list"		
+				MSG="get_monitorID - Monitor not found in response list"
 			fi
 		fi
 	fi
