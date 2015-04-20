@@ -7,7 +7,7 @@ currentscriptpath()
   local fullpath_length=`echo ${#fullpath}`
   local scriptname="$(basename $0)"
   local scriptname_length=`echo ${#scriptname}`
-  local result_length=`echo $fullpath_length - $scriptname_length - 1 | bc`
+  local result_length="$(($fullpath_length - $scriptname_length - 1))"
   local result=`echo $fullpath | head -c $result_length`
   echo $result
 }

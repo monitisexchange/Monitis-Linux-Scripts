@@ -105,7 +105,7 @@ while true ; do
 			error "$ret" "$NAME - $MSG"
 			continue
 		fi
-		get_measure				# call measure function
+		get_measure		# call measure function
 		ret="$?"
 		echo $NAME - DEBUG ret = "$ret"  return_value = "$return_value"
 		if [[ ($ret -ne 0) ]] ; then

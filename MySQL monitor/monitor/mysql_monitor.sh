@@ -39,10 +39,9 @@ function formatTimestamp(){
 	local min=$(( ($time/60)%60 ))
 	local hr=$(( ($time/3600)%24 ))
 	local da=$(( $time/86400 ))
-	local str=$(echo `printf "%02u.%02u.%02u" $hr $min $sec`)
-	if [[ ($da -gt 0) ]]
-	then
-		str="$da""-""$str" 
+	local str=$(echo `printf "%02u:%02u:%02u" $hr $min $sec`)
+	if [[ ($da -gt 0) ]] ; then
+		str="$da-$str" 
 	fi
 	echo $str
 }
@@ -59,12 +58,12 @@ function extract_value() {
     FILENAME=$1
     VAR=$2
     DELIMITER=$3
-    if [ $DELIMITER ]
-    then
-	    grep -w $VAR $FILENAME | tr '\r' ' ' | awk -F $DELIMITER '{print $2 $3}'    
+    if [ $DELIMITER ] ; then
+	    ret=`grep -w $VAR $FILENAME | awk -F $DELIMITER '{print $2 $3} ' `
     else
-	    grep -w $VAR $FILENAME | tr '\r' ' ' | awk '{print $2 $3}'
+	    ret=`grep -w $VAR $FILENAME | awk '{print $2 $3} ' `
     fi
+    echo `trim "$ret"`
 }
 
 #function get_slow_queries(){
@@ -111,12 +110,10 @@ function get_measure() {
 	#echo "********** check MySQL parameters **********"
 	access_MySQL $HOST $USER $PASSWORD  "SHOW GLOBAL STATUS" $FILE_STATUS
 	local ret_s="$?"
-	if [[ (ret_s -gt 0) || ($(stat -c%s $FILE_STATUS) -le 0) ]]
-	then
+	if [[ (ret_s -gt 0) || ($(stat -c%s $FILE_STATUS) -le 0) ]] ; then
 		MSG="Unknown problems while access mysql..."
-		problem="FATAL "+"$MSG"
-		details="$details+${problem}"
-		return_value="$RESP_DOWN | $details"
+	  	details="$(uri_escape \"details\":\"Problems in replication - $MSG\")"
+	    return_value="$RESP_DOWN;additionalResults:[{$details}]"
 		return 1
 	fi
 	
@@ -199,7 +196,7 @@ function get_measure() {
 	local Connections_usage=$(echo "scale=1; 100 * $Threads_connected/$max_connections" | bc )
 	local up=$(formatTimestamp $Uptime )
 	
-	#echo "*********** Analyzing ****************"
+	#echo "*********** Analysis ****************"
 	local status="OK"
 	
 	errors=0
@@ -221,22 +218,23 @@ function get_measure() {
 	    errors=$(($errors+1))
 	fi
 		
-	if [ $errors -gt 0 ] ; then
-	    problem="Problems detected"
+	if [[ ($errors -gt 0) ]] ; then
+	    details={"$(uri_escape \"details\":\"Problems detected\")"}
 	    CNT=0
-	    while [ "$CNT" != "$errors" ]
-	    do
-	        problem="$problem + ${MSG[$CNT]}"
+	    while [[ ("$CNT" != "$errors") ]] ; do
+	        details=$details,{"$(uri_escape \"details\":\"${MSG[$CNT]}\")"}
 	        CNT=$(($CNT+1))
 	    done
-	    details="$details+${problem}"
 	else
-	    details="$details + ""MySQL is OK"
-	    #details="$details + Master writes to $Master_binlog_file ($Master_binlog_pos) with rate $Master_load pos/sec"
-	    #details="$details + Slave reads from $Slave_read_binlog_file ($Slave_read_binlog_pos) with rate $Slave_load pos/sec"	
+	    details={"$(uri_escape \"details\":\"MySQL is OK\")"}
+	    #details=$details,{"$(uri_escape \"details\":\"Master writes to $Master_binlog_file \($Master_binlog_pos\) with rate $Master_load pos/sec\")"}
+	    #details=$details,{"$(uri_escape \"details\":\"Slave reads from $Slave_read_binlog_file \($Slave_read_binlog_pos\) with rate $Slave_load pos/sec\")"}
 	fi
 	local param="status:$status;receive:$KBytes_received_dif_ps;send:$KBytes_sent_dif_ps;insert:$Com_insert_dif_ps;select:$Com_select_dif_ps;update:$Com_update_dif_ps;delete:$Com_delete_dif_ps"
-	param=$param";queries:$Queries_dif_ps;slow_queries:$Slow_queries_dif;thread_running:$Threads_running;thread_connected:$Threads_connected;Connections_usage:$Connections_usage;uptime:$up"
-	return_value="$param | $details"
+	param=$param";queries:$Queries_dif_ps;slow_queries:$Slow_queries_dif;thread_running:$Threads_running;thread_connected:$Threads_connected;Connections_usage:$Connections_usage;uptime:$up;additionalResults:[$details]"
+	return_value="$param"
 	return 0
 }
+
+#get_measure
+#echo $return_value

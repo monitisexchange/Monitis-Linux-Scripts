@@ -7,9 +7,10 @@ source proc_monitor.sh || error 2 proc_monitor.sh
 echo Input params is "$*"
 
 #read arguments; in this case the monitoring folders paths
-while getopts ":d:p:c:s:h" opt;
+while getopts ":n:d:p:c:s:h" opt;
 do
         case $opt in
+        n) name=$OPTARG ;;
 		d) dur=$OPTARG 
 			if [[ ($dur -gt 0) ]] ; then
 			    echo Set duration to $dur min
@@ -24,16 +25,20 @@ do
         esac
 done
 
-if [[ ("x$host" != "x") ]]
-then
+if [[ ("x$host" != "x") ]] ; then
+	echo "Host is redefined as $host"
       HOST="$host"
 fi
-
-if [[ ("x$proc" != "x") ]]
-then
-	PROC_CMD="$proc"
-	MONITOR_NAME="$NAME"_"$HOST"_"$PROC_CMD"
+if [[ ("x$name" != "x") ]] ; then
+	echo "Name is redefined as $name"
+	NAME="$NAME"_"$name"
 fi
+if [[ ("x$proc" != "x") ]] ; then
+	echo "Application is defined as $proc"
+	PROC_CMD="$proc"
+fi
+
+MONITOR_NAME="$NAME"_"$HOST"_"$PROC_CMD"
 
 DURATION=$((60*$DURATION)) #convert to sec
 

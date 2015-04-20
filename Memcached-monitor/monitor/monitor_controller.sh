@@ -15,14 +15,17 @@ if [[ ($# -gt 0) ]] ; then
   restart_="restart"
   if [[ ($(expr "$param" : ".*$stop_") -gt 0) ]] ; then
       cmd=1	#stop
-      echo "Command for stopping..."
   elif [[ ($(expr "$param" : ".*$restart_") -gt 0) ]] ; then
       cmd=2	#restart
-      echo "Command for restarting"
-  else
-      echo "Command for starting"	
   fi
 fi
+
+case $cmd in
+	0) echo "Command for starting"	;;
+	1) echo "Command for stopping..." ;;
+	2) echo "Command for restarting" ;;
+	*) echo "Unknown command" ; exit 1 ;;
+esac
 
 for p in ${ports[@]}; do
 	pid=`ps -efw | grep -i 'mmon_start.sh' | grep "$p" | awk '{print $2} ' `
@@ -55,7 +58,7 @@ for p in ${ports[@]}; do
 	  local fullpath_length=`echo ${#fullpath}`
 	  local scriptname="$(basename $0)"
 	  local scriptname_length=`echo ${#scriptname}`
-	  local result_length=`echo $fullpath_length - $scriptname_length - 1 | bc`
+	  local result_length="$(($fullpath_length - $scriptname_length - 1))"
 	  local result=`echo $fullpath | head -c $result_length`
 	  echo $result
 	}

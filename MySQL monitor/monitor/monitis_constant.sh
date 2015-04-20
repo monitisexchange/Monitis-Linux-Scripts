@@ -6,7 +6,7 @@
 #declare -r SERVER="http://new.monitis.com/"	# Monitis new server
 declare -r SERVER="http://api.monitis.com/"		# Monitis api server
 #declare -r SERVER="http://www.monitor.us/"		# Monitor.us server
-declare -r API_PATH="customMonitorApi"				# Custom API path
+declare -r API_PATH="customMonitorApi"			# Custom API path
 
 declare -r APIKEY="T5BAQQ46JPTGR6EBLFE28OSSQ"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
 declare -r SECRETKEY="248VUB2FA3DST8J31A9U6D9OHT"	# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
@@ -32,4 +32,5 @@ declare -r RES_DATA="data"
 declare -r TRUE=true
 declare -r FALSE=false
 
+declare -r CURL_PARAMS="--connect-timeout 10"
 

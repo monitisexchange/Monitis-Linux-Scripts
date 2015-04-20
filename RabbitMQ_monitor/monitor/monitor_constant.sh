@@ -8,10 +8,12 @@ declare -r PORT=15672					# port for RabbitMQ since version 3.0 is 15672
 declare -r USER="guest"
 declare -r PSWD="guest"
 
-#declare -r NAME="RabbitMQ"
-declare    MONITOR_NAME="$NAME"_"$HOST_IP:$PORT" 		# name of custom monitor
-declare -r MONITOR_TAG="rabbitmq"						# tag for custom monitor
-declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
+declare -r NAME="RabbitMQ"
+declare    MONITOR_NAME="$NAME"_"$HOST_IP:$PORT" 	# name of custom monitor
+declare -r MONITOR_TAG="rabbitmq"					# tag for custom monitor
+declare -r MONITOR_TYPE="BASH_Monitor"				# type for custom monitor
+declare -r MULTIVALUE="false"
+
 # monitor commands
 declare -r MON_ACTION="action"
 declare -r MON_GET_DATA="getData"

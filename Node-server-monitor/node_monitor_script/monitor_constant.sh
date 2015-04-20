@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Declaration of monitor constants
-declare -r MON_SERVER="test"					# monitored server host
-declare -r NODE_MONITOR="http://127.0.0.1:10010/"		# node server monitor access url
+declare -r MON_SERVER="test"							# monitored server host
+declare -r NODE_MONITOR="http://$MON_SERVER:10010/"		# node server monitor access url
 declare    ACCESS_CODE="monitis"						# access code for node monitor
 
 declare -r NAME="Node.js"
 declare    MONITOR_NAME="$NAME"_"$MON_SERVER"			# name of custom monitor
-declare -r MONITOR_TAG="Node_Server"				# tag for custom monitor
-declare -r MONITOR_TYPE="BASH_Monitor"				# type for custom monitor
+declare -r MONITOR_TAG="Node_Server"					# tag for custom monitor
+declare -r MONITOR_TYPE="BASH_Monitor"					# type for custom monitor
 # monitor commands
 declare -r MON_PATHNAME="node_monitor"
 declare -r MON_ACTION="action"

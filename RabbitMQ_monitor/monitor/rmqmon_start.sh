@@ -59,7 +59,7 @@ while true ; do
 	done
 	echo $NAME - RECEIVE TOKEN: "$TOKEN" at `date -u -d @$(( $TOKEN_OBTAIN_TIME/1000 ))` >&2
 	echo "All is OK for now."
-	
+
 	if [[ ($MONITOR_ID -le 0) ]] ; then
 		#trying to get monitor id
 		id=`get_monitorID "$MONITOR_NAME" "$MONITOR_TAG" "$MONITOR_TYPE" `
@@ -68,7 +68,7 @@ while true ; do
 			error 1 "$NAME - $MSG ( $ret )"
 			#trying to add new monitor
 			echo $NAME - Adding custom monitor >&2
-			add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE"
+			add_custom_monitor "$MONITOR_NAME" "$MONITOR_TAG" "$RESULT_PARAMS" "$ADDITIONAL_PARAMS" "$MONITOR_TYPE" "$MULTIVALUE"
 			ret="$?"
 			if [[ ($ret -ne 0) ]] ; then
 				error "$ret" "$NAME - $MSG"
@@ -147,13 +147,12 @@ while true ; do
 				ret="$?"
 			elif [[ ( -n ` echo $MSG | grep -asio -m1 "Invalid" `) ]] ; then
 				break;
-			else
-				continue
 			fi
 	#		continue
 		else
 			echo $( date +"%D %T" ) - $NAME - The Custom monitor data were added \($ret\)
 			continue # don't send additional data separately
+
 			# Now create additional data
 			if [[ -z "${ADDITIONAL_PARAMS}" ]] ; then # ADDITIONAL_PARAMS is not set
 				continue

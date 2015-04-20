@@ -298,7 +298,7 @@ function get_monitorID {
 	local name=${1:-""}
 	local tag=${2:-""}
 	local type=${3:-""}
-	
+
 	local ret=0
 	
     if [[ (-n $name) && (-n $tag) && (-n $type) ]] ; then
@@ -308,16 +308,16 @@ function get_monitorID {
 			ret=$ret
 		else
 			tmp=`jsonArray2ss "${response}" ` #convert json array to set of json objects separated by "|"
-				set -- "$tmp" 				
-					OIFS=$IFS
-					IFS="|"
-					declare -a Array=($*) 
-					IFS=$OIFS			
+			set -- "$tmp" 				
+				OIFS=$IFS
+				IFS="|"
+				declare -a Array=($*) 
+				IFS=$OIFS	
 			if [[ (	${#Array[@]} -eq 1 ) ]] ; then	
 				value=`jsonval "${Array[0]}" "id" `
 				MSG="OK"
-							ret="$?"
-							echo $value
+				ret="$?"
+				echo $value
 				ret=$ret
 			else 
 				MSG="get_monitorID - Monitor not found in response list"
@@ -365,10 +365,10 @@ function add_custom_monitor_data() {
 		if [[ (${#response} -le 0) ]]
 		then
 			MSG="add_custom_monitor_data: No response received.. `curlError $res` "
-			ret=3
+			ret=1
 		else
 			MSG="add_custom_monitor_data: Response is too long..."
-			ret=3
+			ret=1
 		fi
 	fi
 	return $ret

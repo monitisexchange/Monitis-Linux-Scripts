@@ -5,7 +5,7 @@ declare    HOST="host address"					# replace by your host ip
 declare    PROC_CMD='unique command/regex'		# replace by your process command
 declare    PROC_ID=0							# replace by your process PID (optional)
 
-declare -r NAME="Process"
+declare    NAME="Process"
 declare    MONITOR_NAME="$NAME"_"$HOST"_"$PROC_CMD"		# name of custom monitor
 declare -r MONITOR_TAG="Process"				# tag for custom monitor
 declare -r MONITOR_TYPE="BASH_Monitor"			# type for custom monitor
