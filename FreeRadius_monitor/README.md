@@ -19,7 +19,7 @@ The project is based on Bash 4.x+ and requires Linux kernel 2.6.x or higher.
 
    Custom FRMon  
 
-          env.sh                verifying the existence of necessary commands
+          env.sh                verifying the existence of necessary tools
           monitor_constant.sh   custom monitor constants (and configuration)  
           radius_monitor.sh     custom monitor main executor  
 
