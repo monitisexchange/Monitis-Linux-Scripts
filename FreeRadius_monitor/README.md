@@ -1,6 +1,7 @@
 ## Free Radius server monitor (FRMon)
 
 _Original Author: Arthur Sergeyan_
+_Review and refactoring: Simon Hunanyan_
 
 This project presents the Linux Bash-script application which monitors [FreeRadius server](http://freeradius.org) health status.  
  It is implemeted as Monitis custom monitor and uses the Monitis Open API.  
@@ -17,11 +18,13 @@ The project is based on Bash 4.x+ and requires Linux kernel 2.6.x or higher.
 
    Custom FRMon  
 
+	  env.sh                verifying the existence of necessary commands
           monitor_constant.sh   custom monitor constants (and configuration)  
           radius_monitor.sh     custom monitor main executor  
 
    Service part  
 
+	  monitor_controller.sh controlling monitor (status, start, stop, restart)
           start.sh              runs conveyor that contains monitor and executor
           stop.sh               stops conveyor all parts
 
@@ -90,5 +93,5 @@ This applicattion is tracking your Radius server health status by using 2 metris
 			
    - __reqTime__, which shows the responce delay in seconds for Radius request.
 
-That's all. Now you can click on start.sh to run your custom FRMon monitor.  
+That's all. Now you can call 'monitor_controller.sh start' to run your custom FRMon monitor.  
 
