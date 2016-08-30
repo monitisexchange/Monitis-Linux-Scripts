@@ -1,6 +1,7 @@
 ## Free Radius server monitor (FRMon)
 
 _Original Author: Arthur Sergeyan_
+
 _Review and refactoring: Simon Hunanyan_
 
 This project presents the Linux Bash-script application which monitors [FreeRadius server](http://freeradius.org) health status.  
