@@ -22,7 +22,7 @@ The Repository contains the following files
     Processing part  
 
         monitor_start.sh      Main executable script
-        monitor_controller.sh start/stop/restart monitor as a deamon processes (for production use)
+        monitor_controller.sh status/start/stop/restart monitor as a deamon processes (for production use)
 
     Test part  
 
