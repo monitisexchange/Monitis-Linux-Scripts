@@ -19,13 +19,13 @@ The project is based on Bash 4.x+ and requires Linux kernel 2.6.x or higher.
 
    Custom FRMon  
 
-	  env.sh                verifying the existence of necessary commands
+          env.sh                verifying the existence of necessary commands
           monitor_constant.sh   custom monitor constants (and configuration)  
           radius_monitor.sh     custom monitor main executor  
 
    Service part  
 
-	  monitor_controller.sh controlling monitor (status, start, stop, restart)
+          monitor_controller.sh controlling monitor (status, start, stop, restart)
           start.sh              runs conveyor that contains monitor and executor
           stop.sh               stops conveyor all parts
 
