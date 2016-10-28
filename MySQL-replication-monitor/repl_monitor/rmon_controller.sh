@@ -67,7 +67,7 @@ esac
 	cd $tmp
 	echo switching to ` pwd ` and start monitor
 
-	./rmon_start.sh $param 1> /dev/null &
+	$tmp/rmon_start.sh $param 1> /dev/null &
 
 	echo "monitor ran with status code $?" >&2
 

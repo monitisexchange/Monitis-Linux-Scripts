@@ -95,8 +95,7 @@ function get_measure() {
 	#echo "********** check Master parameters **********"
 	access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW MASTER STATUS\G" mstatus
 	local ret_m="$?"
-	if [[ (ret_m -gt 0) || ($(stat -c%s mstatus) -le 0) ]]
-	then
+	if [[ (ret_m -gt 0) || ($(stat -c%s mstatus) -le 0) ]] ; then
 		MSG="Unknown problems while access MASTER mysql..."
 	  	details="$(uri_escape \"details\":\"Problems in replication - $MSG\")"
 	    return_value="$RESP_DOWN;additionalResults:[{$details}]"
@@ -104,8 +103,7 @@ function get_measure() {
 	fi
 
 	#****Still OK****
-	if [ $initialized -eq 0 ]
-	then
+	if [ $initialized -eq 0 ] ; then
 	  access_remout_MySQL $MASTER_HOST $MASTER_PORT $MASTER_USER $MASTER_PASSWORD  "SHOW VARIABLES" mvariables
 	  initialized=1
 	fi
@@ -158,36 +156,31 @@ function get_measure() {
 	#echo "*********** Analizing ****************"
 	local alive=OK;
 	
-	if [ "$Master_Host" != "$MASTER_HOST" ]
-	then
+	if [ "$Master_Host" != "$MASTER_HOST" ] ; then
 	    MSG[$errors]="ERROR - the slave is replicating not from the defined host"
 	    errors=$(($errors+1))
 	    alive=NOK
 	fi
 	
-	if [ "$Master_Port" != "$MASTER_PORT" ]
-	then
+	if [ "$Master_Port" != "$MASTER_PORT" ] ; then
 	    MSG[$errors]="ERROR - the slave listen not the defined host port"
 	    errors=$(($errors+1))
 	    alive=NOK
 	fi
 	
-	if [ "$Master_binlog_file" != "$Slave_read_binlog_file" ]
-	then
+	if [ "$Master_binlog_file" != "$Slave_read_binlog_file" ] ; then
 	    MSG[$errors]="CRITICAL - master binlog ($Master_binlog_file) and slave read binlog ($Slave_read_binlog_file) files differ"
 	    errors=$(($errors+1))
 	    alive=NOK
 	fi
 	
-	if [ "$Slave_IO_Running" == "No" ]
-	then
+	if [ "$Slave_IO_Running" == "No" ] ; then
 	    MSG[$errors]="CRITICAL - Replication is stopped (IO_Thread is down)"
 	    errors=$(($errors+1))
 	    alive=NOK
 	fi
 	
-	if [ "$Slave_SQL_Running" == "No" ]
-	then
+	if [ "$Slave_SQL_Running" == "No" ] ; then
 	    MSG[$errors]="CRITICAL - Replication is stopped (SQL_THread is down) "
 	    errors=$(($errors+1))
 	    alive=NOK
@@ -204,14 +197,12 @@ function get_measure() {
 	    errors=$(($errors+1))
 	fi
 	
-	if [ $(echo "$Desynch_percent > 1" | bc ) -ne 0 ]
-	then
+	if [ $(echo "$Desynch_percent > 1" | bc ) -ne 0 ] ; then
 	    MSG[$errors]="WARNING - Desynchronization in replication is about $Desynch_percent percent"
 	    errors=$(($errors+1))
 	fi
 	
-	if [ $(echo "$discord > 5 || $discord < -5" | bc ) -ne 0 ]
-	then
+	if [ $(echo "$discord > 5 || $discord < -5" | bc ) -ne 0 ] ; then
 	    MSG[$errors]="WARNING - Inconsistency in replication has reached to $discord percent \(master - $Master_load; slave - $Slave_load \)"
 	    errors=$(($errors+1))
 	fi
