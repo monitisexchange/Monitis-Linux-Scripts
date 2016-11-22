@@ -89,12 +89,12 @@ Note: to demonize use the foloowing command
 #### Testing 
 To check the correctness of monitor workability, some tests was done on working RabbitMQ server which was under real load.  
 
-PIC_1
-
+<a href="http://i.imgur.com/yLO6JEg.png"><img src="http://i.imgur.com/yLO6JEg.png" title="RabbitMQ monitoring test" /></a>
 
 The graphical mode view is also available.  
 
-PIC_2
+<a href="http://i.imgur.com/JimtYDa.png"><img src="http://i.imgur.com/JimtYDa.png" title="RabbitMQ monitoring test" /></a>
+
 
 
 
