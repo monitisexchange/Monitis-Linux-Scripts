@@ -1,10 +1,9 @@
 #!/bin/bash
 
 # Declaration of monitor constants
-declare    HOST_IP="127.0.0.1"						# host mashine real IP-address
+declare    HOST_IP="127.0.0.1"			# host mashine real IP-address
 declare -r HOST="127.0.0.1"
-#declare -r PORT=55672					# port for RabbitMQ versions prior to 3.0 is 55672
-declare -r PORT=15672					# port for RabbitMQ since version 3.0 is 15672
+declare -r PORT=15672					# management port for RabbitMQ since version 3.0
 declare -r USER="guest"
 declare -r PSWD="guest"
 
@@ -33,6 +32,6 @@ declare -r IDLE_STATE="IDLE"
 declare -r FAIL_STATE="NOK"
 declare -r UNAC_STATE="status:FAIL | details + Cannot access to the rabbitmq engine"
 
-declare    DURATION=5	 				# information sending duration [min] (REPLACE by any desired value)
+declare    DURATION=5	 		# information sending duration [min] (REPLACE by any desired value)
 
 declare    return_value			# working parameter
