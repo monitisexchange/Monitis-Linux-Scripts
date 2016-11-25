@@ -8,8 +8,8 @@ declare -r SERVER="http://api.monitis.com/"		# Monitis api server
 #declare -r SERVER="http://www.monitor.us/"		# Monitor.us server
 declare -r API_PATH="customMonitorApi"			# Custom API path
 
-declare -r APIKEY="2K3GFQ1SU0JO8UD9OIKAVG9SE8"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
-declare -r SECRETKEY="LLTSDOJ6244CDA899R4H949TE"	# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
+declare -r APIKEY="MJH2K3GFTREIOUD9OIKAV98HGF"		# ApiKey - REPLACE it by your key's value (can be obtained from your Monitis account)
+declare -r SECRETKEY="LKYT478DDF4CDA899R4H948UYH"	# SecretKey - REPLACE it by your key's value (can be obtained from your Monitis account)
 
 declare -r APIVERSION="2"							# Version of existing Monitis Open API
 declare -r OUTPUT_TYPE="JSON"						# Output type that is used in the current project implementation
